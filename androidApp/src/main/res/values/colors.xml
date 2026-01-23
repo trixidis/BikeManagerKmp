@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#FF3F51B5</color>
+    <color name="primary_dark">#FF303F9F</color>
+    <color name="accent">#FFFF4081</color>
+    <color name="teal">#FF009688</color>
+    <color name="indigo">#FF3F51B5</color>
+    <color name="dark_green">#FF388E3C</color>
+    <color name="dark_red">#FFD32F2F</color>
+    <color name="primary_text">#FF212121</color>
+    <color name="secondary_text">#FF727272</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>

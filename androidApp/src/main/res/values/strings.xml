@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Mes entretiens moto</string>
+    <string name="my_bikes">Mes motos</string>
+    <string name="maintenances">Entretiens</string>
+    <string name="no_bikes">Vous n\'avez pour l\'instant ajouté aucune moto</string>
+    <string name="no_maintenance">Aucun entretien pour cette moto</string>
+    <string name="tab_done">Faits</string>
+    <string name="tab_todo">A faire</string>
+    <string name="add_bike_title">Ajout de moto</string>
+    <string name="add_bike_message">Veuillez renseigner le nom de la moto à ajouter</string>
+    <string name="add_maintenance_done">Entretien effectué</string>
+    <string name="add_maintenance_todo">Entretien à faire</string>
+    <string name="maintenance_type_hint">Type d\'entretien</string>
+    <string name="nb_hours_hint">Nombre d\'heures</string>
+    <string name="nb_km_hint">Nombre de kilomètres</string>
+    <string name="mark_done_title">Marquer cet entretien comme terminé</string>
+    <string name="add">Ajouter</string>
+    <string name="cancel">Annuler</string>
+    <string name="yes">Oui</string>
+    <string name="no">Non</string>
+    <string name="maintenance_deleted">Entretien supprimé</string>
+    <string name="invalid_input">Saisie invalide</string>
+    <string name="count_by">Compter en :</string>
+    <string name="hours">Heures</string>
+    <string name="km">Kilomètres</string>
+    <string name="undo">Annuler</string>
+    <string name="error_login">Une erreur est survenue</string>
+    <string name="sign_in_with_google">Se connecter avec Google</string>
+    <!-- Replace with your actual web client ID from Firebase Console -->
+    <string name="default_web_client_id">000000000000-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com</string>
+</resources>

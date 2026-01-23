@@ -1,0 +1,61 @@
+CREATE TABLE Bike (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    countingMethod TEXT NOT NULL DEFAULT 'KM',
+    firebaseRef TEXT
+);
+
+CREATE TABLE Maintenance (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    value REAL NOT NULL DEFAULT -1,
+    date INTEGER NOT NULL DEFAULT 0,
+    isDone INTEGER NOT NULL DEFAULT 0,
+    bikeId INTEGER NOT NULL,
+    firebaseRef TEXT,
+    FOREIGN KEY (bikeId) REFERENCES Bike(id) ON DELETE CASCADE
+);
+
+-- Queries pour Bike
+getAllBikes:
+SELECT * FROM Bike ORDER BY id DESC;
+
+getBikeById:
+SELECT * FROM Bike WHERE id = ?;
+
+insertBike:
+INSERT INTO Bike (name, countingMethod, firebaseRef) VALUES (?, ?, ?);
+
+updateBike:
+UPDATE Bike SET name = ?, countingMethod = ?, firebaseRef = ? WHERE id = ?;
+
+deleteBike:
+DELETE FROM Bike WHERE id = ?;
+
+getLastInsertedBikeId:
+SELECT last_insert_rowid();
+
+-- Queries pour Maintenance
+getMaintenancesByBikeId:
+SELECT * FROM Maintenance WHERE bikeId = ? ORDER BY value DESC;
+
+getDoneMaintenances:
+SELECT * FROM Maintenance WHERE bikeId = ? AND isDone = 1 ORDER BY value DESC;
+
+getTodoMaintenances:
+SELECT * FROM Maintenance WHERE bikeId = ? AND isDone = 0 ORDER BY id DESC;
+
+insertMaintenance:
+INSERT INTO Maintenance (name, value, date, isDone, bikeId, firebaseRef) VALUES (?, ?, ?, ?, ?, ?);
+
+updateMaintenance:
+UPDATE Maintenance SET name = ?, value = ?, date = ?, isDone = ?, firebaseRef = ? WHERE id = ?;
+
+markMaintenanceDone:
+UPDATE Maintenance SET isDone = 1, value = ?, date = ? WHERE id = ?;
+
+deleteMaintenance:
+DELETE FROM Maintenance WHERE id = ?;
+
+getLastInsertedMaintenanceId:
+SELECT last_insert_rowid();
