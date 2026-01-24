@@ -1,8 +1,10 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlin.compose.compiler)
     alias(libs.plugins.android.library)
     alias(libs.plugins.sqldelight)
     alias(libs.plugins.kover)
+    alias(libs.plugins.compose.multiplatform)
 }
 
 kotlin {
@@ -33,6 +35,33 @@ kotlin {
                 implementation(libs.sqldelight.coroutines)
                 implementation(libs.coroutines.core)
                 implementation(libs.napier)
+                implementation(libs.kotlinx.datetime)
+
+                // Compose Multiplatform
+                implementation(compose.runtime)
+                implementation(compose.foundation)
+                implementation(compose.material3)
+                implementation(compose.ui)
+                @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+                implementation(compose.components.resources)
+
+                // Voyager Navigation
+                implementation(libs.voyager.navigator)
+                implementation(libs.voyager.screenModel)
+                implementation(libs.voyager.koin)
+                implementation(libs.voyager.transitions)
+
+                // Koin Compose Multiplatform
+                implementation(libs.koin.compose.multiplatform)
+
+                // GitLive Firebase KMP SDK
+                implementation(libs.gitlive.firebase.auth)
+                implementation(libs.gitlive.firebase.database)
+
+                // KMPAuth for Google Sign-In
+                implementation(libs.kmpauth.google)
+                implementation(libs.kmpauth.firebase)
+                implementation(libs.kmpauth.uihelper)
             }
         }
         val commonTest by getting {
@@ -59,6 +88,7 @@ kotlin {
             iosSimulatorArm64Main.dependsOn(this)
             dependencies {
                 implementation(libs.sqldelight.native)
+                implementation(libs.stately.common)
             }
         }
     }
@@ -73,6 +103,9 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+    buildFeatures {
+        compose = true
     }
 }
 

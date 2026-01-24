@@ -1,9 +1,37 @@
 import java.util.Properties
+import groovy.json.JsonSlurper
 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose.compiler)
     alias(libs.plugins.google.services)
+}
+
+/**
+ * Extracts the Web Client ID (OAuth client_type: 3) from a google-services.json file.
+ */
+fun getWebClientId(buildType: String): String {
+    val googleServicesFile = file("src/$buildType/google-services.json")
+    if (!googleServicesFile.exists()) {
+        return "MISSING_GOOGLE_SERVICES_JSON"
+    }
+
+    val json = JsonSlurper().parseText(googleServicesFile.readText()) as Map<*, *>
+    val clients = json["client"] as? List<*> ?: return "NO_CLIENT_FOUND"
+
+    for (client in clients) {
+        val clientMap = client as? Map<*, *> ?: continue
+        val oauthClients = clientMap["oauth_client"] as? List<*> ?: continue
+
+        for (oauth in oauthClients) {
+            val oauthMap = oauth as? Map<*, *> ?: continue
+            if (oauthMap["client_type"] == 3) {
+                return oauthMap["client_id"] as? String ?: continue
+            }
+        }
+    }
+    return "WEB_CLIENT_ID_NOT_FOUND"
 }
 
 android {
@@ -39,7 +67,14 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Web Client ID extracted from src/debug/google-services.json
+            buildConfigField("String", "WEB_CLIENT_ID", "\"${getWebClientId("debug")}\"")
+        }
         release {
+            // Web Client ID extracted from src/release/google-services.json
+            buildConfigField("String", "WEB_CLIENT_ID", "\"${getWebClientId("release")}\"")
+
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
@@ -65,10 +100,6 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.4"
     }
 
     packaging {
@@ -114,6 +145,11 @@ dependencies {
 
     // Napier
     implementation(libs.napier)
+
+    // KMPAuth
+    implementation(libs.kmpauth.google)
+    implementation(libs.kmpauth.firebase)
+    implementation(libs.kmpauth.uihelper)
 
     // Testing
     testImplementation(libs.junit)

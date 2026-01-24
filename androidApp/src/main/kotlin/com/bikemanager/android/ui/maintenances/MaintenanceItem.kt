@@ -16,14 +16,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DismissDirection
-import androidx.compose.material3.DismissValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SwipeToDismiss
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberDismissState
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -49,9 +48,9 @@ fun MaintenanceItem(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val dismissState = rememberDismissState(
-        confirmValueChange = {
-            if (it == DismissValue.DismissedToStart || it == DismissValue.DismissedToEnd) {
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            if (value == SwipeToDismissBoxValue.StartToEnd || value == SwipeToDismissBoxValue.EndToStart) {
                 onDelete()
                 true
             } else {
@@ -60,23 +59,24 @@ fun MaintenanceItem(
         }
     )
 
-    SwipeToDismiss(
+    SwipeToDismissBox(
         state = dismissState,
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 4.dp),
-        directions = setOf(DismissDirection.StartToEnd, DismissDirection.EndToStart),
-        background = {
+        enableDismissFromStartToEnd = true,
+        enableDismissFromEndToStart = true,
+        backgroundContent = {
             val backgroundColor by animateColorAsState(
                 targetValue = when (dismissState.targetValue) {
-                    DismissValue.DismissedToEnd -> DarkRed
-                    DismissValue.DismissedToStart -> DarkRed
+                    SwipeToDismissBoxValue.StartToEnd -> DarkRed
+                    SwipeToDismissBoxValue.EndToStart -> DarkRed
                     else -> Color.Transparent
                 },
                 label = "backgroundColor"
             )
             val iconScale by animateFloatAsState(
-                targetValue = if (dismissState.targetValue == DismissValue.Default) 0.75f else 1f,
+                targetValue = if (dismissState.targetValue == SwipeToDismissBoxValue.Settled) 0.75f else 1f,
                 label = "iconScale"
             )
 
@@ -86,8 +86,8 @@ fun MaintenanceItem(
                     .background(backgroundColor)
                     .padding(horizontal = 20.dp),
                 contentAlignment = when (dismissState.dismissDirection) {
-                    DismissDirection.StartToEnd -> Alignment.CenterStart
-                    DismissDirection.EndToStart -> Alignment.CenterEnd
+                    SwipeToDismissBoxValue.StartToEnd -> Alignment.CenterStart
+                    SwipeToDismissBoxValue.EndToStart -> Alignment.CenterEnd
                     else -> Alignment.Center
                 }
             ) {
@@ -99,7 +99,7 @@ fun MaintenanceItem(
                 )
             }
         },
-        dismissContent = {
+        content = {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()

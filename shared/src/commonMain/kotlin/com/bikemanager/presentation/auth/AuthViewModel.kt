@@ -95,4 +95,11 @@ class AuthViewModel(
             _uiState.value = AuthUiState.NotAuthenticated
         }
     }
+
+    /**
+     * Sets an error message.
+     */
+    fun setError(message: String) {
+        _uiState.value = AuthUiState.Error(message)
+    }
 }
