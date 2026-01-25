@@ -1,7 +1,6 @@
 package com.bikemanager.ui.maintenances
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -15,7 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -39,7 +38,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -219,46 +217,34 @@ fun MaintenancesScreenContent(
                                 modifier = Modifier.fillMaxSize(),
                                 state = listState
                             ) {
-                                itemsIndexed(
+                                items(
                                     items = maintenances,
-                                    key = { _, maintenance -> maintenance.id }
-                                ) { index, maintenance ->
-                                    var visible by remember { mutableStateOf(false) }
-                                    LaunchedEffect(maintenance.id) {
-                                        visible = true
-                                    }
-                                    AnimatedVisibility(
-                                        visible = visible,
-                                        enter = fadeIn(animationSpec = tween(durationMillis = 300, delayMillis = index * 50)) +
-                                                slideInVertically(
-                                                    animationSpec = tween(durationMillis = 300, delayMillis = index * 50),
-                                                    initialOffsetY = { it / 2 }
+                                    key = { maintenance -> maintenance.id }
+                                ) {  maintenance ->
+
+                                    MaintenanceItem(
+                                        maintenance = maintenance,
+                                        countingMethod = countingMethod,
+                                        isDone = page == 0,
+                                        onClick = {
+                                            if (page == 1) {
+                                                markDoneMaintenance = maintenance
+                                            }
+                                        },
+                                        onDelete = {
+                                            viewModel.deleteMaintenance(maintenance)
+                                            scope.launch {
+                                                val result = snackbarHostState.showSnackbar(
+                                                    message = Strings.MAINTENANCE_DELETED,
+                                                    actionLabel = Strings.UNDO,
+                                                    duration = SnackbarDuration.Short
                                                 )
-                                    ) {
-                                        MaintenanceItem(
-                                            maintenance = maintenance,
-                                            countingMethod = countingMethod,
-                                            isDone = page == 0,
-                                            onClick = {
-                                                if (page == 1) {
-                                                    markDoneMaintenance = maintenance
-                                                }
-                                            },
-                                            onDelete = {
-                                                viewModel.deleteMaintenance(maintenance)
-                                                scope.launch {
-                                                    val result = snackbarHostState.showSnackbar(
-                                                        message = Strings.MAINTENANCE_DELETED,
-                                                        actionLabel = Strings.UNDO,
-                                                        duration = SnackbarDuration.Short
-                                                    )
-                                                    if (result == SnackbarResult.ActionPerformed) {
-                                                        viewModel.undoDelete()
-                                                    }
+                                                if (result == SnackbarResult.ActionPerformed) {
+                                                    viewModel.undoDelete()
                                                 }
                                             }
-                                        )
-                                    }
+                                        }
+                                    )
                                 }
                             }
                         }
