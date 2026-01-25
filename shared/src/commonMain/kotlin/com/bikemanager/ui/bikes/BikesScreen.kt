@@ -20,6 +20,10 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -28,6 +32,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -40,6 +46,7 @@ import com.bikemanager.ui.Strings
 import com.bikemanager.ui.core.rememberFabVisibility
 import com.bikemanager.ui.navigation.MaintenancesScreenDestination
 import com.bikemanager.ui.theme.White
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,8 +58,11 @@ fun BikesScreenContent(
     val uiState by viewModel.uiState.collectAsState()
     val showAddDialog = remember { mutableStateOf(false) }
     val editingBike = remember { mutableStateOf<Bike?>(null) }
+    var deletingBike by remember { mutableStateOf<Bike?>(null) }
     val listState = rememberLazyListState()
     val fabVisible = rememberFabVisibility(listState)
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
 
     Scaffold(
@@ -82,7 +92,8 @@ fun BikesScreenContent(
                     )
                 }
             }
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -128,7 +139,7 @@ fun BikesScreenContent(
                                     )
                                 },
                                 onEditClick = { editingBike.value = bike },
-                                onDeleteClick = { /* TODO: Wire in subtask-4-4 */ }
+                                onDeleteClick = { deletingBike = bike }
                             )
                         }
                     }
@@ -165,6 +176,27 @@ fun BikesScreenContent(
             onConfirm = { updatedBike ->
                 viewModel.updateBike(updatedBike)
                 editingBike.value = null
+            }
+        )
+    }
+
+    deletingBike?.let { bike ->
+        DeleteBikeConfirmationDialog(
+            bike = bike,
+            onDismiss = { deletingBike = null },
+            onConfirm = {
+                viewModel.deleteBike(bike)
+                deletingBike = null
+                scope.launch {
+                    val result = snackbarHostState.showSnackbar(
+                        message = Strings.BIKE_DELETED,
+                        actionLabel = Strings.UNDO,
+                        duration = SnackbarDuration.Short
+                    )
+                    if (result == SnackbarResult.ActionPerformed) {
+                        viewModel.undoDelete()
+                    }
+                }
             }
         )
     }
