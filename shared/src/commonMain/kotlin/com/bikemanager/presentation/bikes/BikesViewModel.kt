@@ -45,8 +45,13 @@ class BikesViewModel(
             getBikesUseCase()
                 .catch { throwable ->
                     Napier.e(throwable) { "Error observing bikes" }
+                    val appError = if (throwable is AppError) {
+                        throwable
+                    } else {
+                        ErrorHandler.handle(throwable, "observing bikes")
+                    }
                     _uiState.value = BikesUiState.Error(
-                        throwable.message ?: "Unknown error"
+                        ErrorMessages.getMessage(appError)
                     )
                 }
                 .collect { result ->
