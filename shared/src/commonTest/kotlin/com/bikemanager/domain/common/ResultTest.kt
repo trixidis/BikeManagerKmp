@@ -407,12 +407,12 @@ class ErrorHandlerTest {
 
     @Test
     fun `handle converts database exception to DatabaseError`() {
-        val exception = Exception("Database connection failed")
+        val exception = Exception("Database operation failed")
 
         val error = ErrorHandler.handle(exception)
 
         assertIs<AppError.DatabaseError>(error)
-        assertEquals("Database connection failed", error.errorMessage)
+        assertEquals("Database operation failed", error.errorMessage)
     }
 
     @Test

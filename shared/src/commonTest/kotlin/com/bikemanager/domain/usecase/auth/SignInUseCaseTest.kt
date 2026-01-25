@@ -47,7 +47,7 @@ class SignInUseCaseTest {
 
     @Test
     fun `invoke returns failure when sign in fails`() = runTest {
-        repository.setSignInThrows(true, IllegalStateException("Auth failed"))
+        repository.setSignInFails(true, IllegalStateException("Auth failed"))
 
         val result = useCase("valid-token")
 
