@@ -27,9 +27,9 @@
         The device_transfer domain applies only during device-to-device transfers
         We exclude the same sensitive data during transfers
     -->
-    <exclude domain="device_transfer/database" path="bikemanager.db"/>
-    <exclude domain="device_transfer/database" path="bikemanager.db-shm"/>
-    <exclude domain="device_transfer/database" path="bikemanager.db-wal"/>
-    <exclude domain="device_transfer/database" path="bikemanager.db-journal"/>
-    <exclude domain="device_transfer/sharedpref" path="."/>
+    <exclude domain="device_database" path="bikemanager.db"/>
+    <exclude domain="device_database" path="bikemanager.db-shm"/>
+    <exclude domain="device_database" path="bikemanager.db-wal"/>
+    <exclude domain="device_database" path="bikemanager.db-journal"/>
+    <exclude domain="device_sharedpref" path="."/>
 </full-backup-content>
