@@ -1,0 +1,39 @@
+{
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true
+  },
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Read(./**)",
+      "Write(./**)",
+      "Edit(./**)",
+      "Glob(./**)",
+      "Grep(./**)",
+      "Read(/Users/adrien/dev/BikeManager/.auto-claude/worktrees/tasks/008-android-backup-security/**)",
+      "Write(/Users/adrien/dev/BikeManager/.auto-claude/worktrees/tasks/008-android-backup-security/**)",
+      "Edit(/Users/adrien/dev/BikeManager/.auto-claude/worktrees/tasks/008-android-backup-security/**)",
+      "Glob(/Users/adrien/dev/BikeManager/.auto-claude/worktrees/tasks/008-android-backup-security/**)",
+      "Grep(/Users/adrien/dev/BikeManager/.auto-claude/worktrees/tasks/008-android-backup-security/**)",
+      "Read(/Users/adrien/dev/BikeManager/.auto-claude/worktrees/tasks/008-android-backup-security/.auto-claude/specs/008-android-backup-security/**)",
+      "Write(/Users/adrien/dev/BikeManager/.auto-claude/worktrees/tasks/008-android-backup-security/.auto-claude/specs/008-android-backup-security/**)",
+      "Edit(/Users/adrien/dev/BikeManager/.auto-claude/worktrees/tasks/008-android-backup-security/.auto-claude/specs/008-android-backup-security/**)",
+      "Read(/Users/adrien/dev/BikeManager/.auto-claude/**)",
+      "Write(/Users/adrien/dev/BikeManager/.auto-claude/**)",
+      "Edit(/Users/adrien/dev/BikeManager/.auto-claude/**)",
+      "Glob(/Users/adrien/dev/BikeManager/.auto-claude/**)",
+      "Grep(/Users/adrien/dev/BikeManager/.auto-claude/**)",
+      "Bash(*)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "mcp__context7__resolve-library-id(*)",
+      "mcp__context7__get-library-docs(*)",
+      "mcp__graphiti-memory__search_nodes(*)",
+      "mcp__graphiti-memory__search_facts(*)",
+      "mcp__graphiti-memory__add_episode(*)",
+      "mcp__graphiti-memory__get_episodes(*)",
+      "mcp__graphiti-memory__get_entity_edge(*)"
+    ]
+  }
+}

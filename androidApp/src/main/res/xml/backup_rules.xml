@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Android Backup Rules Configuration
+
+    This file defines what data should be excluded from Android's automatic backup system.
+
+    Security considerations:
+    - SQLite database (bikemanager.db) is excluded to prevent exposure of maintenance data
+    - Database journal files (.db-shm, .db-wal) are excluded to prevent corruption
+    - SharedPreferences are excluded as they may contain authentication tokens
+
+    For Android 12+ (API 31+), this configuration applies to both cloud backup and device-to-device transfer.
+    See androidApp/BACKUP_SECURITY.md for more information.
+-->
+<full-backup-content>
+    <!-- Exclude SQLite database files -->
+    <exclude domain="database" path="bikemanager.db"/>
+    <exclude domain="database" path="bikemanager.db-shm"/>
+    <exclude domain="database" path="bikemanager.db-wal"/>
+    <exclude domain="database" path="bikemanager.db-journal"/>
+
+    <!-- Exclude SharedPreferences that may contain auth tokens -->
+    <exclude domain="sharedpref" path="."/>
+
+    <!--
+        Device transfer rules for Android 12+ (API 31+)
+        The device_transfer domain applies only during device-to-device transfers
+        We exclude the same sensitive data during transfers
+    -->
+    <exclude domain="device_database" path="bikemanager.db"/>
+    <exclude domain="device_database" path="bikemanager.db-shm"/>
+    <exclude domain="device_database" path="bikemanager.db-wal"/>
+    <exclude domain="device_database" path="bikemanager.db-journal"/>
+    <exclude domain="device_sharedpref" path="."/>
+</full-backup-content>
