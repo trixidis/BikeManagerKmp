@@ -12,6 +12,7 @@ import com.bikemanager.domain.usecase.auth.GetCurrentUserUseCase
 import com.bikemanager.domain.usecase.auth.SignInUseCase
 import com.bikemanager.domain.usecase.auth.SignOutUseCase
 import com.bikemanager.domain.usecase.bike.AddBikeUseCase
+import com.bikemanager.domain.usecase.bike.DeleteBikeUseCase
 import com.bikemanager.domain.usecase.bike.GetBikesUseCase
 import com.bikemanager.domain.usecase.bike.UpdateBikeUseCase
 import com.bikemanager.domain.usecase.maintenance.AddMaintenanceUseCase
@@ -42,6 +43,7 @@ val sharedModule: Module = module {
     factory { GetBikesUseCase(get()) }
     factory { AddBikeUseCase(get()) }
     factory { UpdateBikeUseCase(get()) }
+    factory { DeleteBikeUseCase(get(), get()) }
 
     // Maintenance Use Cases
     factory { GetMaintenancesUseCase(get()) }
@@ -60,7 +62,7 @@ val sharedModule: Module = module {
 
     // ViewModels
     single { AuthViewModel(get(), get(), get()) }
-    single { BikesViewModel(get(), get(), get()) }
+    single { BikesViewModel(get(), get(), get(), get(), get()) }
     factory { (bikeId: String) -> MaintenancesViewModel(bikeId, get(), get(), get(), get()) }
     single { ThemeViewModel(get(), get()) }
 }
