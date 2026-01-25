@@ -54,6 +54,10 @@ class FakeMaintenanceRepository : MaintenanceRepository {
         maintenancesFlow.value = maintenancesFlow.value.filter { !(it.id == id && it.bikeId == bikeId) }
     }
 
+    override suspend fun deleteAllMaintenancesForBike(bikeId: String) {
+        maintenancesFlow.value = maintenancesFlow.value.filter { it.bikeId != bikeId }
+    }
+
     /**
      * Helper to set maintenances for testing.
      */
