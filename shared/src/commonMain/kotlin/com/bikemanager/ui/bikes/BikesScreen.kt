@@ -127,7 +127,8 @@ fun BikesScreenContent(
                                         )
                                     )
                                 },
-                                onEditClick = { editingBike.value = bike }
+                                onEditClick = { editingBike.value = bike },
+                                onDeleteClick = { /* TODO: Wire in subtask-4-4 */ }
                             )
                         }
                     }
