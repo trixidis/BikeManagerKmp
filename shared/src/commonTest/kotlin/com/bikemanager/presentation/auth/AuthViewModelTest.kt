@@ -101,8 +101,8 @@ class AuthViewModelTest {
     }
 
     @Test
-    fun `signInWithGoogle transitions to Error on failure`() = runTest {
-        repository.setSignInThrows(true, IllegalStateException("Auth failed"))
+    fun `signInWithGoogle with auth error shows French error message`() = runTest {
+        repository.setSignInFails(true, com.bikemanager.domain.common.AppError.AuthError("Auth failed"))
 
         val viewModel = AuthViewModel(getCurrentUserUseCase, signInUseCase, signOutUseCase)
         advanceUntilIdle()
@@ -118,13 +118,38 @@ class AuthViewModelTest {
             advanceUntilIdle()
             val state = awaitItem()
             assertTrue(state is AuthUiState.Error)
+            assertEquals("Erreur d'authentification. Veuillez vous reconnecter.", (state as AuthUiState.Error).message)
 
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
-    fun `signInWithGoogle with blank token shows error`() = runTest {
+    fun `signInWithGoogle with network error shows French error message`() = runTest {
+        repository.setSignInFails(true, com.bikemanager.domain.common.AppError.NetworkError("Network failed"))
+
+        val viewModel = AuthViewModel(getCurrentUserUseCase, signInUseCase, signOutUseCase)
+        advanceUntilIdle()
+
+        viewModel.uiState.test {
+            // Skip initial state
+            awaitItem()
+
+            viewModel.signInWithGoogle("test-token")
+
+            assertEquals(AuthUiState.Loading, awaitItem())
+
+            advanceUntilIdle()
+            val state = awaitItem()
+            assertTrue(state is AuthUiState.Error)
+            assertEquals("Erreur de connexion. Veuillez vérifier votre connexion internet et réessayer.", (state as AuthUiState.Error).message)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `signInWithGoogle with blank token shows French validation error`() = runTest {
         val viewModel = AuthViewModel(getCurrentUserUseCase, signInUseCase, signOutUseCase)
         advanceUntilIdle()
 
@@ -134,6 +159,7 @@ class AuthViewModelTest {
             viewModel.signInWithGoogle("")
             val state = awaitItem()
             assertTrue(state is AuthUiState.Error)
+            assertEquals("Identifiants invalides. Veuillez réessayer.", (state as AuthUiState.Error).message)
 
             cancelAndIgnoreRemainingEvents()
         }

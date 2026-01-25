@@ -177,4 +177,70 @@ class BikesViewModelTest {
         val bikes = repository.getCurrentBikes()
         assertEquals("Original Name", bikes[0].name)
     }
+
+    @Test
+    fun `observeBikes with database error shows French error message`() = runTest {
+        repository.setGetAllFails(true, com.bikemanager.domain.common.AppError.DatabaseError("Database failed"))
+
+        val viewModel = BikesViewModel(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
+
+        viewModel.uiState.test {
+            // Initial Loading state
+            assertEquals(BikesUiState.Loading, awaitItem())
+
+            advanceUntilIdle()
+            val errorState = awaitItem()
+            assertTrue(errorState is BikesUiState.Error)
+            assertEquals("Erreur lors de la sauvegarde. Veuillez réessayer.", (errorState as BikesUiState.Error).message)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `addBike with database error shows French error message`() = runTest {
+        repository.setAddFails(true, com.bikemanager.domain.common.AppError.DatabaseError("Add failed"))
+
+        val viewModel = BikesViewModel(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
+        advanceUntilIdle()
+
+        viewModel.uiState.test {
+            // Skip initial state
+            awaitItem()
+
+            viewModel.addBike("New Bike")
+            advanceUntilIdle()
+
+            val errorState = awaitItem()
+            assertTrue(errorState is BikesUiState.Error)
+            assertEquals("Erreur lors de la sauvegarde. Veuillez réessayer.", (errorState as BikesUiState.Error).message)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `updateBike with database error shows French error message`() = runTest {
+        val initialBike = Bike(id = "bike1", name = "Old Name")
+        repository.setBikes(listOf(initialBike))
+        repository.setUpdateFails(true, com.bikemanager.domain.common.AppError.DatabaseError("Update failed"))
+
+        val viewModel = BikesViewModel(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
+        advanceUntilIdle()
+
+        viewModel.uiState.test {
+            // Skip initial Success state
+            awaitItem()
+
+            val updatedBike = initialBike.copy(name = "New Name")
+            viewModel.updateBike(updatedBike)
+            advanceUntilIdle()
+
+            val errorState = awaitItem()
+            assertTrue(errorState is BikesUiState.Error)
+            assertEquals("Erreur lors de la sauvegarde. Veuillez réessayer.", (errorState as BikesUiState.Error).message)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
 }

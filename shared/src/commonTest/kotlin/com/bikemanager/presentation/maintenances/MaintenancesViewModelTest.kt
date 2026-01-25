@@ -273,4 +273,115 @@ class MaintenancesViewModelTest {
             cancelAndIgnoreRemainingEvents()
         }
     }
+
+    @Test
+    fun `observeMaintenances with database error shows French error message`() = runTest {
+        maintenanceRepository.setGetDoneFails(true, com.bikemanager.domain.common.AppError.DatabaseError("Database failed"))
+
+        val viewModel = createViewModel()
+
+        viewModel.uiState.test {
+            assertEquals(MaintenancesUiState.Loading, awaitItem())
+
+            advanceUntilIdle()
+            val errorState = awaitItem()
+            assertTrue(errorState is MaintenancesUiState.Error)
+            assertEquals("Erreur lors de la sauvegarde. Veuillez réessayer.", (errorState as MaintenancesUiState.Error).message)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `addDoneMaintenance with database error shows French error message`() = runTest {
+        maintenanceRepository.setAddFails(true, com.bikemanager.domain.common.AppError.DatabaseError("Add failed"))
+
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.uiState.test {
+            // Skip initial state
+            awaitItem()
+
+            viewModel.addDoneMaintenance(name = "Oil Change", value = 5000f)
+            advanceUntilIdle()
+
+            val errorState = awaitItem()
+            assertTrue(errorState is MaintenancesUiState.Error)
+            assertEquals("Erreur lors de la sauvegarde. Veuillez réessayer.", (errorState as MaintenancesUiState.Error).message)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `addTodoMaintenance with database error shows French error message`() = runTest {
+        maintenanceRepository.setAddFails(true, com.bikemanager.domain.common.AppError.DatabaseError("Add failed"))
+
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.uiState.test {
+            // Skip initial state
+            awaitItem()
+
+            viewModel.addTodoMaintenance(name = "Future Check")
+            advanceUntilIdle()
+
+            val errorState = awaitItem()
+            assertTrue(errorState is MaintenancesUiState.Error)
+            assertEquals("Erreur lors de la sauvegarde. Veuillez réessayer.", (errorState as MaintenancesUiState.Error).message)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `markMaintenanceDone with database error shows French error message`() = runTest {
+        maintenanceRepository.setMaintenances(
+            listOf(Maintenance(id = "m1", name = "Todo", isDone = false, bikeId = bikeId))
+        )
+        maintenanceRepository.setMarkDoneFails(true, com.bikemanager.domain.common.AppError.DatabaseError("Mark done failed"))
+
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.uiState.test {
+            // Skip initial state
+            awaitItem()
+
+            viewModel.markMaintenanceDone(maintenanceId = "m1", value = 3000f)
+            advanceUntilIdle()
+
+            val errorState = awaitItem()
+            assertTrue(errorState is MaintenancesUiState.Error)
+            assertEquals("Erreur lors de la sauvegarde. Veuillez réessayer.", (errorState as MaintenancesUiState.Error).message)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `deleteMaintenance with database error shows French error message`() = runTest {
+        val maintenance = Maintenance(id = "m1", name = "To Delete", isDone = true, bikeId = bikeId)
+        maintenanceRepository.setMaintenances(listOf(maintenance))
+        maintenanceRepository.setDeleteFails(true, com.bikemanager.domain.common.AppError.DatabaseError("Delete failed"))
+
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.uiState.test {
+            // Skip initial state
+            awaitItem()
+
+            viewModel.deleteMaintenance(maintenance)
+            advanceUntilIdle()
+
+            val errorState = awaitItem()
+            assertTrue(errorState is MaintenancesUiState.Error)
+            assertEquals("Erreur lors de la sauvegarde. Veuillez réessayer.", (errorState as MaintenancesUiState.Error).message)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
 }
