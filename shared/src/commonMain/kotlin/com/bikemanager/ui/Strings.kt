@@ -33,8 +33,9 @@ object Strings {
     const val ERROR_LOGIN = "Une erreur est survenue"
     const val SIGN_IN_WITH_GOOGLE = "Se connecter avec Google"
     const val EDIT = "Modifier"
-    const val DELETE = "Supprimer"
-    const val DELETE_BIKE_TITLE = "Supprimer cette moto"
-    const val DELETE_BIKE_MESSAGE = "Êtes-vous sûr de vouloir supprimer cette moto ? Tous les entretiens associés seront également supprimés."
-    const val BIKE_DELETED = "Moto supprimée"
+    const val SETTINGS = "Paramètres"
+    const val THEME = "Thème"
+    const val THEME_LIGHT = "Clair"
+    const val THEME_DARK = "Sombre"
+    const val THEME_SYSTEM = "Système"
 }

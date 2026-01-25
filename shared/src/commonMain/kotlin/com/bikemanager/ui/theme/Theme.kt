@@ -1,6 +1,7 @@
 package com.bikemanager.ui.theme
 
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
@@ -19,12 +20,30 @@ private val LightColorScheme = lightColorScheme(
     onError = White
 )
 
+private val DarkColorScheme = darkColorScheme(
+    primary = DarkPrimary,
+    onPrimary = White,
+    primaryContainer = DarkPrimaryVariant,
+    onPrimaryContainer = White,
+    secondary = DarkSecondary,
+    onSecondary = White,
+    background = DarkBackground,
+    onBackground = DarkPrimaryText,
+    surface = DarkSurface,
+    onSurface = DarkPrimaryText,
+    error = DarkRed,
+    onError = White
+)
+
 @Composable
 fun BikeManagerTheme(
+    darkTheme: Boolean = false,
     content: @Composable () -> Unit
 ) {
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+
     MaterialTheme(
-        colorScheme = LightColorScheme,
+        colorScheme = colorScheme,
         content = content
     )
 }

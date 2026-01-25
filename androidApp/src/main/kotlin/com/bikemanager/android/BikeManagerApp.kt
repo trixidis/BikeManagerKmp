@@ -2,6 +2,7 @@ package com.bikemanager.android
 
 import android.app.Application
 import com.bikemanager.data.local.DatabaseDriverFactory
+import com.bikemanager.data.local.ThemePreferences
 import com.bikemanager.di.sharedModule
 import com.mmk.kmpauth.google.GoogleAuthCredentials
 import com.mmk.kmpauth.google.GoogleAuthProvider
@@ -37,4 +38,7 @@ class BikeManagerApp : Application() {
 val androidModule = module {
     // Database Driver Factory (platform-specific)
     single { DatabaseDriverFactory(get()) }
+
+    // Theme Preferences (platform-specific)
+    single { ThemePreferences(get()) }
 }
