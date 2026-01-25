@@ -52,7 +52,7 @@ class BikesViewModelTest {
 
             // After loading, Empty state
             advanceUntilIdle()
-            assertEquals(BikesUiState.Empty, awaitItem())
+            assertTrue(awaitItem() is BikesUiState.Empty)
 
             cancelAndIgnoreRemainingEvents()
         }
@@ -60,7 +60,7 @@ class BikesViewModelTest {
 
     @Test
     fun `initial state is Loading then Success when bikes exist`() = runTest {
-        val bikes = listOf(Bike(id = 1, name = "Test Bike"))
+        val bikes = listOf(Bike(id = "bike1", name = "Test Bike"))
         repository.setBikes(bikes)
 
         val viewModel = BikesViewModel(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
@@ -119,7 +119,7 @@ class BikesViewModelTest {
 
     @Test
     fun `updateBike updates bike in repository`() = runTest {
-        val initialBike = Bike(id = 1, name = "Old Name")
+        val initialBike = Bike(id = "bike1", name = "Old Name")
         repository.setBikes(listOf(initialBike))
 
         val viewModel = BikesViewModel(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
@@ -135,13 +135,13 @@ class BikesViewModelTest {
 
     @Test
     fun `updateBikeName updates bike name when in Success state`() = runTest {
-        val initialBike = Bike(id = 1, name = "Old Name")
+        val initialBike = Bike(id = "bike1", name = "Old Name")
         repository.setBikes(listOf(initialBike))
 
         val viewModel = BikesViewModel(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
         advanceUntilIdle()
 
-        viewModel.updateBikeName(1L, "New Name")
+        viewModel.updateBikeName("bike1", "New Name")
         advanceUntilIdle()
 
         val bikes = repository.getCurrentBikes()
@@ -150,13 +150,13 @@ class BikesViewModelTest {
 
     @Test
     fun `updateBikeCountingMethod updates counting method when in Success state`() = runTest {
-        val initialBike = Bike(id = 1, name = "Bike", countingMethod = CountingMethod.KM)
+        val initialBike = Bike(id = "bike1", name = "Bike", countingMethod = CountingMethod.KM)
         repository.setBikes(listOf(initialBike))
 
         val viewModel = BikesViewModel(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
         advanceUntilIdle()
 
-        viewModel.updateBikeCountingMethod(1L, CountingMethod.HOURS)
+        viewModel.updateBikeCountingMethod("bike1", CountingMethod.HOURS)
         advanceUntilIdle()
 
         val bikes = repository.getCurrentBikes()
@@ -165,36 +165,16 @@ class BikesViewModelTest {
 
     @Test
     fun `updateBikeName with invalid id does nothing`() = runTest {
-        val initialBike = Bike(id = 1, name = "Original Name")
+        val initialBike = Bike(id = "bike1", name = "Original Name")
         repository.setBikes(listOf(initialBike))
 
         val viewModel = BikesViewModel(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
         advanceUntilIdle()
 
-        viewModel.updateBikeName(999L, "New Name")
+        viewModel.updateBikeName("nonexistent", "New Name")
         advanceUntilIdle()
 
         val bikes = repository.getCurrentBikes()
         assertEquals("Original Name", bikes[0].name)
-    }
-
-    @Test
-    fun `loadBikes reloads bikes from repository`() = runTest {
-        val viewModel = BikesViewModel(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
-        advanceUntilIdle()
-
-        // Add a bike directly to repository
-        repository.setBikes(listOf(Bike(id = 1, name = "New Bike")))
-
-        // Reload
-        viewModel.loadBikes()
-        advanceUntilIdle()
-
-        viewModel.uiState.test {
-            val state = awaitItem()
-            assertTrue(state is BikesUiState.Success)
-            assertEquals(1, (state as BikesUiState.Success).bikes.size)
-            cancelAndIgnoreRemainingEvents()
-        }
     }
 }

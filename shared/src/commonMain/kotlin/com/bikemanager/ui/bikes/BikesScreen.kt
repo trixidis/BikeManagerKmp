@@ -1,16 +1,16 @@
 package com.bikemanager.ui.bikes
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -24,13 +24,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -40,6 +37,7 @@ import com.bikemanager.domain.model.Bike
 import com.bikemanager.presentation.bikes.BikesUiState
 import com.bikemanager.presentation.bikes.BikesViewModel
 import com.bikemanager.ui.Strings
+import com.bikemanager.ui.core.rememberFabVisibility
 import com.bikemanager.ui.navigation.MaintenancesScreenDestination
 import com.bikemanager.ui.theme.White
 import org.koin.compose.koinInject
@@ -51,15 +49,11 @@ fun BikesScreenContent(
 ) {
     val navigator = LocalNavigator.currentOrThrow
     val uiState by viewModel.uiState.collectAsState()
-    var showAddDialog by remember { mutableStateOf(false) }
-    var editingBike by remember { mutableStateOf<Bike?>(null) }
+    val showAddDialog = remember { mutableStateOf(false) }
+    val editingBike = remember { mutableStateOf<Bike?>(null) }
     val listState = rememberLazyListState()
+    val fabVisible = rememberFabVisibility(listState)
 
-    val fabVisible by remember {
-        derivedStateOf {
-            listState.firstVisibleItemIndex == 0 || !listState.isScrollInProgress
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -74,11 +68,11 @@ fun BikesScreenContent(
         floatingActionButton = {
             AnimatedVisibility(
                 visible = fabVisible,
-                enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
-                exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
+                enter = fadeIn() + slideInVertically(initialOffsetY = { it *2}),
+                exit = fadeOut() + slideOutVertically(targetOffsetY = { it *2})
             ) {
                 FloatingActionButton(
-                    onClick = { showAddDialog = true },
+                    onClick = { showAddDialog.value = true },
                     containerColor = MaterialTheme.colorScheme.secondary
                 ) {
                     Icon(
@@ -115,38 +109,26 @@ fun BikesScreenContent(
                 is BikesUiState.Success -> {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
                         state = listState
                     ) {
-                        itemsIndexed(
+                        items(
                             items = state.bikes,
-                            key = { _, bike -> bike.id }
-                        ) { index, bike ->
-                            var visible by remember { mutableStateOf(false) }
-                            LaunchedEffect(bike.id) {
-                                visible = true
-                            }
-                            AnimatedVisibility(
-                                visible = visible,
-                                enter = fadeIn(animationSpec = tween(durationMillis = 300, delayMillis = index * 50)) +
-                                        slideInVertically(
-                                            animationSpec = tween(durationMillis = 300, delayMillis = index * 50),
-                                            initialOffsetY = { it / 2 }
+                            key = { bike -> bike.id }
+                        ) { bike ->
+                            BikeItem(
+                                bike = bike,
+                                onClick = {
+                                    navigator.push(
+                                        MaintenancesScreenDestination(
+                                            bikeId = bike.id,
+                                            bikeName = bike.name,
+                                            countingMethod = bike.countingMethod
                                         )
-                            ) {
-                                BikeItem(
-                                    bike = bike,
-                                    onClick = {
-                                        navigator.push(
-                                            MaintenancesScreenDestination(
-                                                bikeId = bike.id,
-                                                bikeName = bike.name,
-                                                countingMethod = bike.countingMethod
-                                            )
-                                        )
-                                    },
-                                    onEditClick = { editingBike = bike }
-                                )
-                            }
+                                    )
+                                },
+                                onEditClick = { editingBike.value = bike }
+                            )
                         }
                     }
                 }
@@ -165,23 +147,23 @@ fun BikesScreenContent(
         }
     }
 
-    if (showAddDialog) {
+    if (showAddDialog.value) {
         AddBikeDialog(
-            onDismiss = { showAddDialog = false },
+            onDismiss = { showAddDialog.value = false },
             onConfirm = { name ->
                 viewModel.addBike(name)
-                showAddDialog = false
+                showAddDialog.value = false
             }
         )
     }
 
-    editingBike?.let { bike ->
+    editingBike.value?.let { bike ->
         EditBikeDialog(
             bike = bike,
-            onDismiss = { editingBike = null },
+            onDismiss = { editingBike.value = null },
             onConfirm = { updatedBike ->
                 viewModel.updateBike(updatedBike)
-                editingBike = null
+                editingBike.value = null
             }
         )
     }

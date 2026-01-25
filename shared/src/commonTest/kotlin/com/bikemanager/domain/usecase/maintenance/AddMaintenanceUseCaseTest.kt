@@ -21,11 +21,11 @@ class AddMaintenanceUseCaseTest {
 
     @Test
     fun `invoke adds maintenance to repository and returns id`() = runTest {
-        val maintenance = Maintenance(name = "Oil Change", bikeId = 1L)
+        val maintenance = Maintenance(name = "Oil Change", bikeId = "bike1")
 
         val id = useCase(maintenance)
 
-        assertTrue(id > 0)
+        assertTrue(id.isNotEmpty())
         val maintenances = repository.getCurrentMaintenances()
         assertEquals(1, maintenances.size)
         assertEquals("Oil Change", maintenances[0].name)
@@ -33,7 +33,7 @@ class AddMaintenanceUseCaseTest {
 
     @Test
     fun `invoke throws exception when maintenance name is empty`() = runTest {
-        val maintenance = Maintenance(name = "", bikeId = 1L)
+        val maintenance = Maintenance(name = "", bikeId = "bike1")
 
         assertFailsWith<IllegalArgumentException> {
             useCase(maintenance)
@@ -42,7 +42,7 @@ class AddMaintenanceUseCaseTest {
 
     @Test
     fun `invoke throws exception when maintenance name is blank`() = runTest {
-        val maintenance = Maintenance(name = "   ", bikeId = 1L)
+        val maintenance = Maintenance(name = "   ", bikeId = "bike1")
 
         assertFailsWith<IllegalArgumentException> {
             useCase(maintenance)
@@ -51,9 +51,9 @@ class AddMaintenanceUseCaseTest {
 
     @Test
     fun `addDone creates done maintenance with timestamp`() = runTest {
-        val id = useCase.addDone(name = "Tire Change", value = 10000f, bikeId = 1L)
+        val id = useCase.addDone(name = "Tire Change", value = 10000f, bikeId = "bike1")
 
-        assertTrue(id > 0)
+        assertTrue(id.isNotEmpty())
         val maintenances = repository.getCurrentMaintenances()
         assertEquals(1, maintenances.size)
         assertEquals("Tire Change", maintenances[0].name)
@@ -65,31 +65,31 @@ class AddMaintenanceUseCaseTest {
     @Test
     fun `addDone throws exception when name is empty`() = runTest {
         assertFailsWith<IllegalArgumentException> {
-            useCase.addDone(name = "", value = 5000f, bikeId = 1L)
+            useCase.addDone(name = "", value = 5000f, bikeId = "bike1")
         }
     }
 
     @Test
     fun `addDone throws exception when value is negative`() = runTest {
         assertFailsWith<IllegalArgumentException> {
-            useCase.addDone(name = "Test", value = -1f, bikeId = 1L)
+            useCase.addDone(name = "Test", value = -1f, bikeId = "bike1")
         }
     }
 
     @Test
     fun `addDone accepts zero value`() = runTest {
-        val id = useCase.addDone(name = "Zero KM Check", value = 0f, bikeId = 1L)
+        val id = useCase.addDone(name = "Zero KM Check", value = 0f, bikeId = "bike1")
 
-        assertTrue(id > 0)
+        assertTrue(id.isNotEmpty())
         val maintenances = repository.getCurrentMaintenances()
         assertEquals(0f, maintenances[0].value)
     }
 
     @Test
     fun `addTodo creates todo maintenance without value or date`() = runTest {
-        val id = useCase.addTodo(name = "Future Maintenance", bikeId = 1L)
+        val id = useCase.addTodo(name = "Future Maintenance", bikeId = "bike1")
 
-        assertTrue(id > 0)
+        assertTrue(id.isNotEmpty())
         val maintenances = repository.getCurrentMaintenances()
         assertEquals(1, maintenances.size)
         assertEquals("Future Maintenance", maintenances[0].name)
@@ -101,41 +101,31 @@ class AddMaintenanceUseCaseTest {
     @Test
     fun `addTodo throws exception when name is empty`() = runTest {
         assertFailsWith<IllegalArgumentException> {
-            useCase.addTodo(name = "", bikeId = 1L)
+            useCase.addTodo(name = "", bikeId = "bike1")
         }
     }
 
     @Test
     fun `addTodo throws exception when name is blank`() = runTest {
         assertFailsWith<IllegalArgumentException> {
-            useCase.addTodo(name = "   ", bikeId = 1L)
+            useCase.addTodo(name = "   ", bikeId = "bike1")
         }
     }
 
     @Test
     fun `invoke preserves bikeId`() = runTest {
-        val maintenance = Maintenance(name = "Test", bikeId = 42L)
+        val maintenance = Maintenance(name = "Test", bikeId = "bike42")
 
         useCase(maintenance)
 
         val maintenances = repository.getCurrentMaintenances()
-        assertEquals(42L, maintenances[0].bikeId)
-    }
-
-    @Test
-    fun `invoke preserves firebase reference`() = runTest {
-        val maintenance = Maintenance(name = "Test", bikeId = 1L, firebaseRef = "firebase-123")
-
-        useCase(maintenance)
-
-        val maintenances = repository.getCurrentMaintenances()
-        assertEquals("firebase-123", maintenances[0].firebaseRef)
+        assertEquals("bike42", maintenances[0].bikeId)
     }
 
     @Test
     fun `multiple addDone creates unique maintenances`() = runTest {
-        val id1 = useCase.addDone(name = "Maintenance 1", value = 1000f, bikeId = 1L)
-        val id2 = useCase.addDone(name = "Maintenance 2", value = 2000f, bikeId = 1L)
+        val id1 = useCase.addDone(name = "Maintenance 1", value = 1000f, bikeId = "bike1")
+        val id2 = useCase.addDone(name = "Maintenance 2", value = 2000f, bikeId = "bike1")
 
         assertTrue(id1 != id2)
         val maintenances = repository.getCurrentMaintenances()

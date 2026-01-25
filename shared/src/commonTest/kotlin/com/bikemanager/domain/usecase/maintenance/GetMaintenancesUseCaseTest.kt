@@ -21,7 +21,7 @@ class GetMaintenancesUseCaseTest {
 
     @Test
     fun `invoke returns empty lists when no maintenances exist`() = runTest {
-        useCase(bikeId = 1L).test {
+        useCase(bikeId = "bike1").test {
             val (done, todo) = awaitItem()
             assertTrue(done.isEmpty())
             assertTrue(todo.isEmpty())
@@ -32,13 +32,13 @@ class GetMaintenancesUseCaseTest {
     @Test
     fun `invoke returns done and todo maintenances separately`() = runTest {
         val maintenances = listOf(
-            Maintenance(id = 1, name = "Done 1", isDone = true, bikeId = 1L),
-            Maintenance(id = 2, name = "Done 2", isDone = true, bikeId = 1L),
-            Maintenance(id = 3, name = "Todo 1", isDone = false, bikeId = 1L)
+            Maintenance(id = "m1", name = "Done 1", isDone = true, bikeId = "bike1"),
+            Maintenance(id = "m2", name = "Done 2", isDone = true, bikeId = "bike1"),
+            Maintenance(id = "m3", name = "Todo 1", isDone = false, bikeId = "bike1")
         )
         repository.setMaintenances(maintenances)
 
-        useCase(bikeId = 1L).test {
+        useCase(bikeId = "bike1").test {
             val (done, todo) = awaitItem()
             assertEquals(2, done.size)
             assertEquals(1, todo.size)
@@ -52,12 +52,12 @@ class GetMaintenancesUseCaseTest {
     @Test
     fun `invoke filters by bike id`() = runTest {
         val maintenances = listOf(
-            Maintenance(id = 1, name = "Bike 1 Maintenance", isDone = true, bikeId = 1L),
-            Maintenance(id = 2, name = "Bike 2 Maintenance", isDone = true, bikeId = 2L)
+            Maintenance(id = "m1", name = "Bike 1 Maintenance", isDone = true, bikeId = "bike1"),
+            Maintenance(id = "m2", name = "Bike 2 Maintenance", isDone = true, bikeId = "bike2")
         )
         repository.setMaintenances(maintenances)
 
-        useCase(bikeId = 1L).test {
+        useCase(bikeId = "bike1").test {
             val (done, _) = awaitItem()
             assertEquals(1, done.size)
             assertEquals("Bike 1 Maintenance", done[0].name)
@@ -68,12 +68,12 @@ class GetMaintenancesUseCaseTest {
     @Test
     fun `getDone returns only done maintenances`() = runTest {
         val maintenances = listOf(
-            Maintenance(id = 1, name = "Done", isDone = true, bikeId = 1L),
-            Maintenance(id = 2, name = "Todo", isDone = false, bikeId = 1L)
+            Maintenance(id = "m1", name = "Done", isDone = true, bikeId = "bike1"),
+            Maintenance(id = "m2", name = "Todo", isDone = false, bikeId = "bike1")
         )
         repository.setMaintenances(maintenances)
 
-        useCase.getDone(bikeId = 1L).test {
+        useCase.getDone(bikeId = "bike1").test {
             val done = awaitItem()
             assertEquals(1, done.size)
             assertEquals("Done", done[0].name)
@@ -85,12 +85,12 @@ class GetMaintenancesUseCaseTest {
     @Test
     fun `getTodo returns only todo maintenances`() = runTest {
         val maintenances = listOf(
-            Maintenance(id = 1, name = "Done", isDone = true, bikeId = 1L),
-            Maintenance(id = 2, name = "Todo", isDone = false, bikeId = 1L)
+            Maintenance(id = "m1", name = "Done", isDone = true, bikeId = "bike1"),
+            Maintenance(id = "m2", name = "Todo", isDone = false, bikeId = "bike1")
         )
         repository.setMaintenances(maintenances)
 
-        useCase.getTodo(bikeId = 1L).test {
+        useCase.getTodo(bikeId = "bike1").test {
             val todo = awaitItem()
             assertEquals(1, todo.size)
             assertEquals("Todo", todo[0].name)
@@ -104,7 +104,7 @@ class GetMaintenancesUseCaseTest {
         // First, set up data before collecting
         repository.setMaintenances(emptyList())
 
-        useCase(bikeId = 1L).test {
+        useCase(bikeId = "bike1").test {
             // Initially empty
             val (done1, todo1) = awaitItem()
             assertTrue(done1.isEmpty())
@@ -113,8 +113,8 @@ class GetMaintenancesUseCaseTest {
             // Add maintenances - the flow should emit
             repository.setMaintenances(
                 listOf(
-                    Maintenance(id = 1, name = "Done", isDone = true, bikeId = 1L),
-                    Maintenance(id = 2, name = "Todo", isDone = false, bikeId = 1L)
+                    Maintenance(id = "m1", name = "Done", isDone = true, bikeId = "bike1"),
+                    Maintenance(id = "m2", name = "Todo", isDone = false, bikeId = "bike1")
                 )
             )
 
@@ -131,17 +131,17 @@ class GetMaintenancesUseCaseTest {
     fun `invoke includes maintenance details like value and date`() = runTest {
         val maintenances = listOf(
             Maintenance(
-                id = 1,
+                id = "m1",
                 name = "Oil Change",
                 value = 5000f,
                 date = 1700000000000L,
                 isDone = true,
-                bikeId = 1L
+                bikeId = "bike1"
             )
         )
         repository.setMaintenances(maintenances)
 
-        useCase(bikeId = 1L).test {
+        useCase(bikeId = "bike1").test {
             val (done, _) = awaitItem()
             assertEquals(5000f, done[0].value)
             assertEquals(1700000000000L, done[0].date)

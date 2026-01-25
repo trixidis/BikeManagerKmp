@@ -66,7 +66,7 @@ import org.koin.core.parameter.parametersOf
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun MaintenancesScreen(
-    bikeId: Long,
+    bikeId: String,
     bikeName: String,
     countingMethod: CountingMethod,
     onBackClick: () -> Unit,

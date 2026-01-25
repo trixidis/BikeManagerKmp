@@ -5,28 +5,28 @@ import kotlinx.coroutines.flow.Flow
 
 /**
  * Repository interface for maintenance operations.
- * Abstracts the data layer from the domain layer.
+ * Uses Firebase Realtime Database with offline persistence.
  */
 interface MaintenanceRepository {
     /**
-     * Gets all maintenances for a bike as a Flow.
+     * Gets all maintenances for a bike as a Flow (real-time updates).
      */
-    fun getMaintenancesByBikeId(bikeId: Long): Flow<List<Maintenance>>
+    fun getMaintenancesByBikeId(bikeId: String): Flow<List<Maintenance>>
 
     /**
      * Gets completed maintenances for a bike as a Flow.
      */
-    fun getDoneMaintenances(bikeId: Long): Flow<List<Maintenance>>
+    fun getDoneMaintenances(bikeId: String): Flow<List<Maintenance>>
 
     /**
      * Gets pending maintenances for a bike as a Flow.
      */
-    fun getTodoMaintenances(bikeId: Long): Flow<List<Maintenance>>
+    fun getTodoMaintenances(bikeId: String): Flow<List<Maintenance>>
 
     /**
-     * Adds a new maintenance and returns its id.
+     * Adds a new maintenance and returns its Firebase key.
      */
-    suspend fun addMaintenance(maintenance: Maintenance): Long
+    suspend fun addMaintenance(maintenance: Maintenance): String
 
     /**
      * Updates an existing maintenance.
@@ -36,10 +36,10 @@ interface MaintenanceRepository {
     /**
      * Marks a maintenance as done.
      */
-    suspend fun markMaintenanceDone(id: Long, value: Float, date: Long)
+    suspend fun markMaintenanceDone(id: String, bikeId: String, value: Float, date: Long)
 
     /**
-     * Deletes a maintenance by its id.
+     * Deletes a maintenance.
      */
-    suspend fun deleteMaintenance(id: Long)
+    suspend fun deleteMaintenance(id: String, bikeId: String)
 }

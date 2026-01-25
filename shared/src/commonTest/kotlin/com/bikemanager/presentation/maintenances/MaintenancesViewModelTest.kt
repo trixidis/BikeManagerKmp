@@ -1,13 +1,11 @@
 package com.bikemanager.presentation.maintenances
 
 import app.cash.turbine.test
-import com.bikemanager.domain.model.Bike
 import com.bikemanager.domain.model.Maintenance
 import com.bikemanager.domain.usecase.maintenance.AddMaintenanceUseCase
 import com.bikemanager.domain.usecase.maintenance.DeleteMaintenanceUseCase
 import com.bikemanager.domain.usecase.maintenance.GetMaintenancesUseCase
 import com.bikemanager.domain.usecase.maintenance.MarkMaintenanceDoneUseCase
-import com.bikemanager.fake.FakeBikeRepository
 import com.bikemanager.fake.FakeMaintenanceRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -24,27 +22,22 @@ import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MaintenancesViewModelTest {
-    private lateinit var bikeRepository: FakeBikeRepository
     private lateinit var maintenanceRepository: FakeMaintenanceRepository
     private lateinit var getMaintenancesUseCase: GetMaintenancesUseCase
     private lateinit var addMaintenanceUseCase: AddMaintenanceUseCase
     private lateinit var markMaintenanceDoneUseCase: MarkMaintenanceDoneUseCase
     private lateinit var deleteMaintenanceUseCase: DeleteMaintenanceUseCase
     private val testDispatcher = StandardTestDispatcher()
-    private val bikeId = 1L
+    private val bikeId = "bike1"
 
     @BeforeTest
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        bikeRepository = FakeBikeRepository()
         maintenanceRepository = FakeMaintenanceRepository()
         getMaintenancesUseCase = GetMaintenancesUseCase(maintenanceRepository)
         addMaintenanceUseCase = AddMaintenanceUseCase(maintenanceRepository)
         markMaintenanceDoneUseCase = MarkMaintenanceDoneUseCase(maintenanceRepository)
         deleteMaintenanceUseCase = DeleteMaintenanceUseCase(maintenanceRepository)
-
-        // Setup a default bike
-        bikeRepository.setBikes(listOf(Bike(id = bikeId, name = "Test Bike")))
     }
 
     @AfterTest
@@ -55,7 +48,6 @@ class MaintenancesViewModelTest {
     private fun createViewModel(): MaintenancesViewModel {
         return MaintenancesViewModel(
             bikeId = bikeId,
-            bikeRepository = bikeRepository,
             getMaintenancesUseCase = getMaintenancesUseCase,
             addMaintenanceUseCase = addMaintenanceUseCase,
             markMaintenanceDoneUseCase = markMaintenanceDoneUseCase,
@@ -85,8 +77,8 @@ class MaintenancesViewModelTest {
     fun `initial state shows done and todo maintenances`() = runTest {
         maintenanceRepository.setMaintenances(
             listOf(
-                Maintenance(id = 1, name = "Done 1", isDone = true, bikeId = bikeId),
-                Maintenance(id = 2, name = "Todo 1", isDone = false, bikeId = bikeId)
+                Maintenance(id = "m1", name = "Done 1", isDone = true, bikeId = bikeId),
+                Maintenance(id = "m2", name = "Todo 1", isDone = false, bikeId = bikeId)
             )
         )
 
@@ -173,13 +165,13 @@ class MaintenancesViewModelTest {
     @Test
     fun `markMaintenanceDone marks maintenance as done`() = runTest {
         maintenanceRepository.setMaintenances(
-            listOf(Maintenance(id = 1, name = "Todo", isDone = false, bikeId = bikeId))
+            listOf(Maintenance(id = "m1", name = "Todo", isDone = false, bikeId = bikeId))
         )
 
         val viewModel = createViewModel()
         advanceUntilIdle()
 
-        viewModel.markMaintenanceDone(maintenanceId = 1L, value = 3000f)
+        viewModel.markMaintenanceDone(maintenanceId = "m1", value = 3000f)
         advanceUntilIdle()
 
         val maintenances = maintenanceRepository.getCurrentMaintenances()
@@ -190,13 +182,13 @@ class MaintenancesViewModelTest {
     @Test
     fun `markMaintenanceDone with negative value does nothing`() = runTest {
         maintenanceRepository.setMaintenances(
-            listOf(Maintenance(id = 1, name = "Todo", isDone = false, bikeId = bikeId))
+            listOf(Maintenance(id = "m1", name = "Todo", isDone = false, bikeId = bikeId))
         )
 
         val viewModel = createViewModel()
         advanceUntilIdle()
 
-        viewModel.markMaintenanceDone(maintenanceId = 1L, value = -1f)
+        viewModel.markMaintenanceDone(maintenanceId = "m1", value = -1f)
         advanceUntilIdle()
 
         val maintenances = maintenanceRepository.getCurrentMaintenances()
@@ -205,7 +197,7 @@ class MaintenancesViewModelTest {
 
     @Test
     fun `deleteMaintenance removes maintenance from repository`() = runTest {
-        val maintenance = Maintenance(id = 1, name = "To Delete", isDone = true, bikeId = bikeId)
+        val maintenance = Maintenance(id = "m1", name = "To Delete", isDone = true, bikeId = bikeId)
         maintenanceRepository.setMaintenances(listOf(maintenance))
 
         val viewModel = createViewModel()
@@ -220,7 +212,7 @@ class MaintenancesViewModelTest {
     @Test
     fun `undoDelete restores deleted maintenance`() = runTest {
         val maintenance = Maintenance(
-            id = 1,
+            id = "m1",
             name = "To Delete",
             value = 5000f,
             date = 1700000000000L,
@@ -258,37 +250,16 @@ class MaintenancesViewModelTest {
     }
 
     @Test
-    fun `loadMaintenances reloads from repository`() = runTest {
-        val viewModel = createViewModel()
-        advanceUntilIdle()
-
-        // Add a maintenance directly to repository
-        maintenanceRepository.setMaintenances(
-            listOf(Maintenance(id = 1, name = "New", isDone = true, bikeId = bikeId))
-        )
-
-        viewModel.loadMaintenances()
-        advanceUntilIdle()
-
-        viewModel.uiState.test {
-            val state = awaitItem()
-            assertTrue(state is MaintenancesUiState.Success)
-            assertEquals(1, (state as MaintenancesUiState.Success).doneMaintenances.size)
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
     fun `maintenances are filtered by bikeId`() = runTest {
         maintenanceRepository.setMaintenances(
             listOf(
-                Maintenance(id = 1, name = "Bike 1 Done", isDone = true, bikeId = 1L),
-                Maintenance(id = 2, name = "Bike 2 Done", isDone = true, bikeId = 2L),
-                Maintenance(id = 3, name = "Bike 1 Todo", isDone = false, bikeId = 1L)
+                Maintenance(id = "m1", name = "Bike 1 Done", isDone = true, bikeId = "bike1"),
+                Maintenance(id = "m2", name = "Bike 2 Done", isDone = true, bikeId = "bike2"),
+                Maintenance(id = "m3", name = "Bike 1 Todo", isDone = false, bikeId = "bike1")
             )
         )
 
-        val viewModel = createViewModel() // bikeId = 1L
+        val viewModel = createViewModel() // bikeId = "bike1"
         advanceUntilIdle()
 
         viewModel.uiState.test {

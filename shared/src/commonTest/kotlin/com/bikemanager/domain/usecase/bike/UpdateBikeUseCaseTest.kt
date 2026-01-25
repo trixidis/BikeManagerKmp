@@ -21,7 +21,7 @@ class UpdateBikeUseCaseTest {
 
     @Test
     fun `invoke updates bike name in repository`() = runTest {
-        val initialBike = Bike(id = 1, name = "Old Name")
+        val initialBike = Bike(id = "bike1", name = "Old Name")
         repository.setBikes(listOf(initialBike))
 
         val updatedBike = initialBike.copy(name = "New Name")
@@ -33,7 +33,7 @@ class UpdateBikeUseCaseTest {
 
     @Test
     fun `invoke updates counting method`() = runTest {
-        val initialBike = Bike(id = 1, name = "Bike", countingMethod = CountingMethod.KM)
+        val initialBike = Bike(id = "bike1", name = "Bike", countingMethod = CountingMethod.KM)
         repository.setBikes(listOf(initialBike))
 
         val updatedBike = initialBike.copy(countingMethod = CountingMethod.HOURS)
@@ -45,7 +45,7 @@ class UpdateBikeUseCaseTest {
 
     @Test
     fun `invoke throws exception when bike name is empty`() = runTest {
-        val initialBike = Bike(id = 1, name = "Valid Name")
+        val initialBike = Bike(id = "bike1", name = "Valid Name")
         repository.setBikes(listOf(initialBike))
 
         val invalidBike = initialBike.copy(name = "")
@@ -57,7 +57,7 @@ class UpdateBikeUseCaseTest {
 
     @Test
     fun `invoke throws exception when bike name is blank`() = runTest {
-        val initialBike = Bike(id = 1, name = "Valid Name")
+        val initialBike = Bike(id = "bike1", name = "Valid Name")
         repository.setBikes(listOf(initialBike))
 
         val invalidBike = initialBike.copy(name = "   ")
@@ -68,40 +68,28 @@ class UpdateBikeUseCaseTest {
     }
 
     @Test
-    fun `invoke updates firebase reference`() = runTest {
-        val initialBike = Bike(id = 1, name = "Bike", firebaseRef = null)
-        repository.setBikes(listOf(initialBike))
-
-        val updatedBike = initialBike.copy(firebaseRef = "new-firebase-ref")
-        useCase(updatedBike)
-
-        val bikes = repository.getCurrentBikes()
-        assertEquals("new-firebase-ref", bikes[0].firebaseRef)
-    }
-
-    @Test
     fun `invoke only updates specified bike`() = runTest {
-        val bike1 = Bike(id = 1, name = "Bike 1")
-        val bike2 = Bike(id = 2, name = "Bike 2")
+        val bike1 = Bike(id = "bike1", name = "Bike 1")
+        val bike2 = Bike(id = "bike2", name = "Bike 2")
         repository.setBikes(listOf(bike1, bike2))
 
         val updatedBike1 = bike1.copy(name = "Updated Bike 1")
         useCase(updatedBike1)
 
         val bikes = repository.getCurrentBikes()
-        assertEquals("Updated Bike 1", bikes.find { it.id == 1L }?.name)
-        assertEquals("Bike 2", bikes.find { it.id == 2L }?.name)
+        assertEquals("Updated Bike 1", bikes.find { it.id == "bike1" }?.name)
+        assertEquals("Bike 2", bikes.find { it.id == "bike2" }?.name)
     }
 
     @Test
     fun `invoke preserves id during update`() = runTest {
-        val initialBike = Bike(id = 42, name = "Initial")
+        val initialBike = Bike(id = "bike42", name = "Initial")
         repository.setBikes(listOf(initialBike))
 
         val updatedBike = initialBike.copy(name = "Updated")
         useCase(updatedBike)
 
         val bikes = repository.getCurrentBikes()
-        assertEquals(42L, bikes[0].id)
+        assertEquals("bike42", bikes[0].id)
     }
 }

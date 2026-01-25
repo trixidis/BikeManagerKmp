@@ -27,6 +27,4 @@
     <string name="undo">Annuler</string>
     <string name="error_login">Une erreur est survenue</string>
     <string name="sign_in_with_google">Se connecter avec Google</string>
-    <!-- Replace with your actual web client ID from Firebase Console -->
-    <string name="default_web_client_id">000000000000-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com</string>
 </resources>

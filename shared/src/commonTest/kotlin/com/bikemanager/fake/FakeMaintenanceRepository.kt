@@ -11,30 +11,31 @@ import kotlinx.coroutines.flow.map
  */
 class FakeMaintenanceRepository : MaintenanceRepository {
     private val maintenancesFlow = MutableStateFlow<List<Maintenance>>(emptyList())
-    private var nextId = 1L
+    private var nextId = 1
 
-    override fun getMaintenancesByBikeId(bikeId: Long): Flow<List<Maintenance>> {
+    override fun getMaintenancesByBikeId(bikeId: String): Flow<List<Maintenance>> {
         return maintenancesFlow.map { list ->
             list.filter { it.bikeId == bikeId }
         }
     }
 
-    override fun getDoneMaintenances(bikeId: Long): Flow<List<Maintenance>> {
+    override fun getDoneMaintenances(bikeId: String): Flow<List<Maintenance>> {
         return maintenancesFlow.map { list ->
             list.filter { it.bikeId == bikeId && it.isDone }
         }
     }
 
-    override fun getTodoMaintenances(bikeId: Long): Flow<List<Maintenance>> {
+    override fun getTodoMaintenances(bikeId: String): Flow<List<Maintenance>> {
         return maintenancesFlow.map { list ->
             list.filter { it.bikeId == bikeId && !it.isDone }
         }
     }
 
-    override suspend fun addMaintenance(maintenance: Maintenance): Long {
-        val newMaintenance = maintenance.copy(id = nextId++)
+    override suspend fun addMaintenance(maintenance: Maintenance): String {
+        val newId = "maintenance_${nextId++}"
+        val newMaintenance = maintenance.copy(id = newId)
         maintenancesFlow.value = maintenancesFlow.value + newMaintenance
-        return newMaintenance.id
+        return newId
     }
 
     override suspend fun updateMaintenance(maintenance: Maintenance) {
@@ -43,14 +44,14 @@ class FakeMaintenanceRepository : MaintenanceRepository {
         }
     }
 
-    override suspend fun markMaintenanceDone(id: Long, value: Float, date: Long) {
+    override suspend fun markMaintenanceDone(id: String, bikeId: String, value: Float, date: Long) {
         maintenancesFlow.value = maintenancesFlow.value.map {
-            if (it.id == id) it.copy(isDone = true, value = value, date = date) else it
+            if (it.id == id && it.bikeId == bikeId) it.copy(isDone = true, value = value, date = date) else it
         }
     }
 
-    override suspend fun deleteMaintenance(id: Long) {
-        maintenancesFlow.value = maintenancesFlow.value.filter { it.id != id }
+    override suspend fun deleteMaintenance(id: String, bikeId: String) {
+        maintenancesFlow.value = maintenancesFlow.value.filter { !(it.id == id && it.bikeId == bikeId) }
     }
 
     /**
@@ -58,7 +59,6 @@ class FakeMaintenanceRepository : MaintenanceRepository {
      */
     fun setMaintenances(maintenances: List<Maintenance>) {
         maintenancesFlow.value = maintenances
-        nextId = (maintenances.maxOfOrNull { it.id } ?: 0L) + 1
     }
 
     /**

@@ -22,10 +22,10 @@ class MarkMaintenanceDoneUseCaseTest {
 
     @Test
     fun `invoke marks maintenance as done with value and timestamp`() = runTest {
-        val maintenance = Maintenance(id = 1, name = "Oil Change", isDone = false, bikeId = 1L)
+        val maintenance = Maintenance(id = "m1", name = "Oil Change", isDone = false, bikeId = "bike1")
         repository.setMaintenances(listOf(maintenance))
 
-        useCase(maintenanceId = 1L, value = 5000f)
+        useCase(maintenanceId = "m1", bikeId = "bike1", value = 5000f)
 
         val maintenances = repository.getCurrentMaintenances()
         assertTrue(maintenances[0].isDone)
@@ -35,20 +35,20 @@ class MarkMaintenanceDoneUseCaseTest {
 
     @Test
     fun `invoke throws exception when value is negative`() = runTest {
-        val maintenance = Maintenance(id = 1, name = "Test", isDone = false, bikeId = 1L)
+        val maintenance = Maintenance(id = "m1", name = "Test", isDone = false, bikeId = "bike1")
         repository.setMaintenances(listOf(maintenance))
 
         assertFailsWith<IllegalArgumentException> {
-            useCase(maintenanceId = 1L, value = -1f)
+            useCase(maintenanceId = "m1", bikeId = "bike1", value = -1f)
         }
     }
 
     @Test
     fun `invoke accepts zero value`() = runTest {
-        val maintenance = Maintenance(id = 1, name = "Test", isDone = false, bikeId = 1L)
+        val maintenance = Maintenance(id = "m1", name = "Test", isDone = false, bikeId = "bike1")
         repository.setMaintenances(listOf(maintenance))
 
-        useCase(maintenanceId = 1L, value = 0f)
+        useCase(maintenanceId = "m1", bikeId = "bike1", value = 0f)
 
         val maintenances = repository.getCurrentMaintenances()
         assertEquals(0f, maintenances[0].value)
@@ -57,25 +57,25 @@ class MarkMaintenanceDoneUseCaseTest {
     @Test
     fun `invoke only updates specified maintenance`() = runTest {
         val maintenances = listOf(
-            Maintenance(id = 1, name = "Maintenance 1", isDone = false, bikeId = 1L),
-            Maintenance(id = 2, name = "Maintenance 2", isDone = false, bikeId = 1L)
+            Maintenance(id = "m1", name = "Maintenance 1", isDone = false, bikeId = "bike1"),
+            Maintenance(id = "m2", name = "Maintenance 2", isDone = false, bikeId = "bike1")
         )
         repository.setMaintenances(maintenances)
 
-        useCase(maintenanceId = 1L, value = 3000f)
+        useCase(maintenanceId = "m1", bikeId = "bike1", value = 3000f)
 
         val result = repository.getCurrentMaintenances()
-        assertTrue(result.find { it.id == 1L }?.isDone == true)
-        assertTrue(result.find { it.id == 2L }?.isDone == false)
+        assertTrue(result.find { it.id == "m1" }?.isDone == true)
+        assertTrue(result.find { it.id == "m2" }?.isDone == false)
     }
 
     @Test
     fun `invoke sets current timestamp`() = runTest {
-        val maintenance = Maintenance(id = 1, name = "Test", isDone = false, bikeId = 1L)
+        val maintenance = Maintenance(id = "m1", name = "Test", isDone = false, bikeId = "bike1")
         repository.setMaintenances(listOf(maintenance))
         val beforeTime = currentTimeMillis()
 
-        useCase(maintenanceId = 1L, value = 1000f)
+        useCase(maintenanceId = "m1", bikeId = "bike1", value = 1000f)
 
         val afterTime = currentTimeMillis()
         val result = repository.getCurrentMaintenances()[0]
@@ -86,30 +86,28 @@ class MarkMaintenanceDoneUseCaseTest {
     @Test
     fun `invoke preserves other maintenance properties`() = runTest {
         val maintenance = Maintenance(
-            id = 1,
+            id = "m1",
             name = "Oil Change",
             value = -1f,
             date = 0,
             isDone = false,
-            bikeId = 42L,
-            firebaseRef = "firebase-123"
+            bikeId = "bike42"
         )
         repository.setMaintenances(listOf(maintenance))
 
-        useCase(maintenanceId = 1L, value = 5000f)
+        useCase(maintenanceId = "m1", bikeId = "bike42", value = 5000f)
 
         val result = repository.getCurrentMaintenances()[0]
         assertEquals("Oil Change", result.name)
-        assertEquals(42L, result.bikeId)
-        assertEquals("firebase-123", result.firebaseRef)
+        assertEquals("bike42", result.bikeId)
     }
 
     @Test
     fun `invoke accepts large values`() = runTest {
-        val maintenance = Maintenance(id = 1, name = "Test", isDone = false, bikeId = 1L)
+        val maintenance = Maintenance(id = "m1", name = "Test", isDone = false, bikeId = "bike1")
         repository.setMaintenances(listOf(maintenance))
 
-        useCase(maintenanceId = 1L, value = 999999f)
+        useCase(maintenanceId = "m1", bikeId = "bike1", value = 999999f)
 
         val result = repository.getCurrentMaintenances()[0]
         assertEquals(999999f, result.value)
@@ -117,10 +115,10 @@ class MarkMaintenanceDoneUseCaseTest {
 
     @Test
     fun `invoke accepts decimal values`() = runTest {
-        val maintenance = Maintenance(id = 1, name = "Test", isDone = false, bikeId = 1L)
+        val maintenance = Maintenance(id = "m1", name = "Test", isDone = false, bikeId = "bike1")
         repository.setMaintenances(listOf(maintenance))
 
-        useCase(maintenanceId = 1L, value = 1234.5f)
+        useCase(maintenanceId = "m1", bikeId = "bike1", value = 1234.5f)
 
         val result = repository.getCurrentMaintenances()[0]
         assertEquals(1234.5f, result.value)
