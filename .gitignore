@@ -23,11 +23,17 @@ node_modules/
 *.keystore
 keystore.properties
 
+# Google Play credentials
+play-store-credentials.json
+
 # Local config
 gradle.properties
 
 # Firebase config (contient des clés API)
 **/google-services.json
+
+# Scripts
+scripts/
 
 # Claude Code
 .claude/
@@ -36,3 +42,14 @@ iosApp/pods/*
 iosApp/iosApp/Firebase/Debug
 iosApp/iosApp/Firebase/Release
 Podfile.lock
+
+# Auto Claude data directory
+.auto-claude/
+
+# Auto Claude generated files
+.auto-claude-security.json
+.auto-claude-status
+.claude_settings.json
+.worktrees/
+.security-key
+logs/security/
