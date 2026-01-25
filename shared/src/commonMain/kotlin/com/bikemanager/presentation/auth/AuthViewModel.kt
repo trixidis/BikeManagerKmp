@@ -74,12 +74,14 @@ class AuthViewModel(
                 },
                 onFailure = { error ->
                     Napier.e(error) { "Error signing in" }
-                    val message = if (error is com.bikemanager.domain.common.AppError) {
-                        ErrorMessages.getMessage(error)
+                    val appError = if (error is AppError) {
+                        error
                     } else {
-                        error.message ?: ErrorMessages.UNKNOWN_ERROR
+                        ErrorHandler.handle(error, "signing in")
                     }
-                    _uiState.value = AuthUiState.Error(message)
+                    _uiState.value = AuthUiState.Error(
+                        ErrorMessages.getMessage(appError)
+                    )
                 }
             )
         }
