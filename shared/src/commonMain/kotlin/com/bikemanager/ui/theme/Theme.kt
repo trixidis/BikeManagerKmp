@@ -37,10 +37,13 @@ private val DarkColorScheme = darkColorScheme(
 
 @Composable
 fun BikeManagerTheme(
+    darkTheme: Boolean = false,
     content: @Composable () -> Unit
 ) {
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+
     MaterialTheme(
-        colorScheme = LightColorScheme,
+        colorScheme = colorScheme,
         content = content
     )
 }
