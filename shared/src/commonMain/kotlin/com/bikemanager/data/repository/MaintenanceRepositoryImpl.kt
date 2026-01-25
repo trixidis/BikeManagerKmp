@@ -117,13 +117,15 @@ class MaintenanceRepositoryImpl(
         val ref = maintenancesRef(bikeId)
         if (ref == null) {
             return flow {
-                emit(Result.Failure(IllegalStateException("User not authenticated")))
+                emit(Result.Failure(
+                    AppError.AuthError("User not authenticated")
+                ))
             }
         }
 
         return ref.valueEvents.map { snapshot ->
-            com.bikemanager.domain.common.runCatching {
-                snapshot.children.mapNotNull { maintenanceSnapshot ->
+            try {
+                val maintenances = snapshot.children.mapNotNull { maintenanceSnapshot ->
                     try {
                         val id = maintenanceSnapshot.key ?: return@mapNotNull null
                         val name = maintenanceSnapshot.child("nameMaintenance").value<String?>()
@@ -145,6 +147,9 @@ class MaintenanceRepositoryImpl(
                         null
                     }
                 }.filter { !it.isDone }.sortedByDescending { it.id }
+                Result.Success(maintenances)
+            } catch (e: Throwable) {
+                Result.Failure(ErrorHandler.handle(e, "loading todo maintenances"))
             }
         }
     }
@@ -152,10 +157,12 @@ class MaintenanceRepositoryImpl(
     override suspend fun addMaintenance(maintenance: Maintenance): Result<String> {
         val ref = maintenancesRef(maintenance.bikeId)
         if (ref == null) {
-            return Result.Failure(IllegalStateException("User not authenticated"))
+            return Result.Failure(
+                AppError.AuthError("User not authenticated")
+            )
         }
 
-        return com.bikemanager.domain.common.runCatching {
+        return ErrorHandler.catching("adding maintenance") {
             val newRef = ref.push()
             val data = mapOf(
                 "nameMaintenance" to maintenance.name,
@@ -174,14 +181,21 @@ class MaintenanceRepositoryImpl(
     override suspend fun updateMaintenance(maintenance: Maintenance): Result<Unit> {
         val ref = maintenancesRef(maintenance.bikeId)
         if (ref == null) {
-            return Result.Failure(IllegalStateException("User not authenticated"))
+            return Result.Failure(
+                AppError.AuthError("User not authenticated")
+            )
         }
 
         if (maintenance.id.isEmpty()) {
-            return Result.Failure(IllegalArgumentException("Maintenance id cannot be empty"))
+            return Result.Failure(
+                AppError.ValidationError(
+                    errorMessage = "Maintenance id cannot be empty",
+                    field = "id"
+                )
+            )
         }
 
-        return com.bikemanager.domain.common.runCatching {
+        return ErrorHandler.catching("updating maintenance") {
             val data = mapOf(
                 "nameMaintenance" to maintenance.name,
                 "nbHoursMaintenance" to maintenance.value,
@@ -196,10 +210,12 @@ class MaintenanceRepositoryImpl(
     override suspend fun markMaintenanceDone(id: String, bikeId: String, value: Float, date: Long): Result<Unit> {
         val ref = maintenancesRef(bikeId)
         if (ref == null) {
-            return Result.Failure(IllegalStateException("User not authenticated"))
+            return Result.Failure(
+                AppError.AuthError("User not authenticated")
+            )
         }
 
-        return com.bikemanager.domain.common.runCatching {
+        return ErrorHandler.catching("marking maintenance done") {
             val updates = mapOf(
                 "isDone" to true,
                 "nbHoursMaintenance" to value,
@@ -213,10 +229,12 @@ class MaintenanceRepositoryImpl(
     override suspend fun deleteMaintenance(id: String, bikeId: String): Result<Unit> {
         val ref = maintenancesRef(bikeId)
         if (ref == null) {
-            return Result.Failure(IllegalStateException("User not authenticated"))
+            return Result.Failure(
+                AppError.AuthError("User not authenticated")
+            )
         }
 
-        return com.bikemanager.domain.common.runCatching {
+        return ErrorHandler.catching("deleting maintenance") {
             ref.child(id).removeValue()
             Napier.d { "Maintenance deleted: $id" }
         }
