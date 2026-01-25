@@ -1,5 +1,7 @@
 package com.bikemanager.presentation.maintenances
 
+import com.bikemanager.domain.common.AppError
+import com.bikemanager.domain.common.ErrorMessages
 import com.bikemanager.domain.model.Maintenance
 import com.bikemanager.domain.usecase.maintenance.AddMaintenanceUseCase
 import com.bikemanager.domain.usecase.maintenance.DeleteMaintenanceUseCase
@@ -46,7 +48,7 @@ class MaintenancesViewModel(
                 .catch { throwable ->
                     Napier.e(throwable) { "Error observing maintenances" }
                     _uiState.value = MaintenancesUiState.Error(
-                        throwable.message ?: "Unknown error"
+                        ErrorMessages.UNKNOWN_ERROR
                     )
                 }
                 .collect { result ->
@@ -59,10 +61,12 @@ class MaintenancesViewModel(
                             )
                         }
                         is com.bikemanager.domain.common.Result.Failure -> {
-                            Napier.e(result.error) { "Error loading maintenances" }
-                            _uiState.value = MaintenancesUiState.Error(
-                                result.error.message ?: "Unknown error"
-                            )
+                            val errorMessage = when (val error = result.error) {
+                                is AppError -> ErrorMessages.getMessage(error)
+                                else -> ErrorMessages.UNKNOWN_ERROR
+                            }
+                            Napier.e { "Error loading maintenances: $errorMessage" }
+                            _uiState.value = MaintenancesUiState.Error(errorMessage)
                         }
                     }
                 }
@@ -81,8 +85,12 @@ class MaintenancesViewModel(
                     // Success - UI will update automatically via Flow
                 }
                 is com.bikemanager.domain.common.Result.Failure -> {
-                    Napier.e(result.error) { "Error adding done maintenance" }
-                    _uiState.value = MaintenancesUiState.Error(result.error.message ?: "Error adding maintenance")
+                    val errorMessage = when (val error = result.error) {
+                        is AppError -> ErrorMessages.getMessage(error)
+                        else -> ErrorMessages.UNKNOWN_ERROR
+                    }
+                    Napier.e { "Error adding done maintenance: $errorMessage" }
+                    _uiState.value = MaintenancesUiState.Error(errorMessage)
                 }
             }
         }
@@ -100,8 +108,12 @@ class MaintenancesViewModel(
                     // Success - UI will update automatically via Flow
                 }
                 is com.bikemanager.domain.common.Result.Failure -> {
-                    Napier.e(result.error) { "Error adding todo maintenance" }
-                    _uiState.value = MaintenancesUiState.Error(result.error.message ?: "Error adding maintenance")
+                    val errorMessage = when (val error = result.error) {
+                        is AppError -> ErrorMessages.getMessage(error)
+                        else -> ErrorMessages.UNKNOWN_ERROR
+                    }
+                    Napier.e { "Error adding todo maintenance: $errorMessage" }
+                    _uiState.value = MaintenancesUiState.Error(errorMessage)
                 }
             }
         }
@@ -119,8 +131,12 @@ class MaintenancesViewModel(
                     // Success - UI will update automatically via Flow
                 }
                 is com.bikemanager.domain.common.Result.Failure -> {
-                    Napier.e(result.error) { "Error marking maintenance as done" }
-                    _uiState.value = MaintenancesUiState.Error(result.error.message ?: "Error updating maintenance")
+                    val errorMessage = when (val error = result.error) {
+                        is AppError -> ErrorMessages.getMessage(error)
+                        else -> ErrorMessages.UNKNOWN_ERROR
+                    }
+                    Napier.e { "Error marking maintenance as done: $errorMessage" }
+                    _uiState.value = MaintenancesUiState.Error(errorMessage)
                 }
             }
         }
@@ -138,9 +154,13 @@ class MaintenancesViewModel(
                     // Success - UI will update automatically via Flow
                 }
                 is com.bikemanager.domain.common.Result.Failure -> {
-                    Napier.e(result.error) { "Error deleting maintenance" }
+                    val errorMessage = when (val error = result.error) {
+                        is AppError -> ErrorMessages.getMessage(error)
+                        else -> ErrorMessages.UNKNOWN_ERROR
+                    }
+                    Napier.e { "Error deleting maintenance: $errorMessage" }
                     deletedMaintenance = null
-                    _uiState.value = MaintenancesUiState.Error(result.error.message ?: "Error deleting maintenance")
+                    _uiState.value = MaintenancesUiState.Error(errorMessage)
                 }
             }
         }
@@ -159,7 +179,11 @@ class MaintenancesViewModel(
                     // Success - UI will update automatically via Flow
                 }
                 is com.bikemanager.domain.common.Result.Failure -> {
-                    Napier.e(result.error) { "Error restoring maintenance" }
+                    val errorMessage = when (val error = result.error) {
+                        is AppError -> ErrorMessages.getMessage(error)
+                        else -> ErrorMessages.UNKNOWN_ERROR
+                    }
+                    Napier.e { "Error restoring maintenance: $errorMessage" }
                 }
             }
         }
