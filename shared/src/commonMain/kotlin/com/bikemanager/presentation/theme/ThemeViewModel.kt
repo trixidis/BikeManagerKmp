@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 
 /**
  * ViewModel for managing theme preferences.
- * Observes and updates theme mode (Light/Dark/System) with persistence.
+ * Observes theme mode changes and provides methods to update theme preference.
  */
 class ThemeViewModel(
     private val getThemeModeUseCase: GetThemeModeUseCase,
@@ -27,13 +27,13 @@ class ThemeViewModel(
     val uiState: StateFlow<ThemeUiState> = _uiState.asStateFlow()
 
     init {
-        observeTheme()
+        observeThemeMode()
     }
 
     /**
-     * Observes theme mode changes from preferences.
+     * Observes theme mode from preferences (real-time updates).
      */
-    private fun observeTheme() {
+    private fun observeThemeMode() {
         viewModelScope.launch {
             getThemeModeUseCase()
                 .catch { throwable ->
@@ -49,7 +49,7 @@ class ThemeViewModel(
     }
 
     /**
-     * Updates the theme mode preference.
+     * Sets the theme mode preference.
      */
     fun setThemeMode(themeMode: ThemeMode) {
         viewModelScope.launch {
