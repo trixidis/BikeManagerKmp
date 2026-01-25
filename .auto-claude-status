@@ -3,9 +3,9 @@
   "spec": "005-dark-mode-support",
   "state": "building",
   "subtasks": {
-    "completed": 18,
+    "completed": 19,
     "total": 22,
-    "in_progress": 1,
+    "in_progress": 0,
     "failed": 0
   },
   "phase": {
@@ -18,8 +18,8 @@
     "max": 1
   },
   "session": {
-    "number": 11,
-    "started_at": "2026-01-25T14:04:03.517232"
+    "number": 19,
+    "started_at": "2026-01-25T12:48:06.350474"
   },
-  "last_update": "2026-01-25T14:22:15.956408"
+  "last_update": "2026-01-25T14:23:43.961674"
 }
