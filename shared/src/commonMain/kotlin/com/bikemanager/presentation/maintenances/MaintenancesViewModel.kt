@@ -49,11 +49,22 @@ class MaintenancesViewModel(
                         throwable.message ?: "Unknown error"
                     )
                 }
-                .collect { (done, todo) ->
-                    _uiState.value = MaintenancesUiState.Success(
-                        doneMaintenances = done,
-                        todoMaintenances = todo
-                    )
+                .collect { result ->
+                    when (result) {
+                        is com.bikemanager.domain.common.Result.Success -> {
+                            val (done, todo) = result.value
+                            _uiState.value = MaintenancesUiState.Success(
+                                doneMaintenances = done,
+                                todoMaintenances = todo
+                            )
+                        }
+                        is com.bikemanager.domain.common.Result.Failure -> {
+                            Napier.e(result.error) { "Error loading maintenances" }
+                            _uiState.value = MaintenancesUiState.Error(
+                                result.error.message ?: "Unknown error"
+                            )
+                        }
+                    }
                 }
         }
     }
@@ -65,11 +76,14 @@ class MaintenancesViewModel(
         if (name.isBlank() || value < 0) return
 
         viewModelScope.launch {
-            try {
-                addMaintenanceUseCase.addDone(name, value, bikeId)
-            } catch (e: Exception) {
-                Napier.e(e) { "Error adding done maintenance" }
-                _uiState.value = MaintenancesUiState.Error(e.message ?: "Error adding maintenance")
+            when (val result = addMaintenanceUseCase.addDone(name, value, bikeId)) {
+                is com.bikemanager.domain.common.Result.Success -> {
+                    // Success - UI will update automatically via Flow
+                }
+                is com.bikemanager.domain.common.Result.Failure -> {
+                    Napier.e(result.error) { "Error adding done maintenance" }
+                    _uiState.value = MaintenancesUiState.Error(result.error.message ?: "Error adding maintenance")
+                }
             }
         }
     }
@@ -81,11 +95,14 @@ class MaintenancesViewModel(
         if (name.isBlank()) return
 
         viewModelScope.launch {
-            try {
-                addMaintenanceUseCase.addTodo(name, bikeId)
-            } catch (e: Exception) {
-                Napier.e(e) { "Error adding todo maintenance" }
-                _uiState.value = MaintenancesUiState.Error(e.message ?: "Error adding maintenance")
+            when (val result = addMaintenanceUseCase.addTodo(name, bikeId)) {
+                is com.bikemanager.domain.common.Result.Success -> {
+                    // Success - UI will update automatically via Flow
+                }
+                is com.bikemanager.domain.common.Result.Failure -> {
+                    Napier.e(result.error) { "Error adding todo maintenance" }
+                    _uiState.value = MaintenancesUiState.Error(result.error.message ?: "Error adding maintenance")
+                }
             }
         }
     }
@@ -97,11 +114,14 @@ class MaintenancesViewModel(
         if (value < 0) return
 
         viewModelScope.launch {
-            try {
-                markMaintenanceDoneUseCase(maintenanceId, bikeId, value)
-            } catch (e: Exception) {
-                Napier.e(e) { "Error marking maintenance as done" }
-                _uiState.value = MaintenancesUiState.Error(e.message ?: "Error updating maintenance")
+            when (val result = markMaintenanceDoneUseCase(maintenanceId, bikeId, value)) {
+                is com.bikemanager.domain.common.Result.Success -> {
+                    // Success - UI will update automatically via Flow
+                }
+                is com.bikemanager.domain.common.Result.Failure -> {
+                    Napier.e(result.error) { "Error marking maintenance as done" }
+                    _uiState.value = MaintenancesUiState.Error(result.error.message ?: "Error updating maintenance")
+                }
             }
         }
     }
@@ -113,12 +133,15 @@ class MaintenancesViewModel(
         deletedMaintenance = maintenance
 
         viewModelScope.launch {
-            try {
-                deleteMaintenanceUseCase(maintenance.id, bikeId)
-            } catch (e: Exception) {
-                Napier.e(e) { "Error deleting maintenance" }
-                deletedMaintenance = null
-                _uiState.value = MaintenancesUiState.Error(e.message ?: "Error deleting maintenance")
+            when (val result = deleteMaintenanceUseCase(maintenance.id, bikeId)) {
+                is com.bikemanager.domain.common.Result.Success -> {
+                    // Success - UI will update automatically via Flow
+                }
+                is com.bikemanager.domain.common.Result.Failure -> {
+                    Napier.e(result.error) { "Error deleting maintenance" }
+                    deletedMaintenance = null
+                    _uiState.value = MaintenancesUiState.Error(result.error.message ?: "Error deleting maintenance")
+                }
             }
         }
     }
@@ -131,10 +154,13 @@ class MaintenancesViewModel(
         deletedMaintenance = null
 
         viewModelScope.launch {
-            try {
-                addMaintenanceUseCase(maintenance.copy(id = ""))
-            } catch (e: Exception) {
-                Napier.e(e) { "Error restoring maintenance" }
+            when (val result = addMaintenanceUseCase(maintenance.copy(id = ""))) {
+                is com.bikemanager.domain.common.Result.Success -> {
+                    // Success - UI will update automatically via Flow
+                }
+                is com.bikemanager.domain.common.Result.Failure -> {
+                    Napier.e(result.error) { "Error restoring maintenance" }
+                }
             }
         }
     }

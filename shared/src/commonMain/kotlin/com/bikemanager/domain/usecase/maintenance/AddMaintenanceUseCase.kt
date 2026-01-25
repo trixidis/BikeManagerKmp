@@ -1,5 +1,6 @@
 package com.bikemanager.domain.usecase.maintenance
 
+import com.bikemanager.domain.common.Result
 import com.bikemanager.domain.model.Maintenance
 import com.bikemanager.domain.repository.MaintenanceRepository
 import com.bikemanager.util.currentTimeMillis
@@ -13,17 +14,23 @@ class AddMaintenanceUseCase(
     /**
      * Adds a new maintenance and returns its Firebase key.
      */
-    suspend operator fun invoke(maintenance: Maintenance): String {
-        require(maintenance.name.isNotBlank()) { "Maintenance name cannot be empty" }
+    suspend operator fun invoke(maintenance: Maintenance): Result<String> {
+        if (maintenance.name.isBlank()) {
+            return Result.Failure(IllegalArgumentException("Maintenance name cannot be empty"))
+        }
         return repository.addMaintenance(maintenance)
     }
 
     /**
      * Adds a done maintenance with current timestamp.
      */
-    suspend fun addDone(name: String, value: Float, bikeId: String): String {
-        require(name.isNotBlank()) { "Maintenance name cannot be empty" }
-        require(value >= 0) { "Value must be positive" }
+    suspend fun addDone(name: String, value: Float, bikeId: String): Result<String> {
+        if (name.isBlank()) {
+            return Result.Failure(IllegalArgumentException("Maintenance name cannot be empty"))
+        }
+        if (value < 0) {
+            return Result.Failure(IllegalArgumentException("Value must be positive"))
+        }
 
         val maintenance = Maintenance(
             name = name,
@@ -38,8 +45,10 @@ class AddMaintenanceUseCase(
     /**
      * Adds a todo maintenance (not done yet).
      */
-    suspend fun addTodo(name: String, bikeId: String): String {
-        require(name.isNotBlank()) { "Maintenance name cannot be empty" }
+    suspend fun addTodo(name: String, bikeId: String): Result<String> {
+        if (name.isBlank()) {
+            return Result.Failure(IllegalArgumentException("Maintenance name cannot be empty"))
+        }
 
         val maintenance = Maintenance(
             name = name,
