@@ -12,10 +12,9 @@ class GetMaintenancesUseCase(private val repository: MaintenanceRepository) {
 
     /**
      * Gets both done and todo maintenances for a bike.
-     * @param bikeId The id of the bike
      * @return A Flow emitting a Pair of (doneMaintenances, todoMaintenances)
      */
-    operator fun invoke(bikeId: Long): Flow<Pair<List<Maintenance>, List<Maintenance>>> {
+    operator fun invoke(bikeId: String): Flow<Pair<List<Maintenance>, List<Maintenance>>> {
         return combine(
             repository.getDoneMaintenances(bikeId),
             repository.getTodoMaintenances(bikeId)
@@ -27,14 +26,14 @@ class GetMaintenancesUseCase(private val repository: MaintenanceRepository) {
     /**
      * Gets only done maintenances for a bike.
      */
-    fun getDone(bikeId: Long): Flow<List<Maintenance>> {
+    fun getDone(bikeId: String): Flow<List<Maintenance>> {
         return repository.getDoneMaintenances(bikeId)
     }
 
     /**
      * Gets only todo maintenances for a bike.
      */
-    fun getTodo(bikeId: Long): Flow<List<Maintenance>> {
+    fun getTodo(bikeId: String): Flow<List<Maintenance>> {
         return repository.getTodoMaintenances(bikeId)
     }
 }

@@ -32,8 +32,8 @@ class GetBikesUseCaseTest {
     @Test
     fun `invoke returns bikes from repository`() = runTest {
         val expectedBikes = listOf(
-            Bike(id = 1, name = "Yamaha MT-07", countingMethod = CountingMethod.KM),
-            Bike(id = 2, name = "Honda CRF 450", countingMethod = CountingMethod.HOURS)
+            Bike(id = "bike1", name = "Yamaha MT-07", countingMethod = CountingMethod.KM),
+            Bike(id = "bike2", name = "Honda CRF 450", countingMethod = CountingMethod.HOURS)
         )
         repository.setBikes(expectedBikes)
 
@@ -54,7 +54,7 @@ class GetBikesUseCaseTest {
             assertTrue(initial.isEmpty())
 
             // Add a bike
-            repository.setBikes(listOf(Bike(id = 1, name = "Kawasaki Ninja")))
+            repository.setBikes(listOf(Bike(id = "bike1", name = "Kawasaki Ninja")))
             val afterAdd = awaitItem()
             assertEquals(1, afterAdd.size)
             assertEquals("Kawasaki Ninja", afterAdd[0].name)
@@ -66,8 +66,8 @@ class GetBikesUseCaseTest {
     @Test
     fun `invoke returns bikes with correct counting methods`() = runTest {
         val bikes = listOf(
-            Bike(id = 1, name = "Road Bike", countingMethod = CountingMethod.KM),
-            Bike(id = 2, name = "Dirt Bike", countingMethod = CountingMethod.HOURS)
+            Bike(id = "bike1", name = "Road Bike", countingMethod = CountingMethod.KM),
+            Bike(id = "bike2", name = "Dirt Bike", countingMethod = CountingMethod.HOURS)
         )
         repository.setBikes(bikes)
 

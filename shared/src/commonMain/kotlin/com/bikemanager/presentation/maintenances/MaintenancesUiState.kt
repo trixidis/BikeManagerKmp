@@ -1,11 +1,10 @@
 package com.bikemanager.presentation.maintenances
 
 import com.bikemanager.domain.model.Maintenance
-import com.bikemanager.presentation.bikes.SyncStatus
 
 /**
  * UI state for the maintenances screen.
- * Uses local-first approach where data is loaded from local database.
+ * Local-first: SQLite is the single source of truth.
  */
 sealed class MaintenancesUiState {
     /**
@@ -15,14 +14,10 @@ sealed class MaintenancesUiState {
 
     /**
      * Success state with done and todo maintenance lists.
-     * @param doneMaintenances List of completed maintenances
-     * @param todoMaintenances List of pending maintenances
-     * @param syncStatus Current cloud synchronization status
      */
     data class Success(
         val doneMaintenances: List<Maintenance>,
-        val todoMaintenances: List<Maintenance>,
-        val syncStatus: SyncStatus = SyncStatus.IDLE
+        val todoMaintenances: List<Maintenance>
     ) : MaintenancesUiState()
 
     /**

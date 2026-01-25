@@ -65,7 +65,7 @@ import org.koin.core.parameter.parametersOf
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun MaintenancesScreenContent(
-    bikeId: Long,
+    bikeId: String,
     bikeName: String,
     countingMethod: CountingMethod,
     viewModel: MaintenancesViewModel = koinInject { parametersOf(bikeId) }

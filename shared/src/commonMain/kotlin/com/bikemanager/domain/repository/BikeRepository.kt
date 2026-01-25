@@ -5,23 +5,23 @@ import kotlinx.coroutines.flow.Flow
 
 /**
  * Repository interface for bike operations.
- * Abstracts the data layer from the domain layer.
+ * Uses Firebase Realtime Database with offline persistence.
  */
 interface BikeRepository {
     /**
-     * Gets all bikes as a Flow.
+     * Gets all bikes as a Flow (real-time updates).
      */
     fun getAllBikes(): Flow<List<Bike>>
 
     /**
      * Gets a bike by its id.
      */
-    suspend fun getBikeById(id: Long): Bike?
+    suspend fun getBikeById(id: String): Bike?
 
     /**
-     * Adds a new bike and returns its id.
+     * Adds a new bike and returns its Firebase key.
      */
-    suspend fun addBike(bike: Bike): Long
+    suspend fun addBike(bike: Bike): String
 
     /**
      * Updates an existing bike.
@@ -31,5 +31,5 @@ interface BikeRepository {
     /**
      * Deletes a bike by its id.
      */
-    suspend fun deleteBike(id: Long)
+    suspend fun deleteBike(id: String)
 }

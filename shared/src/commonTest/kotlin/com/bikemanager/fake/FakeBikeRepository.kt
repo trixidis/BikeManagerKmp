@@ -11,18 +11,19 @@ import kotlinx.coroutines.flow.map
  */
 class FakeBikeRepository : BikeRepository {
     private val bikesFlow = MutableStateFlow<List<Bike>>(emptyList())
-    private var nextId = 1L
+    private var nextId = 1
 
     override fun getAllBikes(): Flow<List<Bike>> = bikesFlow
 
-    override suspend fun getBikeById(id: Long): Bike? {
+    override suspend fun getBikeById(id: String): Bike? {
         return bikesFlow.value.find { it.id == id }
     }
 
-    override suspend fun addBike(bike: Bike): Long {
-        val newBike = bike.copy(id = nextId++)
+    override suspend fun addBike(bike: Bike): String {
+        val newId = "bike_${nextId++}"
+        val newBike = bike.copy(id = newId)
         bikesFlow.value = bikesFlow.value + newBike
-        return newBike.id
+        return newId
     }
 
     override suspend fun updateBike(bike: Bike) {
@@ -31,7 +32,7 @@ class FakeBikeRepository : BikeRepository {
         }
     }
 
-    override suspend fun deleteBike(id: Long) {
+    override suspend fun deleteBike(id: String) {
         bikesFlow.value = bikesFlow.value.filter { it.id != id }
     }
 
@@ -40,7 +41,6 @@ class FakeBikeRepository : BikeRepository {
      */
     fun setBikes(bikes: List<Bike>) {
         bikesFlow.value = bikes
-        nextId = (bikes.maxOfOrNull { it.id } ?: 0L) + 1
     }
 
     /**

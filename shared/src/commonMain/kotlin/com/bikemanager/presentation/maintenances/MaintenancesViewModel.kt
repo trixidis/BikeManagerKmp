@@ -1,7 +1,6 @@
 package com.bikemanager.presentation.maintenances
 
 import com.bikemanager.domain.model.Maintenance
-import com.bikemanager.domain.repository.BikeRepository
 import com.bikemanager.domain.usecase.maintenance.AddMaintenanceUseCase
 import com.bikemanager.domain.usecase.maintenance.DeleteMaintenanceUseCase
 import com.bikemanager.domain.usecase.maintenance.GetMaintenancesUseCase
@@ -18,10 +17,10 @@ import kotlinx.coroutines.launch
 
 /**
  * ViewModel for managing maintenances of a bike.
+ * Uses Firebase Realtime Database with offline persistence.
  */
 class MaintenancesViewModel(
-    private val bikeId: Long,
-    private val bikeRepository: BikeRepository,
+    private val bikeId: String,
     private val getMaintenancesUseCase: GetMaintenancesUseCase,
     private val addMaintenanceUseCase: AddMaintenanceUseCase,
     private val markMaintenanceDoneUseCase: MarkMaintenanceDoneUseCase,
@@ -35,20 +34,19 @@ class MaintenancesViewModel(
     private var deletedMaintenance: Maintenance? = null
 
     init {
-        loadMaintenances()
+        observeMaintenances()
     }
 
     /**
-     * Loads all maintenances for the bike.
+     * Observes maintenances from Firebase (real-time updates).
      */
-    fun loadMaintenances() {
+    private fun observeMaintenances() {
         viewModelScope.launch {
-            _uiState.value = MaintenancesUiState.Loading
             getMaintenancesUseCase(bikeId)
                 .catch { throwable ->
-                    Napier.e(throwable) { "Error loading maintenances" }
+                    Napier.e(throwable) { "Error observing maintenances" }
                     _uiState.value = MaintenancesUiState.Error(
-                        throwable.message ?: "Unknown error occurred"
+                        throwable.message ?: "Unknown error"
                     )
                 }
                 .collect { (done, todo) ->
@@ -62,28 +60,22 @@ class MaintenancesViewModel(
 
     /**
      * Adds a done maintenance.
-     * @param name The name/type of maintenance
-     * @param value The km/hours value
      */
     fun addDoneMaintenance(name: String, value: Float) {
-        if (name.isBlank()) return
-        if (value < 0) return
+        if (name.isBlank() || value < 0) return
 
         viewModelScope.launch {
             try {
                 addMaintenanceUseCase.addDone(name, value, bikeId)
             } catch (e: Exception) {
                 Napier.e(e) { "Error adding done maintenance" }
-                _uiState.value = MaintenancesUiState.Error(
-                    e.message ?: "Error adding maintenance"
-                )
+                _uiState.value = MaintenancesUiState.Error(e.message ?: "Error adding maintenance")
             }
         }
     }
 
     /**
      * Adds a todo maintenance.
-     * @param name The name/type of maintenance
      */
     fun addTodoMaintenance(name: String) {
         if (name.isBlank()) return
@@ -93,49 +85,40 @@ class MaintenancesViewModel(
                 addMaintenanceUseCase.addTodo(name, bikeId)
             } catch (e: Exception) {
                 Napier.e(e) { "Error adding todo maintenance" }
-                _uiState.value = MaintenancesUiState.Error(
-                    e.message ?: "Error adding maintenance"
-                )
+                _uiState.value = MaintenancesUiState.Error(e.message ?: "Error adding maintenance")
             }
         }
     }
 
     /**
      * Marks a maintenance as done.
-     * @param maintenanceId The id of the maintenance
-     * @param value The km/hours value
      */
-    fun markMaintenanceDone(maintenanceId: Long, value: Float) {
+    fun markMaintenanceDone(maintenanceId: String, value: Float) {
         if (value < 0) return
 
         viewModelScope.launch {
             try {
-                markMaintenanceDoneUseCase(maintenanceId, value)
+                markMaintenanceDoneUseCase(maintenanceId, bikeId, value)
             } catch (e: Exception) {
                 Napier.e(e) { "Error marking maintenance as done" }
-                _uiState.value = MaintenancesUiState.Error(
-                    e.message ?: "Error updating maintenance"
-                )
+                _uiState.value = MaintenancesUiState.Error(e.message ?: "Error updating maintenance")
             }
         }
     }
 
     /**
      * Deletes a maintenance and stores it for potential undo.
-     * @param maintenance The maintenance to delete
      */
     fun deleteMaintenance(maintenance: Maintenance) {
         deletedMaintenance = maintenance
 
         viewModelScope.launch {
             try {
-                deleteMaintenanceUseCase(maintenance.id)
+                deleteMaintenanceUseCase(maintenance.id, bikeId)
             } catch (e: Exception) {
                 Napier.e(e) { "Error deleting maintenance" }
                 deletedMaintenance = null
-                _uiState.value = MaintenancesUiState.Error(
-                    e.message ?: "Error deleting maintenance"
-                )
+                _uiState.value = MaintenancesUiState.Error(e.message ?: "Error deleting maintenance")
             }
         }
     }
@@ -149,7 +132,7 @@ class MaintenancesViewModel(
 
         viewModelScope.launch {
             try {
-                addMaintenanceUseCase(maintenance.copy(id = 0))
+                addMaintenanceUseCase(maintenance.copy(id = ""))
             } catch (e: Exception) {
                 Napier.e(e) { "Error restoring maintenance" }
             }

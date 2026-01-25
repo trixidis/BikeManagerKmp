@@ -51,15 +51,14 @@ class BikeRepositoryImplTest {
 
         val id = repository.addBike(bike)
 
-        assertEquals(1L, id)
+        assertTrue(id.isNotEmpty())
     }
 
     @Test
     fun `addBike stores bike with all properties`() = runTest {
         val bike = Bike(
             name = "Kawasaki Ninja",
-            countingMethod = CountingMethod.KM,
-            firebaseRef = "ref-123"
+            countingMethod = CountingMethod.KM
         )
 
         val id = repository.addBike(bike)
@@ -67,12 +66,11 @@ class BikeRepositoryImplTest {
 
         assertEquals("Kawasaki Ninja", stored?.name)
         assertEquals(CountingMethod.KM, stored?.countingMethod)
-        assertEquals("ref-123", stored?.firebaseRef)
     }
 
     @Test
     fun `getBikeById returns null for non-existent id`() = runTest {
-        val result = repository.getBikeById(999L)
+        val result = repository.getBikeById("nonexistent")
         assertNull(result)
     }
 
