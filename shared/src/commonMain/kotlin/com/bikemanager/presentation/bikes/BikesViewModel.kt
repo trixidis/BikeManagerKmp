@@ -3,6 +3,7 @@ package com.bikemanager.presentation.bikes
 import com.bikemanager.domain.model.Bike
 import com.bikemanager.domain.model.CountingMethod
 import com.bikemanager.domain.usecase.bike.AddBikeUseCase
+import com.bikemanager.domain.usecase.bike.DeleteBikeUseCase
 import com.bikemanager.domain.usecase.bike.GetBikesUseCase
 import com.bikemanager.domain.usecase.bike.UpdateBikeUseCase
 import io.github.aakira.napier.Napier
@@ -22,12 +23,15 @@ import kotlinx.coroutines.launch
 class BikesViewModel(
     private val getBikesUseCase: GetBikesUseCase,
     private val addBikeUseCase: AddBikeUseCase,
-    private val updateBikeUseCase: UpdateBikeUseCase
+    private val updateBikeUseCase: UpdateBikeUseCase,
+    private val deleteBikeUseCase: DeleteBikeUseCase
 ) {
     private val viewModelScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     private val _uiState = MutableStateFlow<BikesUiState>(BikesUiState.Loading)
     val uiState: StateFlow<BikesUiState> = _uiState.asStateFlow()
+
+    private var deletedBike: Bike? = null
 
     init {
         observeBikes()
@@ -104,6 +108,39 @@ class BikesViewModel(
         if (currentState is BikesUiState.Success) {
             val bike = currentState.bikes.find { it.id == bikeId } ?: return
             updateBike(bike.copy(countingMethod = countingMethod))
+        }
+    }
+
+    /**
+     * Deletes a bike and stores it for potential undo.
+     */
+    fun deleteBike(bike: Bike) {
+        deletedBike = bike
+
+        viewModelScope.launch {
+            try {
+                deleteBikeUseCase(bike.id)
+            } catch (e: Exception) {
+                Napier.e(e) { "Error deleting bike" }
+                deletedBike = null
+                _uiState.value = BikesUiState.Error(e.message ?: "Error deleting bike")
+            }
+        }
+    }
+
+    /**
+     * Undoes the last deletion by re-adding the bike.
+     */
+    fun undoDelete() {
+        val bike = deletedBike ?: return
+        deletedBike = null
+
+        viewModelScope.launch {
+            try {
+                addBikeUseCase(bike.copy(id = ""))
+            } catch (e: Exception) {
+                Napier.e(e) { "Error restoring bike" }
+            }
         }
     }
 }
