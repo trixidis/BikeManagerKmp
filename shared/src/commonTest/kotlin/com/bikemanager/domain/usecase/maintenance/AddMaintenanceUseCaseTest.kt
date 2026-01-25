@@ -3,6 +3,7 @@ package com.bikemanager.domain.usecase.maintenance
 import com.bikemanager.domain.common.Result
 import com.bikemanager.domain.model.Maintenance
 import com.bikemanager.fake.FakeMaintenanceRepository
+import com.bikemanager.util.currentTimeMillis
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -52,8 +53,16 @@ class AddMaintenanceUseCaseTest {
     }
 
     @Test
-    fun `addDone creates done maintenance with timestamp`() = runTest {
-        val result = useCase.addDone(name = "Tire Change", value = 10000f, bikeId = "bike1")
+    fun `invoke adds done maintenance with timestamp`() = runTest {
+        val maintenance = Maintenance(
+            name = "Tire Change",
+            value = 10000f,
+            date = currentTimeMillis(),
+            isDone = true,
+            bikeId = "bike1"
+        )
+
+        val result = useCase(maintenance)
 
         assertTrue(result is Result.Success)
         val id = result.value
@@ -67,22 +76,16 @@ class AddMaintenanceUseCaseTest {
     }
 
     @Test
-    fun `addDone returns failure when name is empty`() = runTest {
-        val result = useCase.addDone(name = "", value = 5000f, bikeId = "bike1")
+    fun `invoke adds done maintenance with zero value`() = runTest {
+        val maintenance = Maintenance(
+            name = "Zero KM Check",
+            value = 0f,
+            date = currentTimeMillis(),
+            isDone = true,
+            bikeId = "bike1"
+        )
 
-        assertTrue(result is Result.Failure)
-    }
-
-    @Test
-    fun `addDone returns failure when value is negative`() = runTest {
-        val result = useCase.addDone(name = "Test", value = -1f, bikeId = "bike1")
-
-        assertTrue(result is Result.Failure)
-    }
-
-    @Test
-    fun `addDone accepts zero value`() = runTest {
-        val result = useCase.addDone(name = "Zero KM Check", value = 0f, bikeId = "bike1")
+        val result = useCase(maintenance)
 
         assertTrue(result is Result.Success)
         val id = result.value
@@ -92,8 +95,16 @@ class AddMaintenanceUseCaseTest {
     }
 
     @Test
-    fun `addTodo creates todo maintenance without value or date`() = runTest {
-        val result = useCase.addTodo(name = "Future Maintenance", bikeId = "bike1")
+    fun `invoke adds todo maintenance without value or date`() = runTest {
+        val maintenance = Maintenance(
+            name = "Future Maintenance",
+            value = -1f,
+            date = 0,
+            isDone = false,
+            bikeId = "bike1"
+        )
+
+        val result = useCase(maintenance)
 
         assertTrue(result is Result.Success)
         val id = result.value
@@ -104,20 +115,6 @@ class AddMaintenanceUseCaseTest {
         assertEquals(-1f, maintenances[0].value)
         assertEquals(0L, maintenances[0].date)
         assertTrue(!maintenances[0].isDone)
-    }
-
-    @Test
-    fun `addTodo returns failure when name is empty`() = runTest {
-        val result = useCase.addTodo(name = "", bikeId = "bike1")
-
-        assertTrue(result is Result.Failure)
-    }
-
-    @Test
-    fun `addTodo returns failure when name is blank`() = runTest {
-        val result = useCase.addTodo(name = "   ", bikeId = "bike1")
-
-        assertTrue(result is Result.Failure)
     }
 
     @Test
@@ -132,9 +129,24 @@ class AddMaintenanceUseCaseTest {
     }
 
     @Test
-    fun `multiple addDone creates unique maintenances`() = runTest {
-        val result1 = useCase.addDone(name = "Maintenance 1", value = 1000f, bikeId = "bike1")
-        val result2 = useCase.addDone(name = "Maintenance 2", value = 2000f, bikeId = "bike1")
+    fun `invoke creates multiple unique maintenances`() = runTest {
+        val maintenance1 = Maintenance(
+            name = "Maintenance 1",
+            value = 1000f,
+            date = currentTimeMillis(),
+            isDone = true,
+            bikeId = "bike1"
+        )
+        val maintenance2 = Maintenance(
+            name = "Maintenance 2",
+            value = 2000f,
+            date = currentTimeMillis(),
+            isDone = true,
+            bikeId = "bike1"
+        )
+
+        val result1 = useCase(maintenance1)
+        val result2 = useCase(maintenance2)
 
         assertTrue(result1 is Result.Success)
         assertTrue(result2 is Result.Success)

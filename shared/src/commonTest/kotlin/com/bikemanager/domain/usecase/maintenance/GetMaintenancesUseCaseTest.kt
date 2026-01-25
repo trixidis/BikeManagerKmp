@@ -73,44 +73,6 @@ class GetMaintenancesUseCaseTest {
     }
 
     @Test
-    fun `getDone returns only done maintenances`() = runTest {
-        val maintenances = listOf(
-            Maintenance(id = "m1", name = "Done", isDone = true, bikeId = "bike1"),
-            Maintenance(id = "m2", name = "Todo", isDone = false, bikeId = "bike1")
-        )
-        repository.setMaintenances(maintenances)
-
-        useCase.getDone(bikeId = "bike1").test {
-            val result = awaitItem()
-            assertTrue(result is Result.Success)
-            val done = result.value
-            assertEquals(1, done.size)
-            assertEquals("Done", done[0].name)
-            assertTrue(done[0].isDone)
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
-    fun `getTodo returns only todo maintenances`() = runTest {
-        val maintenances = listOf(
-            Maintenance(id = "m1", name = "Done", isDone = true, bikeId = "bike1"),
-            Maintenance(id = "m2", name = "Todo", isDone = false, bikeId = "bike1")
-        )
-        repository.setMaintenances(maintenances)
-
-        useCase.getTodo(bikeId = "bike1").test {
-            val result = awaitItem()
-            assertTrue(result is Result.Success)
-            val todo = result.value
-            assertEquals(1, todo.size)
-            assertEquals("Todo", todo[0].name)
-            assertTrue(!todo[0].isDone)
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
     fun `invoke emits updates when maintenances change`() = runTest {
         // First, set up data before collecting
         repository.setMaintenances(emptyList())

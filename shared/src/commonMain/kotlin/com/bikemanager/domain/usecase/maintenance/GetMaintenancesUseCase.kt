@@ -8,11 +8,19 @@ import kotlinx.coroutines.flow.combine
 
 /**
  * Use case for getting maintenances for a bike.
+ *
+ * Follows Single Responsibility Principle: orchestrates fetching both done and todo maintenances,
+ * combining them into a single result for the ViewModel.
  */
 class GetMaintenancesUseCase(private val repository: MaintenanceRepository) {
 
     /**
      * Gets both done and todo maintenances for a bike.
+     *
+     * Combines two repository streams into a single stream, returning both lists together.
+     * If either stream fails, the failure is propagated.
+     *
+     * @param bikeId The ID of the bike
      * @return A Flow emitting a Result of Pair of (doneMaintenances, todoMaintenances)
      */
     operator fun invoke(bikeId: String): Flow<Result<Pair<List<Maintenance>, List<Maintenance>>>> {
@@ -29,19 +37,5 @@ class GetMaintenancesUseCase(private val repository: MaintenanceRepository) {
                 else -> Result.Failure(IllegalStateException("Unexpected result state"))
             }
         }
-    }
-
-    /**
-     * Gets only done maintenances for a bike.
-     */
-    fun getDone(bikeId: String): Flow<Result<List<Maintenance>>> {
-        return repository.getDoneMaintenances(bikeId)
-    }
-
-    /**
-     * Gets only todo maintenances for a bike.
-     */
-    fun getTodo(bikeId: String): Flow<Result<List<Maintenance>>> {
-        return repository.getTodoMaintenances(bikeId)
     }
 }

@@ -13,6 +13,7 @@ import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -44,6 +45,9 @@ class BikesViewModel(
         viewModelScope.launch {
             getBikesUseCase()
                 .catch { throwable ->
+                    // CRITICAL: Ensure CancellationException is re-thrown for proper coroutine cleanup
+                    coroutineContext.ensureActive()
+
                     Napier.e(throwable) { "Error observing bikes" }
                     val appError = if (throwable is AppError) {
                         throwable

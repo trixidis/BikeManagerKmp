@@ -8,7 +8,6 @@ import com.bikemanager.domain.usecase.auth.GetCurrentUserUseCase
 import com.bikemanager.domain.usecase.auth.SignInUseCase
 import com.bikemanager.domain.usecase.auth.SignOutUseCase
 import io.github.aakira.napier.Napier
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -36,25 +35,19 @@ class AuthViewModel(
 
     /**
      * Checks the current authentication state.
+     *
+     * Note: getCurrentUserUseCase() is a synchronous, non-throwing function that returns User?.
+     * No exception handling needed. CancellationException is handled properly by the coroutine
+     * framework with SupervisorJob.
      */
     fun checkAuthState() {
         viewModelScope.launch {
             _uiState.value = AuthUiState.Checking
-            try {
-                val user = getCurrentUserUseCase()
-                _uiState.value = if (user != null) {
-                    AuthUiState.Authenticated(user)
-                } else {
-                    AuthUiState.NotAuthenticated
-                }
-            } catch (e: CancellationException) {
-                // CRITICAL: Re-throw CancellationException to allow proper coroutine cancellation
-                throw e
-            } catch (e: Exception) {
-                val appError = ErrorHandler.handle(e, "checking auth state")
-                _uiState.value = AuthUiState.Error(
-                    ErrorMessages.getMessage(appError)
-                )
+            val user = getCurrentUserUseCase()
+            _uiState.value = if (user != null) {
+                AuthUiState.Authenticated(user)
+            } else {
+                AuthUiState.NotAuthenticated
             }
         }
     }

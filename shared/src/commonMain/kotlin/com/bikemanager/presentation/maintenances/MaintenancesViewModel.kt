@@ -11,6 +11,7 @@ import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -46,6 +47,7 @@ class MaintenancesViewModel(
         viewModelScope.launch {
             getMaintenancesUseCase(bikeId)
                 .catch { throwable ->
+                    coroutineContext.ensureActive()
                     Napier.e(throwable) { "Error observing maintenances" }
                     _uiState.value = MaintenancesUiState.Error(
                         ErrorMessages.UNKNOWN_ERROR
@@ -75,12 +77,21 @@ class MaintenancesViewModel(
 
     /**
      * Adds a done maintenance.
+     * Constructs the Maintenance object with current timestamp and calls the use case.
      */
     fun addDoneMaintenance(name: String, value: Float) {
         if (name.isBlank() || value < 0) return
 
         viewModelScope.launch {
-            when (val result = addMaintenanceUseCase.addDone(name, value, bikeId)) {
+            val maintenance = Maintenance(
+                name = name,
+                value = value,
+                date = com.bikemanager.util.currentTimeMillis(),
+                isDone = true,
+                bikeId = bikeId
+            )
+
+            when (val result = addMaintenanceUseCase(maintenance)) {
                 is com.bikemanager.domain.common.Result.Success -> {
                     // Success - UI will update automatically via Flow
                 }
@@ -98,12 +109,21 @@ class MaintenancesViewModel(
 
     /**
      * Adds a todo maintenance.
+     * Constructs the Maintenance object with default values for todo items.
      */
     fun addTodoMaintenance(name: String) {
         if (name.isBlank()) return
 
         viewModelScope.launch {
-            when (val result = addMaintenanceUseCase.addTodo(name, bikeId)) {
+            val maintenance = Maintenance(
+                name = name,
+                value = -1f,
+                date = 0,
+                isDone = false,
+                bikeId = bikeId
+            )
+
+            when (val result = addMaintenanceUseCase(maintenance)) {
                 is com.bikemanager.domain.common.Result.Success -> {
                     // Success - UI will update automatically via Flow
                 }
