@@ -1,6 +1,5 @@
 package com.bikemanager.ui.settings
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,8 +8,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -26,7 +27,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bikemanager.domain.model.ThemeMode
@@ -35,6 +38,16 @@ import com.bikemanager.presentation.theme.ThemeViewModel
 import com.bikemanager.ui.Strings
 import com.bikemanager.ui.theme.White
 import org.koin.compose.koinInject
+
+/**
+ * Voyager Screen for Settings.
+ */
+data object SettingsScreenDestination : Screen {
+    @Composable
+    override fun Content() {
+        SettingsScreenContent()
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,7 +64,7 @@ fun SettingsScreenContent(
                 navigationIcon = {
                     IconButton(onClick = { navigator.pop() }) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = null,
                             tint = White
                         )
@@ -88,23 +101,25 @@ fun SettingsScreenContent(
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
 
-                        ThemeModeOption(
-                            label = Strings.THEME_LIGHT,
-                            isSelected = state.themeMode == ThemeMode.LIGHT,
-                            onClick = { viewModel.setThemeMode(ThemeMode.LIGHT) }
-                        )
+                        Column(Modifier.selectableGroup()) {
+                            ThemeModeOption(
+                                label = Strings.THEME_LIGHT,
+                                isSelected = state.themeMode == ThemeMode.LIGHT,
+                                onClick = { viewModel.setThemeMode(ThemeMode.LIGHT) }
+                            )
 
-                        ThemeModeOption(
-                            label = Strings.THEME_DARK,
-                            isSelected = state.themeMode == ThemeMode.DARK,
-                            onClick = { viewModel.setThemeMode(ThemeMode.DARK) }
-                        )
+                            ThemeModeOption(
+                                label = Strings.THEME_DARK,
+                                isSelected = state.themeMode == ThemeMode.DARK,
+                                onClick = { viewModel.setThemeMode(ThemeMode.DARK) }
+                            )
 
-                        ThemeModeOption(
-                            label = Strings.THEME_SYSTEM,
-                            isSelected = state.themeMode == ThemeMode.SYSTEM,
-                            onClick = { viewModel.setThemeMode(ThemeMode.SYSTEM) }
-                        )
+                            ThemeModeOption(
+                                label = Strings.THEME_SYSTEM,
+                                isSelected = state.themeMode == ThemeMode.SYSTEM,
+                                onClick = { viewModel.setThemeMode(ThemeMode.SYSTEM) }
+                            )
+                        }
                     }
                 }
 
@@ -132,13 +147,17 @@ private fun ThemeModeOption(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .selectable(
+                selected = isSelected,
+                onClick = onClick,
+                role = Role.RadioButton
+            )
             .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         RadioButton(
             selected = isSelected,
-            onClick = onClick
+            onClick = null
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(
