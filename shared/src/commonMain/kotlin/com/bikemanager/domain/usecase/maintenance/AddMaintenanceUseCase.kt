@@ -1,5 +1,6 @@
 package com.bikemanager.domain.usecase.maintenance
 
+import com.bikemanager.domain.common.AppError
 import com.bikemanager.domain.common.Result
 import com.bikemanager.domain.model.Maintenance
 import com.bikemanager.domain.repository.MaintenanceRepository
@@ -16,7 +17,12 @@ class AddMaintenanceUseCase(
      */
     suspend operator fun invoke(maintenance: Maintenance): Result<String> {
         if (maintenance.name.isBlank()) {
-            return Result.Failure(IllegalArgumentException("Maintenance name cannot be empty"))
+            return Result.Failure(
+                AppError.ValidationError(
+                    errorMessage = "Maintenance name cannot be empty",
+                    field = "name"
+                )
+            )
         }
         return repository.addMaintenance(maintenance)
     }
@@ -26,10 +32,20 @@ class AddMaintenanceUseCase(
      */
     suspend fun addDone(name: String, value: Float, bikeId: String): Result<String> {
         if (name.isBlank()) {
-            return Result.Failure(IllegalArgumentException("Maintenance name cannot be empty"))
+            return Result.Failure(
+                AppError.ValidationError(
+                    errorMessage = "Maintenance name cannot be empty",
+                    field = "name"
+                )
+            )
         }
         if (value < 0) {
-            return Result.Failure(IllegalArgumentException("Value must be positive"))
+            return Result.Failure(
+                AppError.ValidationError(
+                    errorMessage = "Value must be positive",
+                    field = "value"
+                )
+            )
         }
 
         val maintenance = Maintenance(
@@ -47,7 +63,12 @@ class AddMaintenanceUseCase(
      */
     suspend fun addTodo(name: String, bikeId: String): Result<String> {
         if (name.isBlank()) {
-            return Result.Failure(IllegalArgumentException("Maintenance name cannot be empty"))
+            return Result.Failure(
+                AppError.ValidationError(
+                    errorMessage = "Maintenance name cannot be empty",
+                    field = "name"
+                )
+            )
         }
 
         val maintenance = Maintenance(

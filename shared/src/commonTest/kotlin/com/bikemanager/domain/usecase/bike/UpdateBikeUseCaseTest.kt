@@ -91,8 +91,9 @@ class UpdateBikeUseCaseTest {
         repository.setBikes(listOf(initialBike))
 
         val updatedBike = initialBike.copy(name = "Updated")
-        useCase(updatedBike)
+        val result = useCase(updatedBike)
 
+        assertTrue(result is Result.Success)
         val bikes = repository.getCurrentBikes()
         assertEquals("bike42", bikes[0].id)
     }
