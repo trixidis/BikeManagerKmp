@@ -1,0 +1,25 @@
+{
+  "active": true,
+  "spec": "002-bike-deletion",
+  "state": "planning",
+  "subtasks": {
+    "completed": 0,
+    "total": 0,
+    "in_progress": 1,
+    "failed": 0
+  },
+  "phase": {
+    "current": "Domain Layer - Use Cases",
+    "id": null,
+    "total": 1
+  },
+  "workers": {
+    "active": 0,
+    "max": 1
+  },
+  "session": {
+    "number": 2,
+    "started_at": "2026-01-25T12:37:47.047419"
+  },
+  "last_update": "2026-01-25T12:43:29.821993"
+}
