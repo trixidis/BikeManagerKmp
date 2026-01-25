@@ -1,5 +1,6 @@
 package com.bikemanager.domain.common
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -329,6 +330,61 @@ class ResultTest {
         assertIs<AppError.ValidationError>(error)
         assertEquals("Value is required", error.message)
     }
+
+    // ========== CancellationException Tests ==========
+
+    @Test
+    fun `runCatching re-throws CancellationException`() {
+        var cancellationExceptionThrown = false
+        try {
+            val result = com.bikemanager.domain.common.runCatching<Unit> {
+                throw CancellationException("Coroutine cancelled")
+            }
+            // If we reach here, CancellationException was NOT re-thrown (test should fail)
+            assertFalse(true, "Should not reach here - CancellationException should be re-thrown")
+        } catch (e: CancellationException) {
+            cancellationExceptionThrown = true
+            assertEquals("Coroutine cancelled", e.message)
+        }
+        assertTrue(cancellationExceptionThrown, "CancellationException should be re-thrown, not caught")
+    }
+
+    @Test
+    fun `runCatching does not catch CancellationException`() {
+        // CancellationException should propagate, not be converted to Result.Failure
+        var exceptionThrown = false
+        try {
+            val result = com.bikemanager.domain.common.runCatching<Unit> {
+                throw CancellationException("Cancelled")
+            }
+            // If we reach here, the exception was caught (which is wrong)
+            assertFalse(true, "Should not reach here - result type is ${result::class.simpleName}")
+        } catch (e: CancellationException) {
+            exceptionThrown = true
+        }
+        assertTrue(exceptionThrown, "CancellationException should have been re-thrown")
+    }
+
+    @Test
+    fun `runCatching handles other exceptions while preserving CancellationException behavior`() {
+        // Regular exceptions are caught and wrapped in Result.Failure
+        val result1 = com.bikemanager.domain.common.runCatching<Unit> {
+            throw IllegalStateException("Regular error")
+        }
+        assertTrue(result1.isFailure)
+
+        // CancellationException is re-thrown
+        var cancellationExceptionThrown = false
+        try {
+            val result2 = com.bikemanager.domain.common.runCatching<Unit> {
+                throw CancellationException("Cancelled")
+            }
+            assertFalse(true, "Should not reach here")
+        } catch (e: CancellationException) {
+            cancellationExceptionThrown = true
+        }
+        assertTrue(cancellationExceptionThrown, "CancellationException should be re-thrown")
+    }
 }
 
 class ErrorHandlerTest {
@@ -565,5 +621,55 @@ class ErrorHandlerTest {
 
         assertTrue(result.isSuccess)
         assertEquals("suspended result", result.getOrNull())
+    }
+
+    // ========== CancellationException Tests ==========
+
+    @Test
+    fun `catching re-throws CancellationException`() = runTest {
+        var cancellationExceptionThrown = false
+        try {
+            ErrorHandler.catching("testing cancellation") {
+                throw CancellationException("Coroutine cancelled")
+            }
+        } catch (e: CancellationException) {
+            cancellationExceptionThrown = true
+            assertEquals("Coroutine cancelled", e.message)
+        }
+        assertTrue(cancellationExceptionThrown, "CancellationException should be re-thrown, not caught")
+    }
+
+    @Test
+    fun `catching does not catch CancellationException`() = runTest {
+        // CancellationException should propagate, not be converted to Result.Failure
+        var exceptionThrown = false
+        try {
+            ErrorHandler.catching {
+                throw CancellationException("Cancelled")
+            }
+        } catch (e: CancellationException) {
+            exceptionThrown = true
+        }
+        assertTrue(exceptionThrown, "CancellationException should have been re-thrown")
+    }
+
+    @Test
+    fun `catching handles other exceptions while preserving CancellationException behavior`() = runTest {
+        // Regular exceptions are caught and wrapped in Result.Failure
+        val result1 = ErrorHandler.catching {
+            throw IllegalStateException("Regular error")
+        }
+        assertTrue(result1.isFailure)
+
+        // CancellationException is re-thrown
+        var cancellationExceptionThrown = false
+        try {
+            ErrorHandler.catching {
+                throw CancellationException("Cancelled")
+            }
+        } catch (e: CancellationException) {
+            cancellationExceptionThrown = true
+        }
+        assertTrue(cancellationExceptionThrown, "CancellationException should be re-thrown")
     }
 }

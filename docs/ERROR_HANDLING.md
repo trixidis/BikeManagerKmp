@@ -790,3 +790,94 @@ The error handling pattern provides:
 6. **User Experience**: Clear, actionable error messages
 
 By following this pattern, errors are handled consistently across the entire application, improving both developer experience and user experience.
+
+---
+
+## CancellationException Handling
+
+### Why CancellationException Must Be Re-thrown
+
+In Kotlin coroutines, `CancellationException` is a special exception that signals a coroutine has been cancelled. It is **critical** that this exception is never caught and suppressed, as doing so would:
+
+- Prevent proper coroutine cancellation
+- Cause memory leaks by keeping cancelled coroutines alive
+- Block cleanup of coroutine resources
+- Break structured concurrency guarantees
+
+### Implementation
+
+Our error handling utilities (`ErrorHandler.catching()` and `runCatching()`) properly handle `CancellationException`:
+
+```kotlin
+suspend fun <T> catching(context: String? = null, block: suspend () -> T): Result<T> {
+    return try {
+        Result.Success(block())
+    } catch (e: CancellationException) {
+        // CRITICAL: Always re-throw CancellationException
+        throw e
+    } catch (e: Throwable) {
+        Result.Failure(handle(e, context))
+    }
+}
+```
+
+### Pattern for Manual Exception Handling
+
+If you need to manually catch exceptions in coroutines, **always** re-throw `CancellationException` first:
+
+```kotlin
+// ✅ Correct pattern
+try {
+    someOperation()
+} catch (e: CancellationException) {
+    // CRITICAL: Must re-throw before handling other exceptions
+    throw e
+} catch (e: Exception) {
+    // Handle other exceptions
+    handleError(e)
+}
+
+// ❌ WRONG - Will cause memory leaks!
+try {
+    someOperation()
+} catch (e: Throwable) {  // Catches CancellationException too!
+    handleError(e)
+}
+
+// ❌ WRONG - Catches CancellationException
+try {
+    someOperation()
+} catch (e: Exception) {  // CancellationException extends Exception
+    handleError(e)
+}
+```
+
+### Testing CancellationException
+
+When testing functions that handle `CancellationException`, use fully qualified names to avoid conflicts with Kotlin's stdlib `runCatching`:
+
+```kotlin
+@Test
+fun `test cancellation exception is re-thrown`() = runTest {
+    var exceptionThrown = false
+    try {
+        com.bikemanager.domain.common.runCatching<Unit> {
+            throw CancellationException("Cancelled")
+        }
+    } catch (e: CancellationException) {
+        exceptionThrown = true
+    }
+    assertTrue(exceptionThrown)
+}
+```
+
+### Why This Matters
+
+Without proper CancellationException handling:
+- Cancelled coroutines continue consuming resources
+- Parent-child coroutine relationships break
+- Timeouts and job cancellation stop working
+- Memory leaks accumulate over time
+- App performance degrades
+
+All code in BikeManager properly re-throws `CancellationException` to prevent these issues.

@@ -8,6 +8,7 @@ import com.bikemanager.domain.usecase.auth.GetCurrentUserUseCase
 import com.bikemanager.domain.usecase.auth.SignInUseCase
 import com.bikemanager.domain.usecase.auth.SignOutUseCase
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -46,6 +47,9 @@ class AuthViewModel(
                 } else {
                     AuthUiState.NotAuthenticated
                 }
+            } catch (e: CancellationException) {
+                // CRITICAL: Re-throw CancellationException to allow proper coroutine cancellation
+                throw e
             } catch (e: Exception) {
                 val appError = ErrorHandler.handle(e, "checking auth state")
                 _uiState.value = AuthUiState.Error(

@@ -10,6 +10,7 @@ import com.bikemanager.domain.repository.BikeRepository
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.database.database
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -58,6 +59,9 @@ class BikeRepositoryImpl(
                     }
                 }.sortedByDescending { it.name }
                 Result.Success(bikes)
+            } catch (e: CancellationException) {
+                // CRITICAL: Re-throw CancellationException to allow proper coroutine cancellation
+                throw e
             } catch (e: Throwable) {
                 Result.Failure(ErrorHandler.handle(e, "loading bikes"))
             }

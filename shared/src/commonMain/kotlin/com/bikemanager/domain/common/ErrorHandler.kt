@@ -1,6 +1,7 @@
 package com.bikemanager.domain.common
 
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.CancellationException
 
 /**
  * Utility for converting exceptions to domain-specific AppError types.
@@ -59,6 +60,10 @@ object ErrorHandler {
     /**
      * Wraps a suspending operation in Result, converting any exceptions to AppError.
      *
+     * IMPORTANT: CancellationException is re-thrown to allow proper coroutine cancellation.
+     * Catching and suppressing CancellationException would cause memory leaks and prevent
+     * proper cleanup of coroutine resources.
+     *
      * @param context Optional context string for logging
      * @param block The operation to execute
      * @return Result.Success with the operation result, or Result.Failure with AppError
@@ -66,6 +71,10 @@ object ErrorHandler {
     suspend fun <T> catching(context: String? = null, block: suspend () -> T): Result<T> {
         return try {
             Result.Success(block())
+        } catch (e: CancellationException) {
+            // CRITICAL: Always re-throw CancellationException to allow proper coroutine cancellation
+            // Suppressing this exception would cause memory leaks and prevent cleanup
+            throw e
         } catch (e: Throwable) {
             Result.Failure(handle(e, context))
         }

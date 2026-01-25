@@ -9,6 +9,7 @@ import com.bikemanager.domain.repository.MaintenanceRepository
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.database.database
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -66,6 +67,9 @@ class MaintenanceRepositoryImpl(
                     }
                 }.sortedByDescending { it.value }
                 Result.Success(maintenances)
+            } catch (e: CancellationException) {
+                // CRITICAL: Re-throw CancellationException to allow proper coroutine cancellation
+                throw e
             } catch (e: Throwable) {
                 Result.Failure(ErrorHandler.handle(e, "loading maintenances"))
             }
@@ -107,6 +111,9 @@ class MaintenanceRepositoryImpl(
                     }
                 }.filter { it.isDone }.sortedByDescending { it.value }
                 Result.Success(maintenances)
+            } catch (e: CancellationException) {
+                // CRITICAL: Re-throw CancellationException to allow proper coroutine cancellation
+                throw e
             } catch (e: Throwable) {
                 Result.Failure(ErrorHandler.handle(e, "loading done maintenances"))
             }
@@ -148,6 +155,9 @@ class MaintenanceRepositoryImpl(
                     }
                 }.filter { !it.isDone }.sortedByDescending { it.id }
                 Result.Success(maintenances)
+            } catch (e: CancellationException) {
+                // CRITICAL: Re-throw CancellationException to allow proper coroutine cancellation
+                throw e
             } catch (e: Throwable) {
                 Result.Failure(ErrorHandler.handle(e, "loading todo maintenances"))
             }

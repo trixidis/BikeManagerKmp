@@ -1,5 +1,7 @@
 package com.bikemanager.domain.common
 
+import kotlinx.coroutines.CancellationException
+
 /**
  * A wrapper for operation results that can either succeed or fail.
  * This type provides a functional approach to error handling.
@@ -108,9 +110,15 @@ inline fun <T> Result<T>.onFailure(action: (Throwable) -> Unit): Result<T> {
 
 /**
  * Wraps the execution of a block in a Result, catching any exceptions as Failure.
+ *
+ * IMPORTANT: CancellationException is re-thrown to allow proper coroutine cancellation.
+ * Catching and suppressing CancellationException would cause memory leaks.
  */
 inline fun <T> runCatching(block: () -> T): Result<T> = try {
     Result.Success(block())
+} catch (e: CancellationException) {
+    // CRITICAL: Always re-throw CancellationException to prevent memory leaks
+    throw e
 } catch (e: Throwable) {
     Result.Failure(e)
 }
