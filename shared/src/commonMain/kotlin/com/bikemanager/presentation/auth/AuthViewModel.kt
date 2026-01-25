@@ -1,5 +1,7 @@
 package com.bikemanager.presentation.auth
 
+import com.bikemanager.domain.common.ErrorMessages
+import com.bikemanager.domain.common.fold
 import com.bikemanager.domain.usecase.auth.GetCurrentUserUseCase
 import com.bikemanager.domain.usecase.auth.SignInUseCase
 import com.bikemanager.domain.usecase.auth.SignOutUseCase
@@ -61,15 +63,21 @@ class AuthViewModel(
 
         viewModelScope.launch {
             _uiState.value = AuthUiState.Loading
-            try {
-                val user = signInUseCase(idToken)
-                _uiState.value = AuthUiState.Authenticated(user)
-            } catch (e: Exception) {
-                Napier.e(e) { "Error signing in" }
-                _uiState.value = AuthUiState.Error(
-                    e.message ?: "Une erreur est survenue"
-                )
-            }
+            val result = signInUseCase(idToken)
+            result.fold(
+                onSuccess = { user ->
+                    _uiState.value = AuthUiState.Authenticated(user)
+                },
+                onFailure = { error ->
+                    Napier.e(error) { "Error signing in" }
+                    val message = if (error is com.bikemanager.domain.common.AppError) {
+                        ErrorMessages.getMessage(error)
+                    } else {
+                        error.message ?: "Une erreur est survenue"
+                    }
+                    _uiState.value = AuthUiState.Error(message)
+                }
+            )
         }
     }
 
@@ -78,12 +86,17 @@ class AuthViewModel(
      */
     fun signOut() {
         viewModelScope.launch {
-            try {
-                signOutUseCase()
-                _uiState.value = AuthUiState.NotAuthenticated
-            } catch (e: Exception) {
-                Napier.e(e) { "Error signing out" }
-            }
+            val result = signOutUseCase()
+            result.fold(
+                onSuccess = {
+                    _uiState.value = AuthUiState.NotAuthenticated
+                },
+                onFailure = { error ->
+                    Napier.e(error) { "Error signing out" }
+                    // Optionally set error state, but for sign out we might just silently fail
+                    _uiState.value = AuthUiState.NotAuthenticated
+                }
+            )
         }
     }
 
