@@ -22,6 +22,7 @@ import com.bikemanager.domain.usecase.maintenance.AddMaintenanceUseCase
 import com.bikemanager.domain.usecase.maintenance.DeleteMaintenanceUseCase
 import com.bikemanager.domain.usecase.maintenance.GetMaintenancesUseCase
 import com.bikemanager.domain.usecase.maintenance.MarkMaintenanceDoneUseCase
+import com.bikemanager.domain.usecase.sync.ObserveAndSyncFromCloudUseCase
 import com.bikemanager.domain.usecase.sync.PullFromCloudUseCase
 import com.bikemanager.presentation.auth.AuthViewModel
 import com.bikemanager.presentation.bikes.BikesViewModel
@@ -60,6 +61,7 @@ val sharedModule: Module = module {
 
     // Sync Use Cases
     factory { PullFromCloudUseCase(get(), get(), get()) }
+    factory { ObserveAndSyncFromCloudUseCase(get(), get(), get()) }
 
     // Auth Use Cases
     factory { GetCurrentUserUseCase(get()) }
@@ -68,6 +70,6 @@ val sharedModule: Module = module {
 
     // ViewModels
     factory { AuthViewModel(get(), get(), get()) }
-    factory { BikesViewModel(get(), get(), get(), get()) }
+    factory { BikesViewModel(get(), get(), get(), get<ObserveAndSyncFromCloudUseCase>()) }
     factory { (bikeId: Long) -> MaintenancesViewModel(bikeId, get(), get(), get(), get(), get()) }
 }
