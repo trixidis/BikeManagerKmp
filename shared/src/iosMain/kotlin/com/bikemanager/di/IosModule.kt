@@ -1,6 +1,7 @@
 package com.bikemanager.di
 
 import com.bikemanager.data.local.DatabaseDriverFactory
+import com.bikemanager.data.local.ThemePreferences
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
@@ -14,4 +15,7 @@ import org.koin.dsl.module
 val iosModule: Module = module {
     // Database Driver Factory (platform-specific)
     single { DatabaseDriverFactory() }
+
+    // Theme Preferences (platform-specific)
+    single { ThemePreferences() }
 }

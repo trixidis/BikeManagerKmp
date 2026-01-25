@@ -33,4 +33,9 @@ object Strings {
     const val ERROR_LOGIN = "Une erreur est survenue"
     const val SIGN_IN_WITH_GOOGLE = "Se connecter avec Google"
     const val EDIT = "Modifier"
+    const val SETTINGS = "Paramètres"
+    const val THEME = "Thème"
+    const val THEME_LIGHT = "Clair"
+    const val THEME_DARK = "Sombre"
+    const val THEME_SYSTEM = "Système"
 }
