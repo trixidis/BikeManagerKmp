@@ -1,5 +1,7 @@
 package com.bikemanager.presentation.auth
 
+import com.bikemanager.domain.common.AppError
+import com.bikemanager.domain.common.ErrorHandler
 import com.bikemanager.domain.common.ErrorMessages
 import com.bikemanager.domain.common.fold
 import com.bikemanager.domain.usecase.auth.GetCurrentUserUseCase
@@ -45,8 +47,10 @@ class AuthViewModel(
                     AuthUiState.NotAuthenticated
                 }
             } catch (e: Exception) {
-                Napier.e(e) { "Error checking auth state" }
-                _uiState.value = AuthUiState.NotAuthenticated
+                val appError = ErrorHandler.handle(e, "checking auth state")
+                _uiState.value = AuthUiState.Error(
+                    ErrorMessages.getMessage(appError)
+                )
             }
         }
     }
@@ -57,7 +61,7 @@ class AuthViewModel(
      */
     fun signInWithGoogle(idToken: String) {
         if (idToken.isBlank()) {
-            _uiState.value = AuthUiState.Error("Invalid credentials")
+            _uiState.value = AuthUiState.Error(ErrorMessages.AUTH_INVALID_CREDENTIALS)
             return
         }
 
@@ -73,7 +77,7 @@ class AuthViewModel(
                     val message = if (error is com.bikemanager.domain.common.AppError) {
                         ErrorMessages.getMessage(error)
                     } else {
-                        error.message ?: "Une erreur est survenue"
+                        error.message ?: ErrorMessages.UNKNOWN_ERROR
                     }
                     _uiState.value = AuthUiState.Error(message)
                 }
