@@ -19,8 +19,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -55,8 +55,6 @@ import com.bikemanager.domain.model.Maintenance
 import com.bikemanager.presentation.maintenances.MaintenancesUiState
 import com.bikemanager.presentation.maintenances.MaintenancesViewModel
 import com.bikemanager.ui.Strings
-import com.bikemanager.ui.theme.Indigo
-import com.bikemanager.ui.theme.Teal
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
@@ -91,7 +89,7 @@ fun MaintenancesScreenContent(
 
     val tabs = listOf(Strings.TAB_DONE, Strings.TAB_TODO)
 
-    val headerColor = if (pagerState.currentPage == 0) Indigo else Teal
+    val headerColor = MaterialTheme.colorScheme.primary
 
     Scaffold(
         topBar = {
@@ -101,7 +99,7 @@ fun MaintenancesScreenContent(
                     navigationIcon = {
                         IconButton(onClick = { navigator.pop() }) {
                             Icon(
-                                imageVector = Icons.Default.ArrowBack,
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onPrimary
                             )
