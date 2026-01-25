@@ -1,10 +1,10 @@
 {
   "active": true,
   "spec": "005-dark-mode-support",
-  "state": "planning",
+  "state": "building",
   "subtasks": {
-    "completed": 0,
-    "total": 0,
+    "completed": 1,
+    "total": 22,
     "in_progress": 1,
     "failed": 0
   },
@@ -19,7 +19,7 @@
   },
   "session": {
     "number": 2,
-    "started_at": "2026-01-25T12:40:36.993164"
+    "started_at": "2026-01-25T12:48:06.350474"
   },
-  "last_update": "2026-01-25T12:46:13.712658"
+  "last_update": "2026-01-25T12:49:15.574085"
 }
