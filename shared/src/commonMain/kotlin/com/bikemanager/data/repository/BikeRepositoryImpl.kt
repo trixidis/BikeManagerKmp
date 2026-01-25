@@ -1,7 +1,8 @@
 package com.bikemanager.data.repository
 
+import com.bikemanager.domain.common.AppError
+import com.bikemanager.domain.common.ErrorHandler
 import com.bikemanager.domain.common.Result
-import com.bikemanager.domain.common.runCatching
 import com.bikemanager.domain.model.Bike
 import com.bikemanager.domain.model.CountingMethod
 import com.bikemanager.domain.repository.AuthRepository
@@ -31,13 +32,15 @@ class BikeRepositoryImpl(
         val ref = bikesRef()
         if (ref == null) {
             return flow {
-                emit(Result.Failure(IllegalStateException("User not authenticated")))
+                emit(Result.Failure(
+                    AppError.AuthError("User not authenticated")
+                ))
             }
         }
 
         return ref.valueEvents.map { snapshot ->
-            com.bikemanager.domain.common.runCatching {
-                snapshot.children.mapNotNull { bikeSnapshot ->
+            try {
+                val bikes = snapshot.children.mapNotNull { bikeSnapshot ->
                     try {
                         val id = bikeSnapshot.key ?: return@mapNotNull null
                         val name = bikeSnapshot.child("nameBike").value<String?>() ?: return@mapNotNull null
@@ -54,6 +57,9 @@ class BikeRepositoryImpl(
                         null
                     }
                 }.sortedByDescending { it.name }
+                Result.Success(bikes)
+            } catch (e: Throwable) {
+                Result.Failure(ErrorHandler.handle(e, "loading bikes"))
             }
         }
     }
@@ -61,10 +67,12 @@ class BikeRepositoryImpl(
     override suspend fun getBikeById(id: String): Result<Bike?> {
         val ref = bikesRef()
         if (ref == null) {
-            return Result.Failure(IllegalStateException("User not authenticated"))
+            return Result.Failure(
+                AppError.AuthError("User not authenticated")
+            )
         }
 
-        return com.bikemanager.domain.common.runCatching {
+        return ErrorHandler.catching("getting bike by id") {
             ref.child(id).valueEvents.map { it }.let { flow ->
                 var result: Bike? = null
                 flow.collect { snap ->
@@ -88,10 +96,12 @@ class BikeRepositoryImpl(
     override suspend fun addBike(bike: Bike): Result<String> {
         val ref = bikesRef()
         if (ref == null) {
-            return Result.Failure(IllegalStateException("User not authenticated"))
+            return Result.Failure(
+                AppError.AuthError("User not authenticated")
+            )
         }
 
-        return com.bikemanager.domain.common.runCatching {
+        return ErrorHandler.catching("adding bike") {
             val newRef = ref.push()
             val bikeData = mapOf(
                 "nameBike" to bike.name,
@@ -108,14 +118,21 @@ class BikeRepositoryImpl(
     override suspend fun updateBike(bike: Bike): Result<Unit> {
         val ref = bikesRef()
         if (ref == null) {
-            return Result.Failure(IllegalStateException("User not authenticated"))
+            return Result.Failure(
+                AppError.AuthError("User not authenticated")
+            )
         }
 
         if (bike.id.isEmpty()) {
-            return Result.Failure(IllegalArgumentException("Bike id cannot be empty"))
+            return Result.Failure(
+                AppError.ValidationError(
+                    errorMessage = "Bike id cannot be empty",
+                    field = "id"
+                )
+            )
         }
 
-        return com.bikemanager.domain.common.runCatching {
+        return ErrorHandler.catching("updating bike") {
             val bikeData = mapOf(
                 "nameBike" to bike.name,
                 "countingMethod" to bike.countingMethod.name
@@ -128,10 +145,12 @@ class BikeRepositoryImpl(
     override suspend fun deleteBike(id: String): Result<Unit> {
         val ref = bikesRef()
         if (ref == null) {
-            return Result.Failure(IllegalStateException("User not authenticated"))
+            return Result.Failure(
+                AppError.AuthError("User not authenticated")
+            )
         }
 
-        return com.bikemanager.domain.common.runCatching {
+        return ErrorHandler.catching("deleting bike") {
             ref.child(id).removeValue()
             Napier.d { "Bike deleted: $id" }
         }

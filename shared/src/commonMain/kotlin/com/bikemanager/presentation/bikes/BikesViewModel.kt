@@ -1,5 +1,9 @@
 package com.bikemanager.presentation.bikes
 
+import com.bikemanager.domain.common.AppError
+import com.bikemanager.domain.common.ErrorHandler
+import com.bikemanager.domain.common.ErrorMessages
+import com.bikemanager.domain.common.fold
 import com.bikemanager.domain.model.Bike
 import com.bikemanager.domain.model.CountingMethod
 import com.bikemanager.domain.usecase.bike.AddBikeUseCase
@@ -45,12 +49,27 @@ class BikesViewModel(
                         throwable.message ?: "Unknown error"
                     )
                 }
-                .collect { bikes ->
-                    _uiState.value = if (bikes.isEmpty()) {
-                        BikesUiState.Empty()
-                    } else {
-                        BikesUiState.Success(bikes)
-                    }
+                .collect { result ->
+                    result.fold(
+                        onSuccess = { bikes ->
+                            _uiState.value = if (bikes.isEmpty()) {
+                                BikesUiState.Empty()
+                            } else {
+                                BikesUiState.Success(bikes)
+                            }
+                        },
+                        onFailure = { error ->
+                            Napier.e(error) { "Error loading bikes" }
+                            val appError = if (error is AppError) {
+                                error
+                            } else {
+                                ErrorHandler.handle(error, "loading bikes")
+                            }
+                            _uiState.value = BikesUiState.Error(
+                                ErrorMessages.getMessage(appError)
+                            )
+                        }
+                    )
                 }
         }
     }
@@ -62,12 +81,23 @@ class BikesViewModel(
         if (name.isBlank()) return
 
         viewModelScope.launch {
-            try {
-                addBikeUseCase(Bike(name = name))
-            } catch (e: Exception) {
-                Napier.e(e) { "Error adding bike" }
-                _uiState.value = BikesUiState.Error(e.message ?: "Error adding bike")
-            }
+            val result = addBikeUseCase(Bike(name = name))
+            result.fold(
+                onSuccess = { bikeId ->
+                    Napier.d { "Bike added successfully: $bikeId" }
+                },
+                onFailure = { error ->
+                    Napier.e(error) { "Error adding bike" }
+                    val appError = if (error is AppError) {
+                        error
+                    } else {
+                        ErrorHandler.handle(error, "adding bike")
+                    }
+                    _uiState.value = BikesUiState.Error(
+                        ErrorMessages.getMessage(appError)
+                    )
+                }
+            )
         }
     }
 
@@ -76,12 +106,23 @@ class BikesViewModel(
      */
     fun updateBike(bike: Bike) {
         viewModelScope.launch {
-            try {
-                updateBikeUseCase(bike)
-            } catch (e: Exception) {
-                Napier.e(e) { "Error updating bike" }
-                _uiState.value = BikesUiState.Error(e.message ?: "Error updating bike")
-            }
+            val result = updateBikeUseCase(bike)
+            result.fold(
+                onSuccess = {
+                    Napier.d { "Bike updated successfully: ${bike.name}" }
+                },
+                onFailure = { error ->
+                    Napier.e(error) { "Error updating bike" }
+                    val appError = if (error is AppError) {
+                        error
+                    } else {
+                        ErrorHandler.handle(error, "updating bike")
+                    }
+                    _uiState.value = BikesUiState.Error(
+                        ErrorMessages.getMessage(appError)
+                    )
+                }
+            )
         }
     }
 

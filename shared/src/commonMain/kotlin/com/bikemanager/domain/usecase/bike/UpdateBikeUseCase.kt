@@ -1,5 +1,7 @@
 package com.bikemanager.domain.usecase.bike
 
+import com.bikemanager.domain.common.AppError
+import com.bikemanager.domain.common.Result
 import com.bikemanager.domain.model.Bike
 import com.bikemanager.domain.repository.BikeRepository
 
@@ -12,9 +14,23 @@ class UpdateBikeUseCase(
     /**
      * Updates an existing bike.
      */
-    suspend operator fun invoke(bike: Bike) {
-        require(bike.name.isNotBlank()) { "Bike name cannot be empty" }
-        require(bike.id.isNotEmpty()) { "Bike id cannot be empty" }
-        repository.updateBike(bike)
+    suspend operator fun invoke(bike: Bike): Result<Unit> {
+        if (bike.name.isBlank()) {
+            return Result.Failure(
+                AppError.ValidationError(
+                    errorMessage = "Bike name cannot be empty",
+                    field = "name"
+                )
+            )
+        }
+        if (bike.id.isEmpty()) {
+            return Result.Failure(
+                AppError.ValidationError(
+                    errorMessage = "Bike id cannot be empty",
+                    field = "id"
+                )
+            )
+        }
+        return repository.updateBike(bike)
     }
 }
