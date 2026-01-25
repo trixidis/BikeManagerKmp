@@ -23,6 +23,7 @@ import com.bikemanager.domain.usecase.theme.SetThemeModeUseCase
 import com.bikemanager.presentation.auth.AuthViewModel
 import com.bikemanager.presentation.bikes.BikesViewModel
 import com.bikemanager.presentation.maintenances.MaintenancesViewModel
+import com.bikemanager.presentation.theme.ThemeViewModel
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
@@ -61,4 +62,5 @@ val sharedModule: Module = module {
     single { AuthViewModel(get(), get(), get()) }
     single { BikesViewModel(get(), get(), get()) }
     factory { (bikeId: String) -> MaintenancesViewModel(bikeId, get(), get(), get(), get()) }
+    single { ThemeViewModel(get(), get()) }
 }
