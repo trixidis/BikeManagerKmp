@@ -1,6 +1,7 @@
 package com.bikemanager.domain.usecase.bike
 
 import app.cash.turbine.test
+import com.bikemanager.domain.common.Result
 import com.bikemanager.domain.model.Bike
 import com.bikemanager.domain.model.CountingMethod
 import com.bikemanager.fake.FakeBikeRepository
@@ -23,7 +24,9 @@ class GetBikesUseCaseTest {
     @Test
     fun `invoke returns empty list when no bikes exist`() = runTest {
         useCase().test {
-            val bikes = awaitItem()
+            val result = awaitItem()
+            assertTrue(result is Result.Success)
+            val bikes = result.value
             assertTrue(bikes.isEmpty())
             cancelAndIgnoreRemainingEvents()
         }
@@ -38,7 +41,9 @@ class GetBikesUseCaseTest {
         repository.setBikes(expectedBikes)
 
         useCase().test {
-            val bikes = awaitItem()
+            val result = awaitItem()
+            assertTrue(result is Result.Success)
+            val bikes = result.value
             assertEquals(2, bikes.size)
             assertEquals("Yamaha MT-07", bikes[0].name)
             assertEquals("Honda CRF 450", bikes[1].name)
@@ -50,12 +55,16 @@ class GetBikesUseCaseTest {
     fun `invoke emits updates when bikes change`() = runTest {
         useCase().test {
             // Initially empty
-            val initial = awaitItem()
+            val initialResult = awaitItem()
+            assertTrue(initialResult is Result.Success)
+            val initial = initialResult.value
             assertTrue(initial.isEmpty())
 
             // Add a bike
             repository.setBikes(listOf(Bike(id = "bike1", name = "Kawasaki Ninja")))
-            val afterAdd = awaitItem()
+            val afterAddResult = awaitItem()
+            assertTrue(afterAddResult is Result.Success)
+            val afterAdd = afterAddResult.value
             assertEquals(1, afterAdd.size)
             assertEquals("Kawasaki Ninja", afterAdd[0].name)
 
@@ -73,8 +82,10 @@ class GetBikesUseCaseTest {
 
         useCase().test {
             val result = awaitItem()
-            assertEquals(CountingMethod.KM, result[0].countingMethod)
-            assertEquals(CountingMethod.HOURS, result[1].countingMethod)
+            assertTrue(result is Result.Success)
+            val bikesResult = result.value
+            assertEquals(CountingMethod.KM, bikesResult[0].countingMethod)
+            assertEquals(CountingMethod.HOURS, bikesResult[1].countingMethod)
             cancelAndIgnoreRemainingEvents()
         }
     }

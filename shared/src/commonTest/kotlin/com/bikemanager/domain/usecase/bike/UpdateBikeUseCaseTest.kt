@@ -1,5 +1,6 @@
 package com.bikemanager.domain.usecase.bike
 
+import com.bikemanager.domain.common.Result
 import com.bikemanager.domain.model.Bike
 import com.bikemanager.domain.model.CountingMethod
 import com.bikemanager.fake.FakeBikeRepository
@@ -7,7 +8,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class UpdateBikeUseCaseTest {
     private lateinit var repository: FakeBikeRepository
@@ -25,8 +26,9 @@ class UpdateBikeUseCaseTest {
         repository.setBikes(listOf(initialBike))
 
         val updatedBike = initialBike.copy(name = "New Name")
-        useCase(updatedBike)
+        val result = useCase(updatedBike)
 
+        assertTrue(result is Result.Success)
         val bikes = repository.getCurrentBikes()
         assertEquals("New Name", bikes[0].name)
     }
@@ -37,34 +39,35 @@ class UpdateBikeUseCaseTest {
         repository.setBikes(listOf(initialBike))
 
         val updatedBike = initialBike.copy(countingMethod = CountingMethod.HOURS)
-        useCase(updatedBike)
+        val result = useCase(updatedBike)
 
+        assertTrue(result is Result.Success)
         val bikes = repository.getCurrentBikes()
         assertEquals(CountingMethod.HOURS, bikes[0].countingMethod)
     }
 
     @Test
-    fun `invoke throws exception when bike name is empty`() = runTest {
+    fun `invoke returns failure when bike name is empty`() = runTest {
         val initialBike = Bike(id = "bike1", name = "Valid Name")
         repository.setBikes(listOf(initialBike))
 
         val invalidBike = initialBike.copy(name = "")
 
-        assertFailsWith<IllegalArgumentException> {
-            useCase(invalidBike)
-        }
+        val result = useCase(invalidBike)
+
+        assertTrue(result is Result.Failure)
     }
 
     @Test
-    fun `invoke throws exception when bike name is blank`() = runTest {
+    fun `invoke returns failure when bike name is blank`() = runTest {
         val initialBike = Bike(id = "bike1", name = "Valid Name")
         repository.setBikes(listOf(initialBike))
 
         val invalidBike = initialBike.copy(name = "   ")
 
-        assertFailsWith<IllegalArgumentException> {
-            useCase(invalidBike)
-        }
+        val result = useCase(invalidBike)
+
+        assertTrue(result is Result.Failure)
     }
 
     @Test
@@ -74,8 +77,9 @@ class UpdateBikeUseCaseTest {
         repository.setBikes(listOf(bike1, bike2))
 
         val updatedBike1 = bike1.copy(name = "Updated Bike 1")
-        useCase(updatedBike1)
+        val result = useCase(updatedBike1)
 
+        assertTrue(result is Result.Success)
         val bikes = repository.getCurrentBikes()
         assertEquals("Updated Bike 1", bikes.find { it.id == "bike1" }?.name)
         assertEquals("Bike 2", bikes.find { it.id == "bike2" }?.name)
