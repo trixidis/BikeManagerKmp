@@ -34,7 +34,7 @@ data object BikesScreenDestination : Screen {
  * Voyager Screen for Maintenances of a specific bike.
  */
 data class MaintenancesScreenDestination(
-    val bikeId: Long,
+    val bikeId: String,
     val bikeName: String,
     val countingMethod: CountingMethod
 ) : Screen {

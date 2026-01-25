@@ -4,10 +4,11 @@ import com.bikemanager.domain.model.Maintenance
 
 /**
  * UI state for the maintenances screen.
+ * Local-first: SQLite is the single source of truth.
  */
 sealed class MaintenancesUiState {
     /**
-     * Loading state while fetching maintenances.
+     * Loading state while fetching maintenances from local database.
      */
     data object Loading : MaintenancesUiState()
 

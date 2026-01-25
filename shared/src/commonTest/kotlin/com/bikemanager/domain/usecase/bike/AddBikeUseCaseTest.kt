@@ -26,7 +26,7 @@ class AddBikeUseCaseTest {
 
         val id = useCase(bike)
 
-        assertTrue(id > 0)
+        assertTrue(id.isNotEmpty())
         val bikes = repository.getCurrentBikes()
         assertEquals(1, bikes.size)
         assertEquals("Yamaha MT-07", bikes[0].name)
@@ -70,16 +70,6 @@ class AddBikeUseCaseTest {
 
         assertTrue(id1 != id2)
         assertEquals(2, repository.getCurrentBikes().size)
-    }
-
-    @Test
-    fun `invoke preserves firebase reference`() = runTest {
-        val bike = Bike(name = "Test Bike", firebaseRef = "firebase-ref-123")
-
-        useCase(bike)
-
-        val bikes = repository.getCurrentBikes()
-        assertEquals("firebase-ref-123", bikes[0].firebaseRef)
     }
 
     @Test

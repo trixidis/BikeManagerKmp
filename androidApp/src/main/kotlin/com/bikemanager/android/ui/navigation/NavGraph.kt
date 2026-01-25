@@ -22,7 +22,7 @@ object NavRoutes {
     const val BIKES = "bikes"
     const val MAINTENANCES = "maintenances/{bikeId}/{bikeName}/{countingMethod}"
 
-    fun maintenances(bikeId: Long, bikeName: String, countingMethod: CountingMethod): String {
+    fun maintenances(bikeId: String, bikeName: String, countingMethod: CountingMethod): String {
         return "maintenances/$bikeId/$bikeName/${countingMethod.name}"
     }
 }
@@ -84,12 +84,12 @@ fun NavGraph(
         composable(
             route = NavRoutes.MAINTENANCES,
             arguments = listOf(
-                navArgument("bikeId") { type = NavType.LongType },
+                navArgument("bikeId") { type = NavType.StringType },
                 navArgument("bikeName") { type = NavType.StringType },
                 navArgument("countingMethod") { type = NavType.StringType }
             )
         ) { backStackEntry ->
-            val bikeId = backStackEntry.arguments?.getLong("bikeId") ?: return@composable
+            val bikeId = backStackEntry.arguments?.getString("bikeId") ?: return@composable
             val bikeName = backStackEntry.arguments?.getString("bikeName") ?: return@composable
             val countingMethodStr = backStackEntry.arguments?.getString("countingMethod") ?: return@composable
             val countingMethod = CountingMethod.valueOf(countingMethodStr)

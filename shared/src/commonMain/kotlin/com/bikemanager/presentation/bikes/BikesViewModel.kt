@@ -5,7 +5,6 @@ import com.bikemanager.domain.model.CountingMethod
 import com.bikemanager.domain.usecase.bike.AddBikeUseCase
 import com.bikemanager.domain.usecase.bike.GetBikesUseCase
 import com.bikemanager.domain.usecase.bike.UpdateBikeUseCase
-import com.bikemanager.domain.usecase.sync.PullFromCloudUseCase
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,12 +17,12 @@ import kotlinx.coroutines.launch
 
 /**
  * ViewModel for managing bikes list screen.
+ * Uses Firebase Realtime Database with offline persistence.
  */
 class BikesViewModel(
     private val getBikesUseCase: GetBikesUseCase,
     private val addBikeUseCase: AddBikeUseCase,
-    private val updateBikeUseCase: UpdateBikeUseCase,
-    private val pullFromCloudUseCase: PullFromCloudUseCase? = null
+    private val updateBikeUseCase: UpdateBikeUseCase
 ) {
     private val viewModelScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
@@ -31,45 +30,24 @@ class BikesViewModel(
     val uiState: StateFlow<BikesUiState> = _uiState.asStateFlow()
 
     init {
-        pullFromCloudAndLoadBikes()
+        observeBikes()
     }
 
     /**
-     * Pulls data from cloud (if available) then loads bikes.
+     * Observes bikes from Firebase (real-time updates with offline support).
      */
-    private fun pullFromCloudAndLoadBikes() {
+    private fun observeBikes() {
         viewModelScope.launch {
-            // First, pull from cloud if available
-            pullFromCloudUseCase?.let { useCase ->
-                try {
-                    Napier.d("Pulling data from cloud...")
-                    useCase()
-                    Napier.d("Cloud pull completed")
-                } catch (e: Exception) {
-                    Napier.e(e) { "Error pulling from cloud, continuing with local data" }
-                }
-            }
-            // Then load bikes (which will include any newly synced data)
-            loadBikes()
-        }
-    }
-
-    /**
-     * Loads all bikes from the repository.
-     */
-    fun loadBikes() {
-        viewModelScope.launch {
-            _uiState.value = BikesUiState.Loading
             getBikesUseCase()
                 .catch { throwable ->
-                    Napier.e(throwable) { "Error loading bikes" }
+                    Napier.e(throwable) { "Error observing bikes" }
                     _uiState.value = BikesUiState.Error(
-                        throwable.message ?: "Unknown error occurred"
+                        throwable.message ?: "Unknown error"
                     )
                 }
                 .collect { bikes ->
                     _uiState.value = if (bikes.isEmpty()) {
-                        BikesUiState.Empty
+                        BikesUiState.Empty()
                     } else {
                         BikesUiState.Success(bikes)
                     }
@@ -79,27 +57,22 @@ class BikesViewModel(
 
     /**
      * Adds a new bike with the given name.
-     * @param name The name of the bike to add
      */
     fun addBike(name: String) {
         if (name.isBlank()) return
 
         viewModelScope.launch {
             try {
-                val bike = Bike(name = name)
-                addBikeUseCase(bike)
+                addBikeUseCase(Bike(name = name))
             } catch (e: Exception) {
                 Napier.e(e) { "Error adding bike" }
-                _uiState.value = BikesUiState.Error(
-                    e.message ?: "Error adding bike"
-                )
+                _uiState.value = BikesUiState.Error(e.message ?: "Error adding bike")
             }
         }
     }
 
     /**
      * Updates an existing bike.
-     * @param bike The bike to update with new values
      */
     fun updateBike(bike: Bike) {
         viewModelScope.launch {
@@ -107,19 +80,15 @@ class BikesViewModel(
                 updateBikeUseCase(bike)
             } catch (e: Exception) {
                 Napier.e(e) { "Error updating bike" }
-                _uiState.value = BikesUiState.Error(
-                    e.message ?: "Error updating bike"
-                )
+                _uiState.value = BikesUiState.Error(e.message ?: "Error updating bike")
             }
         }
     }
 
     /**
      * Updates the name of a bike.
-     * @param bikeId The id of the bike to update
-     * @param newName The new name for the bike
      */
-    fun updateBikeName(bikeId: Long, newName: String) {
+    fun updateBikeName(bikeId: String, newName: String) {
         val currentState = _uiState.value
         if (currentState is BikesUiState.Success) {
             val bike = currentState.bikes.find { it.id == bikeId } ?: return
@@ -129,10 +98,8 @@ class BikesViewModel(
 
     /**
      * Updates the counting method of a bike.
-     * @param bikeId The id of the bike to update
-     * @param countingMethod The new counting method
      */
-    fun updateBikeCountingMethod(bikeId: Long, countingMethod: CountingMethod) {
+    fun updateBikeCountingMethod(bikeId: String, countingMethod: CountingMethod) {
         val currentState = _uiState.value
         if (currentState is BikesUiState.Success) {
             val bike = currentState.bikes.find { it.id == bikeId } ?: return

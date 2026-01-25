@@ -36,15 +36,15 @@ fun BikeItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(6.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = bike.name,
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = 10.dp),
-                style = MaterialTheme.typography.titleMedium
+                    .padding(start = 32.dp),
+                style = MaterialTheme.typography.titleSmall
             )
 
             IconButton(onClick = onEditClick) {
