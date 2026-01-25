@@ -3,23 +3,23 @@
   "spec": "005-dark-mode-support",
   "state": "building",
   "subtasks": {
-    "completed": 17,
+    "completed": 18,
     "total": 22,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "UI Integration",
+    "current": "Android Platform Integration",
     "id": null,
-    "total": 4
+    "total": 1
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
-    "number": 10,
+    "number": 11,
     "started_at": "2026-01-25T14:04:03.517232"
   },
-  "last_update": "2026-01-25T14:20:04.346791"
+  "last_update": "2026-01-25T14:22:15.956408"
 }
