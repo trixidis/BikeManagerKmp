@@ -52,6 +52,6 @@ val sharedModule: Module = module {
 
     // ViewModels
     single { AuthViewModel(get(), get(), get()) }
-    single { BikesViewModel(get(), get(), get(), get()) }
+    single { BikesViewModel(get(), get(), get(), get(), get()) }
     factory { (bikeId: String) -> MaintenancesViewModel(bikeId, get(), get(), get(), get()) }
 }

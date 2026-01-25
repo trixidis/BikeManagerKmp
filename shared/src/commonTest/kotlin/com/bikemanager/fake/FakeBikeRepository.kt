@@ -27,8 +27,15 @@ class FakeBikeRepository : BikeRepository {
     }
 
     override suspend fun updateBike(bike: Bike) {
-        bikesFlow.value = bikesFlow.value.map {
-            if (it.id == bike.id) bike else it
+        val currentList = bikesFlow.value
+        val exists = currentList.any { it.id == bike.id }
+
+        bikesFlow.value = if (exists) {
+            // Update existing bike
+            currentList.map { if (it.id == bike.id) bike else it }
+        } else {
+            // Add bike (for undo restoration)
+            currentList + bike
         }
     }
 

@@ -39,8 +39,15 @@ class FakeMaintenanceRepository : MaintenanceRepository {
     }
 
     override suspend fun updateMaintenance(maintenance: Maintenance) {
-        maintenancesFlow.value = maintenancesFlow.value.map {
-            if (it.id == maintenance.id) maintenance else it
+        val currentList = maintenancesFlow.value
+        val exists = currentList.any { it.id == maintenance.id }
+
+        maintenancesFlow.value = if (exists) {
+            // Update existing maintenance
+            currentList.map { if (it.id == maintenance.id) maintenance else it }
+        } else {
+            // Add new maintenance (for undo restoration)
+            currentList + maintenance
         }
     }
 
@@ -69,4 +76,10 @@ class FakeMaintenanceRepository : MaintenanceRepository {
      * Helper to get current maintenances for verification.
      */
     fun getCurrentMaintenances(): List<Maintenance> = maintenancesFlow.value
+
+    /**
+     * Helper to get current maintenances for a specific bike for verification.
+     */
+    fun getCurrentMaintenances(bikeId: String): List<Maintenance> =
+        maintenancesFlow.value.filter { it.bikeId == bikeId }
 }
