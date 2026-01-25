@@ -36,7 +36,6 @@ import com.bikemanager.domain.model.ThemeMode
 import com.bikemanager.presentation.theme.ThemeUiState
 import com.bikemanager.presentation.theme.ThemeViewModel
 import com.bikemanager.ui.Strings
-import com.bikemanager.ui.theme.White
 import org.koin.compose.koinInject
 
 /**
@@ -66,13 +65,13 @@ fun SettingsScreenContent(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = null,
-                            tint = White
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = White
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         }

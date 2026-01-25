@@ -42,7 +42,6 @@ import com.bikemanager.ui.Strings
 import com.bikemanager.ui.core.rememberFabVisibility
 import com.bikemanager.ui.navigation.MaintenancesScreenDestination
 import com.bikemanager.ui.navigation.SettingsScreenDestination
-import com.bikemanager.ui.theme.White
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,13 +66,13 @@ fun BikesScreenContent(
                         Icon(
                             imageVector = Icons.Default.Settings,
                             contentDescription = Strings.SETTINGS,
-                            tint = White
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = White
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         },
@@ -90,7 +89,7 @@ fun BikesScreenContent(
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = Strings.ADD,
-                        tint = White
+                        tint = MaterialTheme.colorScheme.onSecondary
                     )
                 }
             }

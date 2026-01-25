@@ -57,7 +57,6 @@ import com.bikemanager.presentation.maintenances.MaintenancesViewModel
 import com.bikemanager.ui.Strings
 import com.bikemanager.ui.theme.Indigo
 import com.bikemanager.ui.theme.Teal
-import com.bikemanager.ui.theme.White
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
@@ -104,13 +103,13 @@ fun MaintenancesScreenContent(
                             Icon(
                                 imageVector = Icons.Default.ArrowBack,
                                 contentDescription = null,
-                                tint = White
+                                tint = MaterialTheme.colorScheme.onPrimary
                             )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = headerColor,
-                        titleContentColor = White
+                        titleContentColor = MaterialTheme.colorScheme.onPrimary
                     )
                 )
                 Box(
@@ -140,7 +139,7 @@ fun MaintenancesScreenContent(
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = Strings.ADD,
-                        tint = White
+                        tint = MaterialTheme.colorScheme.onSecondary
                     )
                 }
             }
