@@ -237,4 +237,12 @@ class MaintenanceRepositoryImpl(
             }
         }
     }
+
+    override suspend fun deleteAllMaintenancesForBike(bikeId: String) {
+        val ref = maintenancesRef(bikeId)
+            ?: throw IllegalStateException("User not authenticated")
+
+        ref.removeValue()
+        Napier.d { "All maintenances deleted for bike: $bikeId" }
+    }
 }

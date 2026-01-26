@@ -19,8 +19,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -57,9 +57,6 @@ import com.bikemanager.presentation.maintenances.MaintenanceEvent
 import com.bikemanager.presentation.maintenances.MaintenancesUiState
 import com.bikemanager.presentation.maintenances.MaintenancesViewModelMvi
 import com.bikemanager.ui.Strings
-import com.bikemanager.ui.theme.Indigo
-import com.bikemanager.ui.theme.Teal
-import com.bikemanager.ui.theme.White
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
@@ -94,7 +91,7 @@ fun MaintenancesScreenContent(
 
     val tabs = listOf(Strings.TAB_DONE, Strings.TAB_TODO)
 
-    val headerColor = if (pagerState.currentPage == 0) Indigo else Teal
+    val headerColor = MaterialTheme.colorScheme.primary
 
     // Collect events from ViewModel (MVI pattern)
     LaunchedEffect(Unit) {
@@ -134,15 +131,15 @@ fun MaintenancesScreenContent(
                     navigationIcon = {
                         IconButton(onClick = { navigator.pop() }) {
                             Icon(
-                                imageVector = Icons.Default.ArrowBack,
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = null,
-                                tint = White
+                                tint = MaterialTheme.colorScheme.onPrimary
                             )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = headerColor,
-                        titleContentColor = White
+                        titleContentColor = MaterialTheme.colorScheme.onPrimary
                     )
                 )
                 Box(
@@ -172,7 +169,7 @@ fun MaintenancesScreenContent(
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = Strings.ADD,
-                        tint = White
+                        tint = MaterialTheme.colorScheme.onSecondary
                     )
                 }
             }
