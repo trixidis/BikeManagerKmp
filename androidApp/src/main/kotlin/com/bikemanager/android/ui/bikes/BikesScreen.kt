@@ -55,6 +55,7 @@ fun BikesScreen(
     val uiState by viewModel.uiState.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
     var editingBike by remember { mutableStateOf<Bike?>(null) }
+    var deletingBike by remember { mutableStateOf<Bike?>(null) }
     val listState = rememberLazyListState()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -161,7 +162,8 @@ fun BikesScreen(
                                 BikeItem(
                                     bike = bike,
                                     onClick = { onBikeClick(bike) },
-                                    onEditClick = { editingBike = bike }
+                                    onEditClick = { editingBike = bike },
+                                    onDeleteClick = { deletingBike = bike }
                                 )
                             }
                         }
@@ -199,6 +201,17 @@ fun BikesScreen(
             onConfirm = { updatedBike ->
                 viewModel.updateBike(updatedBike)
                 editingBike = null
+            }
+        )
+    }
+
+    deletingBike?.let { bike ->
+        DeleteBikeConfirmationDialog(
+            bike = bike,
+            onDismiss = { deletingBike = null },
+            onConfirm = {
+                viewModel.deleteBike(bike.id)
+                deletingBike = null
             }
         )
     }

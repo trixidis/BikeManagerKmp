@@ -33,6 +33,9 @@ object Strings {
     const val ERROR_LOGIN = "Une erreur est survenue"
     const val SIGN_IN_WITH_GOOGLE = "Se connecter avec Google"
     const val EDIT = "Modifier"
+    const val DELETE = "Supprimer"
+    const val DELETE_BIKE_TITLE = "Supprimer cette moto ?"
+    const val DELETE_BIKE_MESSAGE = "Cette action supprimera également tous les entretiens associés. Cette action est irréversible."
 
     // Error messages
     const val ERROR_NETWORK = "Erreur de connexion. Veuillez vérifier votre connexion internet."
