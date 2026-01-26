@@ -23,11 +23,17 @@ node_modules/
 *.keystore
 keystore.properties
 
+# Google Play credentials
+play-store-credentials.json
+
 # Local config
 gradle.properties
 
 # Firebase config (contient des clés API)
 **/google-services.json
+
+# Scripts
+scripts/
 
 # Claude Code
 .claude/
@@ -48,3 +54,4 @@ Podfile.lock
 .security-key
 logs/security/
 .knowledge
+publish-android.sh
