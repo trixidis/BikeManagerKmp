@@ -1,5 +1,6 @@
 package com.bikemanager.domain.usecase.maintenance
 
+import com.bikemanager.domain.common.AppError
 import com.bikemanager.domain.common.Result
 import com.bikemanager.domain.model.Maintenance
 import com.bikemanager.domain.repository.MaintenanceRepository
@@ -34,7 +35,10 @@ class GetMaintenancesUseCase(private val repository: MaintenanceRepository) {
                 doneResult is Result.Success && todoResult is Result.Success -> {
                     Result.Success(Pair(doneResult.value, todoResult.value))
                 }
-                else -> Result.Failure(IllegalStateException("Unexpected result state"))
+                // This should never happen, but handle it safely with proper error type
+                else -> Result.Failure(
+                    AppError.UnknownError("Unexpected result state in GetMaintenancesUseCase")
+                )
             }
         }
     }

@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.bikemanager.android.BuildConfig
 import com.bikemanager.android.R
 import com.bikemanager.presentation.auth.AuthUiState
-import com.bikemanager.presentation.auth.AuthViewModel
+import com.bikemanager.presentation.auth.AuthViewModelMvi
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
@@ -39,7 +39,7 @@ import org.koin.compose.koinInject
 @Composable
 fun SignInScreen(
     onSignInSuccess: () -> Unit,
-    viewModel: AuthViewModel = koinInject()
+    viewModel: AuthViewModelMvi = koinInject()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current

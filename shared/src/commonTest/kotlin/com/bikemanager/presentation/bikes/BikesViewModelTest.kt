@@ -44,7 +44,7 @@ class BikesViewModelTest {
 
     @Test
     fun `initial state is Loading then Empty when no bikes`() = runTest {
-        val viewModel = BikesViewModel(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
+        val viewModel = BikesViewModelMvi(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
 
         viewModel.uiState.test {
             // Initial Loading state
@@ -63,7 +63,7 @@ class BikesViewModelTest {
         val bikes = listOf(Bike(id = "bike1", name = "Test Bike"))
         repository.setBikes(bikes)
 
-        val viewModel = BikesViewModel(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
+        val viewModel = BikesViewModelMvi(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
 
         viewModel.uiState.test {
             // Initial Loading state
@@ -81,21 +81,29 @@ class BikesViewModelTest {
     }
 
     @Test
-    fun `addBike adds bike to repository`() = runTest {
-        val viewModel = BikesViewModel(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
+    fun `addBike adds bike to repository and emits ShowSuccess event`() = runTest {
+        val viewModel = BikesViewModelMvi(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
         advanceUntilIdle()
 
-        viewModel.addBike("New Bike")
-        advanceUntilIdle()
+        viewModel.events.test {
+            viewModel.addBike("New Bike")
+            advanceUntilIdle()
 
-        val bikes = repository.getCurrentBikes()
-        assertEquals(1, bikes.size)
-        assertEquals("New Bike", bikes[0].name)
+            val event = awaitItem()
+            assertTrue(event is BikeEvent.ShowSuccess)
+            assertEquals("Vélo ajouté", (event as BikeEvent.ShowSuccess).message)
+
+            val bikes = repository.getCurrentBikes()
+            assertEquals(1, bikes.size)
+            assertEquals("New Bike", bikes[0].name)
+
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     @Test
     fun `addBike with blank name does nothing`() = runTest {
-        val viewModel = BikesViewModel(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
+        val viewModel = BikesViewModelMvi(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
         advanceUntilIdle()
 
         viewModel.addBike("")
@@ -107,7 +115,7 @@ class BikesViewModelTest {
 
     @Test
     fun `addBike with whitespace only does nothing`() = runTest {
-        val viewModel = BikesViewModel(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
+        val viewModel = BikesViewModelMvi(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
         advanceUntilIdle()
 
         viewModel.addBike("   ")
@@ -122,7 +130,7 @@ class BikesViewModelTest {
         val initialBike = Bike(id = "bike1", name = "Old Name")
         repository.setBikes(listOf(initialBike))
 
-        val viewModel = BikesViewModel(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
+        val viewModel = BikesViewModelMvi(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
         advanceUntilIdle()
 
         val updatedBike = initialBike.copy(name = "New Name")
@@ -138,7 +146,7 @@ class BikesViewModelTest {
         val initialBike = Bike(id = "bike1", name = "Old Name")
         repository.setBikes(listOf(initialBike))
 
-        val viewModel = BikesViewModel(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
+        val viewModel = BikesViewModelMvi(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
         advanceUntilIdle()
 
         viewModel.updateBikeName("bike1", "New Name")
@@ -153,7 +161,7 @@ class BikesViewModelTest {
         val initialBike = Bike(id = "bike1", name = "Bike", countingMethod = CountingMethod.KM)
         repository.setBikes(listOf(initialBike))
 
-        val viewModel = BikesViewModel(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
+        val viewModel = BikesViewModelMvi(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
         advanceUntilIdle()
 
         viewModel.updateBikeCountingMethod("bike1", CountingMethod.HOURS)
@@ -168,7 +176,7 @@ class BikesViewModelTest {
         val initialBike = Bike(id = "bike1", name = "Original Name")
         repository.setBikes(listOf(initialBike))
 
-        val viewModel = BikesViewModel(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
+        val viewModel = BikesViewModelMvi(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
         advanceUntilIdle()
 
         viewModel.updateBikeName("nonexistent", "New Name")
@@ -179,10 +187,10 @@ class BikesViewModelTest {
     }
 
     @Test
-    fun `observeBikes with database error shows French error message`() = runTest {
+    fun `observeBikes with database error shows French error message in state`() = runTest {
         repository.setGetAllFails(true, com.bikemanager.domain.common.AppError.DatabaseError("Database failed"))
 
-        val viewModel = BikesViewModel(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
+        val viewModel = BikesViewModelMvi(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
 
         viewModel.uiState.test {
             // Initial Loading state
@@ -198,47 +206,41 @@ class BikesViewModelTest {
     }
 
     @Test
-    fun `addBike with database error shows French error message`() = runTest {
+    fun `addBike with database error emits ShowError event with French message`() = runTest {
         repository.setAddFails(true, com.bikemanager.domain.common.AppError.DatabaseError("Add failed"))
 
-        val viewModel = BikesViewModel(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
+        val viewModel = BikesViewModelMvi(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
         advanceUntilIdle()
 
-        viewModel.uiState.test {
-            // Skip initial state
-            awaitItem()
-
+        viewModel.events.test {
             viewModel.addBike("New Bike")
             advanceUntilIdle()
 
-            val errorState = awaitItem()
-            assertTrue(errorState is BikesUiState.Error)
-            assertEquals("Erreur lors de la sauvegarde. Veuillez réessayer.", (errorState as BikesUiState.Error).message)
+            val event = awaitItem()
+            assertTrue(event is BikeEvent.ShowError)
+            assertEquals("Erreur lors de la sauvegarde. Veuillez réessayer.", (event as BikeEvent.ShowError).message)
 
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
-    fun `updateBike with database error shows French error message`() = runTest {
+    fun `updateBike with database error emits ShowError event with French message`() = runTest {
         val initialBike = Bike(id = "bike1", name = "Old Name")
         repository.setBikes(listOf(initialBike))
         repository.setUpdateFails(true, com.bikemanager.domain.common.AppError.DatabaseError("Update failed"))
 
-        val viewModel = BikesViewModel(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
+        val viewModel = BikesViewModelMvi(getBikesUseCase, addBikeUseCase, updateBikeUseCase)
         advanceUntilIdle()
 
-        viewModel.uiState.test {
-            // Skip initial Success state
-            awaitItem()
-
+        viewModel.events.test {
             val updatedBike = initialBike.copy(name = "New Name")
             viewModel.updateBike(updatedBike)
             advanceUntilIdle()
 
-            val errorState = awaitItem()
-            assertTrue(errorState is BikesUiState.Error)
-            assertEquals("Erreur lors de la sauvegarde. Veuillez réessayer.", (errorState as BikesUiState.Error).message)
+            val event = awaitItem()
+            assertTrue(event is BikeEvent.ShowError)
+            assertEquals("Erreur lors de la sauvegarde. Veuillez réessayer.", (event as BikeEvent.ShowError).message)
 
             cancelAndIgnoreRemainingEvents()
         }

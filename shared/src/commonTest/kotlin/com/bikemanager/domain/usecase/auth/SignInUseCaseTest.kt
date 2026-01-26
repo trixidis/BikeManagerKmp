@@ -1,5 +1,6 @@
 package com.bikemanager.domain.usecase.auth
 
+import com.bikemanager.domain.common.AppError
 import com.bikemanager.domain.common.Result
 import com.bikemanager.fake.FakeAuthRepository
 import kotlinx.coroutines.test.runTest
@@ -47,7 +48,7 @@ class SignInUseCaseTest {
 
     @Test
     fun `invoke returns failure when sign in fails`() = runTest {
-        repository.setSignInFails(true, IllegalStateException("Auth failed"))
+        repository.setSignInFails(true, AppError.AuthError("Auth failed"))
 
         val result = useCase("valid-token")
 

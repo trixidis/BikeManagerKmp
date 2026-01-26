@@ -16,9 +16,9 @@ import com.bikemanager.domain.usecase.maintenance.AddMaintenanceUseCase
 import com.bikemanager.domain.usecase.maintenance.DeleteMaintenanceUseCase
 import com.bikemanager.domain.usecase.maintenance.GetMaintenancesUseCase
 import com.bikemanager.domain.usecase.maintenance.MarkMaintenanceDoneUseCase
-import com.bikemanager.presentation.auth.AuthViewModel
-import com.bikemanager.presentation.bikes.BikesViewModel
-import com.bikemanager.presentation.maintenances.MaintenancesViewModel
+import com.bikemanager.presentation.auth.AuthViewModelMvi
+import com.bikemanager.presentation.bikes.BikesViewModelMvi
+import com.bikemanager.presentation.maintenances.MaintenancesViewModelMvi
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
@@ -48,8 +48,8 @@ val sharedModule: Module = module {
     factory { SignInUseCase(get()) }
     factory { SignOutUseCase(get()) }
 
-    // ViewModels
-    single { AuthViewModel(get(), get(), get()) }
-    single { BikesViewModel(get(), get(), get()) }
-    factory { (bikeId: String) -> MaintenancesViewModel(bikeId, get(), get(), get(), get()) }
+    // ViewModels (MVI Pattern)
+    single { AuthViewModelMvi(get(), get(), get()) }
+    single { BikesViewModelMvi(get(), get(), get()) }
+    factory { (bikeId: String) -> MaintenancesViewModelMvi(bikeId, get(), get(), get(), get()) }
 }

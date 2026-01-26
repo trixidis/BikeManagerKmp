@@ -13,6 +13,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withTimeout
 
 /**
  * Firebase implementation of MaintenanceRepository.
@@ -32,6 +33,40 @@ class MaintenanceRepositoryImpl(
             .child("maintenances")
     }
 
+    /**
+     * Parses a Firebase snapshot into a Maintenance object.
+     * Returns null if parsing fails or required fields are missing.
+     * Follows Single Responsibility Principle: dedicated to parsing logic.
+     */
+    private fun parseMaintenanceSnapshot(
+        maintenanceSnapshot: dev.gitlive.firebase.database.DataSnapshot,
+        bikeId: String
+    ): Maintenance? {
+        return try {
+            val id = maintenanceSnapshot.key ?: return null
+            val name = maintenanceSnapshot.child("nameMaintenance").value<String?>()
+                ?: return null
+            val value = maintenanceSnapshot.child("nbHoursMaintenance").value<Double?>()?.toFloat() ?: -1f
+            val date = maintenanceSnapshot.child("dateMaintenance").value<Long?>() ?: 0L
+            val isDone = maintenanceSnapshot.child("isDone").value<Boolean?>() ?: false
+
+            Maintenance(
+                id = id,
+                name = name,
+                value = value,
+                date = date,
+                isDone = isDone,
+                bikeId = bikeId
+            )
+        } catch (e: CancellationException) {
+            // CRITICAL: Re-throw CancellationException to allow proper coroutine cancellation
+            throw e
+        } catch (e: Exception) {
+            Napier.e(e) { "Error parsing maintenance" }
+            null
+        }
+    }
+
     override fun getMaintenancesByBikeId(bikeId: String): Flow<Result<List<Maintenance>>> {
         val ref = maintenancesRef(bikeId)
         if (ref == null) {
@@ -44,28 +79,9 @@ class MaintenanceRepositoryImpl(
 
         return ref.valueEvents.map { snapshot ->
             try {
-                val maintenances = snapshot.children.mapNotNull { maintenanceSnapshot ->
-                    try {
-                        val id = maintenanceSnapshot.key ?: return@mapNotNull null
-                        val name = maintenanceSnapshot.child("nameMaintenance").value<String?>()
-                            ?: return@mapNotNull null
-                        val value = maintenanceSnapshot.child("nbHoursMaintenance").value<Double?>()?.toFloat() ?: -1f
-                        val date = maintenanceSnapshot.child("dateMaintenance").value<Long?>() ?: 0L
-                        val isDone = maintenanceSnapshot.child("isDone").value<Boolean?>() ?: false
-
-                        Maintenance(
-                            id = id,
-                            name = name,
-                            value = value,
-                            date = date,
-                            isDone = isDone,
-                            bikeId = bikeId
-                        )
-                    } catch (e: Exception) {
-                        Napier.e(e) { "Error parsing maintenance" }
-                        null
-                    }
-                }.sortedByDescending { it.value }
+                val maintenances = snapshot.children
+                    .mapNotNull { parseMaintenanceSnapshot(it, bikeId) }
+                    .sortedByDescending { it.value }
                 Result.Success(maintenances)
             } catch (e: CancellationException) {
                 // CRITICAL: Re-throw CancellationException to allow proper coroutine cancellation
@@ -88,28 +104,10 @@ class MaintenanceRepositoryImpl(
 
         return ref.valueEvents.map { snapshot ->
             try {
-                val maintenances = snapshot.children.mapNotNull { maintenanceSnapshot ->
-                    try {
-                        val id = maintenanceSnapshot.key ?: return@mapNotNull null
-                        val name = maintenanceSnapshot.child("nameMaintenance").value<String?>()
-                            ?: return@mapNotNull null
-                        val value = maintenanceSnapshot.child("nbHoursMaintenance").value<Double?>()?.toFloat() ?: -1f
-                        val date = maintenanceSnapshot.child("dateMaintenance").value<Long?>() ?: 0L
-                        val isDone = maintenanceSnapshot.child("isDone").value<Boolean?>() ?: false
-
-                        Maintenance(
-                            id = id,
-                            name = name,
-                            value = value,
-                            date = date,
-                            isDone = isDone,
-                            bikeId = bikeId
-                        )
-                    } catch (e: Exception) {
-                        Napier.e(e) { "Error parsing maintenance" }
-                        null
-                    }
-                }.filter { it.isDone }.sortedByDescending { it.value }
+                val maintenances = snapshot.children
+                    .mapNotNull { parseMaintenanceSnapshot(it, bikeId) }
+                    .filter { it.isDone }
+                    .sortedByDescending { it.value }
                 Result.Success(maintenances)
             } catch (e: CancellationException) {
                 // CRITICAL: Re-throw CancellationException to allow proper coroutine cancellation
@@ -132,28 +130,10 @@ class MaintenanceRepositoryImpl(
 
         return ref.valueEvents.map { snapshot ->
             try {
-                val maintenances = snapshot.children.mapNotNull { maintenanceSnapshot ->
-                    try {
-                        val id = maintenanceSnapshot.key ?: return@mapNotNull null
-                        val name = maintenanceSnapshot.child("nameMaintenance").value<String?>()
-                            ?: return@mapNotNull null
-                        val value = maintenanceSnapshot.child("nbHoursMaintenance").value<Double?>()?.toFloat() ?: -1f
-                        val date = maintenanceSnapshot.child("dateMaintenance").value<Long?>() ?: 0L
-                        val isDone = maintenanceSnapshot.child("isDone").value<Boolean?>() ?: false
-
-                        Maintenance(
-                            id = id,
-                            name = name,
-                            value = value,
-                            date = date,
-                            isDone = isDone,
-                            bikeId = bikeId
-                        )
-                    } catch (e: Exception) {
-                        Napier.e(e) { "Error parsing maintenance" }
-                        null
-                    }
-                }.filter { !it.isDone }.sortedByDescending { it.id }
+                val maintenances = snapshot.children
+                    .mapNotNull { parseMaintenanceSnapshot(it, bikeId) }
+                    .filter { !it.isDone }
+                    .sortedByDescending { it.id }
                 Result.Success(maintenances)
             } catch (e: CancellationException) {
                 // CRITICAL: Re-throw CancellationException to allow proper coroutine cancellation
@@ -173,18 +153,20 @@ class MaintenanceRepositoryImpl(
         }
 
         return ErrorHandler.catching("adding maintenance") {
-            val newRef = ref.push()
-            val data = mapOf(
-                "nameMaintenance" to maintenance.name,
-                "nbHoursMaintenance" to maintenance.value,
-                "dateMaintenance" to maintenance.date,
-                "isDone" to maintenance.isDone
-            )
-            newRef.setValue(data)
+            withTimeout(10_000L) { // 10 second timeout
+                val newRef = ref.push()
+                val data = mapOf(
+                    "nameMaintenance" to maintenance.name,
+                    "nbHoursMaintenance" to maintenance.value,
+                    "dateMaintenance" to maintenance.date,
+                    "isDone" to maintenance.isDone
+                )
+                newRef.setValue(data)
 
-            val key = newRef.key ?: throw IllegalStateException("Failed to get Firebase key")
-            Napier.d { "Maintenance added: ${maintenance.name} (id=$key)" }
-            key
+                val key = newRef.key ?: throw IllegalStateException("Failed to get Firebase key")
+                Napier.d { "Maintenance added: ${maintenance.name} (id=$key)" }
+                key
+            }
         }
     }
 
@@ -206,14 +188,16 @@ class MaintenanceRepositoryImpl(
         }
 
         return ErrorHandler.catching("updating maintenance") {
-            val data = mapOf(
-                "nameMaintenance" to maintenance.name,
-                "nbHoursMaintenance" to maintenance.value,
-                "dateMaintenance" to maintenance.date,
-                "isDone" to maintenance.isDone
-            )
-            ref.child(maintenance.id).setValue(data)
-            Napier.d { "Maintenance updated: ${maintenance.name}" }
+            withTimeout(10_000L) { // 10 second timeout
+                val data = mapOf(
+                    "nameMaintenance" to maintenance.name,
+                    "nbHoursMaintenance" to maintenance.value,
+                    "dateMaintenance" to maintenance.date,
+                    "isDone" to maintenance.isDone
+                )
+                ref.child(maintenance.id).setValue(data)
+                Napier.d { "Maintenance updated: ${maintenance.name}" }
+            }
         }
     }
 
@@ -226,13 +210,15 @@ class MaintenanceRepositoryImpl(
         }
 
         return ErrorHandler.catching("marking maintenance done") {
-            val updates = mapOf(
-                "isDone" to true,
-                "nbHoursMaintenance" to value,
-                "dateMaintenance" to date
-            )
-            ref.child(id).updateChildren(updates)
-            Napier.d { "Maintenance marked done: $id" }
+            withTimeout(10_000L) { // 10 second timeout
+                val updates = mapOf(
+                    "isDone" to true,
+                    "nbHoursMaintenance" to value,
+                    "dateMaintenance" to date
+                )
+                ref.child(id).updateChildren(updates)
+                Napier.d { "Maintenance marked done: $id" }
+            }
         }
     }
 
@@ -245,8 +231,10 @@ class MaintenanceRepositoryImpl(
         }
 
         return ErrorHandler.catching("deleting maintenance") {
-            ref.child(id).removeValue()
-            Napier.d { "Maintenance deleted: $id" }
+            withTimeout(10_000L) { // 10 second timeout
+                ref.child(id).removeValue()
+                Napier.d { "Maintenance deleted: $id" }
+            }
         }
     }
 }

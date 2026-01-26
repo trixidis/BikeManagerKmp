@@ -36,7 +36,7 @@ class ResultTest {
 
     @Test
     fun `Failure creates result with error`() {
-        val error = IllegalStateException("test error")
+        val error = AppError.UnknownError("test error")
         val result = Result.Failure(error)
 
         assertEquals(error, result.error)
@@ -64,7 +64,7 @@ class ResultTest {
 
     @Test
     fun `getOrNull returns null for Failure`() {
-        val result: Result<String> = Result.Failure(IllegalStateException())
+        val result: Result<String> = Result.Failure(AppError.UnknownError("error"))
 
         assertNull(result.getOrNull())
     }
@@ -82,7 +82,7 @@ class ResultTest {
 
     @Test
     fun `getOrElse returns default for Failure`() {
-        val error = IllegalStateException("error")
+        val error = AppError.UnknownError("error")
         val result: Result<String> = Result.Failure(error)
 
         val value = result.getOrElse { "default: ${it.message}" }
@@ -101,10 +101,10 @@ class ResultTest {
 
     @Test
     fun `getOrThrow throws error for Failure`() {
-        val error = IllegalStateException("test error")
+        val error = AppError.UnknownError("test error")
         val result: Result<String> = Result.Failure(error)
 
-        val thrown = assertFailsWith<IllegalStateException> {
+        val thrown = assertFailsWith<AppError.UnknownError> {
             result.getOrThrow()
         }
         assertEquals("test error", thrown.message)
@@ -124,7 +124,7 @@ class ResultTest {
 
     @Test
     fun `map returns unchanged Failure`() {
-        val error = IllegalStateException("test error")
+        val error = AppError.UnknownError("test error")
         val result: Result<Int> = Result.Failure(error)
 
         val mapped = result.map { it * 2 }
@@ -160,7 +160,7 @@ class ResultTest {
         val result: Result<Int> = Result.Success(5)
 
         val flatMapped = result.flatMap {
-            Result.Failure(IllegalStateException("error"))
+            Result.Failure(AppError.UnknownError("error"))
         }
 
         assertTrue(flatMapped.isFailure)
@@ -168,7 +168,7 @@ class ResultTest {
 
     @Test
     fun `flatMap returns unchanged Failure`() {
-        val error = IllegalStateException("test error")
+        val error = AppError.UnknownError("test error")
         val result: Result<Int> = Result.Failure(error)
 
         val flatMapped = result.flatMap { Result.Success(it * 2) }
@@ -193,7 +193,7 @@ class ResultTest {
 
     @Test
     fun `fold calls onFailure for Failure`() {
-        val error = IllegalStateException("error message")
+        val error = AppError.UnknownError("error message")
         val result: Result<Int> = Result.Failure(error)
 
         val value = result.fold(
@@ -219,7 +219,7 @@ class ResultTest {
 
     @Test
     fun `onSuccess does not execute action for Failure`() {
-        val result: Result<String> = Result.Failure(IllegalStateException())
+        val result: Result<String> = Result.Failure(AppError.UnknownError("error"))
         var executed = false
 
         val returned = result.onSuccess { executed = true }
@@ -232,9 +232,9 @@ class ResultTest {
 
     @Test
     fun `onFailure executes action for Failure`() {
-        val error = IllegalStateException("test")
+        val error = AppError.UnknownError("test")
         val result: Result<String> = Result.Failure(error)
-        var capturedError: Throwable? = null
+        var capturedError: AppError? = null
 
         val returned = result.onFailure { capturedError = it }
 
@@ -283,7 +283,8 @@ class ResultTest {
         }
 
         assertTrue(result.isFailure)
-        assertIs<IllegalStateException>((result as Result.Failure).error)
+        // runCatching now converts all exceptions to AppError via ErrorHandler
+        assertIs<AppError>((result as Result.Failure).error)
     }
 
     @Test
@@ -302,7 +303,7 @@ class ResultTest {
     fun `toResult returns Success for non-null value`() {
         val value: String? = "test"
 
-        val result = value.toResult { IllegalStateException("null value") }
+        val result = value.toResult { AppError.ValidationError("null value") }
 
         assertTrue(result.isSuccess)
         assertEquals("test", result.getOrNull())
@@ -312,10 +313,10 @@ class ResultTest {
     fun `toResult returns Failure for null value`() {
         val value: String? = null
 
-        val result = value.toResult { IllegalStateException("null value") }
+        val result = value.toResult { AppError.ValidationError("null value") }
 
         assertTrue(result.isFailure)
-        assertIs<IllegalStateException>((result as Result.Failure).error)
+        assertIs<AppError.ValidationError>((result as Result.Failure).error)
     }
 
     @Test

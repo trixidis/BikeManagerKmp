@@ -37,6 +37,10 @@ kotlin {
                 implementation(libs.napier)
                 implementation(libs.kotlinx.datetime)
 
+                // Lifecycle ViewModel for KMP
+                implementation(libs.androidx.lifecycle.viewmodel)
+                implementation(libs.androidx.lifecycle.viewmodel.compose)
+
                 // Compose Multiplatform
                 implementation(compose.runtime)
                 implementation(compose.foundation)

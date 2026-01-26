@@ -20,6 +20,9 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -38,20 +41,42 @@ import androidx.compose.ui.unit.dp
 import com.bikemanager.android.R
 import com.bikemanager.android.ui.theme.White
 import com.bikemanager.domain.model.Bike
+import com.bikemanager.presentation.bikes.BikeEvent
 import com.bikemanager.presentation.bikes.BikesUiState
-import com.bikemanager.presentation.bikes.BikesViewModel
+import com.bikemanager.presentation.bikes.BikesViewModelMvi
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BikesScreen(
     onBikeClick: (Bike) -> Unit,
-    viewModel: BikesViewModel = koinInject()
+    viewModel: BikesViewModelMvi = koinInject()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
     var editingBike by remember { mutableStateOf<Bike?>(null) }
     val listState = rememberLazyListState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Collect events from ViewModel (MVI pattern)
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is BikeEvent.ShowError -> {
+                    snackbarHostState.showSnackbar(
+                        message = event.message,
+                        duration = SnackbarDuration.Short
+                    )
+                }
+                is BikeEvent.ShowSuccess -> {
+                    snackbarHostState.showSnackbar(
+                        message = event.message,
+                        duration = SnackbarDuration.Short
+                    )
+                }
+            }
+        }
+    }
 
     // FAB visibility based on scroll direction
     val fabVisible by remember {
@@ -87,7 +112,8 @@ fun BikesScreen(
                     )
                 }
             }
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Box(
             modifier = Modifier

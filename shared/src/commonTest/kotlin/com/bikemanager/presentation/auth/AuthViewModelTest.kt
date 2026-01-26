@@ -43,7 +43,7 @@ class AuthViewModelTest {
 
     @Test
     fun `initial state is Checking then NotAuthenticated when no user`() = runTest {
-        val viewModel = AuthViewModel(getCurrentUserUseCase, signInUseCase, signOutUseCase)
+        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signOutUseCase)
 
         viewModel.uiState.test {
             assertEquals(AuthUiState.Checking, awaitItem())
@@ -65,7 +65,7 @@ class AuthViewModelTest {
         )
         repository.setCurrentUser(testUser)
 
-        val viewModel = AuthViewModel(getCurrentUserUseCase, signInUseCase, signOutUseCase)
+        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signOutUseCase)
 
         viewModel.uiState.test {
             assertEquals(AuthUiState.Checking, awaitItem())
@@ -81,7 +81,7 @@ class AuthViewModelTest {
 
     @Test
     fun `signInWithGoogle transitions to Loading then Authenticated on success`() = runTest {
-        val viewModel = AuthViewModel(getCurrentUserUseCase, signInUseCase, signOutUseCase)
+        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signOutUseCase)
         advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -104,7 +104,7 @@ class AuthViewModelTest {
     fun `signInWithGoogle with auth error shows French error message`() = runTest {
         repository.setSignInFails(true, com.bikemanager.domain.common.AppError.AuthError("Auth failed"))
 
-        val viewModel = AuthViewModel(getCurrentUserUseCase, signInUseCase, signOutUseCase)
+        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signOutUseCase)
         advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -128,7 +128,7 @@ class AuthViewModelTest {
     fun `signInWithGoogle with network error shows French error message`() = runTest {
         repository.setSignInFails(true, com.bikemanager.domain.common.AppError.NetworkError("Network failed"))
 
-        val viewModel = AuthViewModel(getCurrentUserUseCase, signInUseCase, signOutUseCase)
+        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signOutUseCase)
         advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -150,7 +150,7 @@ class AuthViewModelTest {
 
     @Test
     fun `signInWithGoogle with blank token shows French validation error`() = runTest {
-        val viewModel = AuthViewModel(getCurrentUserUseCase, signInUseCase, signOutUseCase)
+        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signOutUseCase)
         advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -171,7 +171,7 @@ class AuthViewModelTest {
             User(uid = "uid", email = null, displayName = null, photoUrl = null)
         )
 
-        val viewModel = AuthViewModel(getCurrentUserUseCase, signInUseCase, signOutUseCase)
+        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signOutUseCase)
         advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -190,7 +190,7 @@ class AuthViewModelTest {
 
     @Test
     fun `clearError resets from Error to NotAuthenticated`() = runTest {
-        val viewModel = AuthViewModel(getCurrentUserUseCase, signInUseCase, signOutUseCase)
+        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signOutUseCase)
         advanceUntilIdle()
 
         // Trigger an error
@@ -209,7 +209,7 @@ class AuthViewModelTest {
 
     @Test
     fun `checkAuthState refreshes auth state`() = runTest {
-        val viewModel = AuthViewModel(getCurrentUserUseCase, signInUseCase, signOutUseCase)
+        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signOutUseCase)
         advanceUntilIdle()
 
         // Set up a user

@@ -15,19 +15,19 @@ class FakeMaintenanceRepository : MaintenanceRepository {
     private val maintenancesFlow = MutableStateFlow<List<Maintenance>>(emptyList())
     private var nextId = 1
     private var shouldFailOnGetByBikeId = false
-    private var getByBikeIdError: Throwable? = null
+    private var getByBikeIdError: AppError? = null
     private var shouldFailOnGetDone = false
-    private var getDoneError: Throwable? = null
+    private var getDoneError: AppError? = null
     private var shouldFailOnGetTodo = false
-    private var getTodoError: Throwable? = null
+    private var getTodoError: AppError? = null
     private var shouldFailOnAdd = false
-    private var addError: Throwable? = null
+    private var addError: AppError? = null
     private var shouldFailOnUpdate = false
-    private var updateError: Throwable? = null
+    private var updateError: AppError? = null
     private var shouldFailOnMarkDone = false
-    private var markDoneError: Throwable? = null
+    private var markDoneError: AppError? = null
     private var shouldFailOnDelete = false
-    private var deleteError: Throwable? = null
+    private var deleteError: AppError? = null
 
     override fun getMaintenancesByBikeId(bikeId: String): Flow<Result<List<Maintenance>>> {
         return maintenancesFlow.map { list ->
@@ -112,7 +112,7 @@ class FakeMaintenanceRepository : MaintenanceRepository {
     /**
      * Helper to make getMaintenancesByBikeId return a failure.
      */
-    fun setGetByBikeIdFails(shouldFail: Boolean, error: Throwable? = null) {
+    fun setGetByBikeIdFails(shouldFail: Boolean, error: AppError? = null) {
         shouldFailOnGetByBikeId = shouldFail
         getByBikeIdError = error
     }
@@ -120,7 +120,7 @@ class FakeMaintenanceRepository : MaintenanceRepository {
     /**
      * Helper to make getDoneMaintenances return a failure.
      */
-    fun setGetDoneFails(shouldFail: Boolean, error: Throwable? = null) {
+    fun setGetDoneFails(shouldFail: Boolean, error: AppError? = null) {
         shouldFailOnGetDone = shouldFail
         getDoneError = error
     }
@@ -128,7 +128,7 @@ class FakeMaintenanceRepository : MaintenanceRepository {
     /**
      * Helper to make getTodoMaintenances return a failure.
      */
-    fun setGetTodoFails(shouldFail: Boolean, error: Throwable? = null) {
+    fun setGetTodoFails(shouldFail: Boolean, error: AppError? = null) {
         shouldFailOnGetTodo = shouldFail
         getTodoError = error
     }
@@ -136,7 +136,7 @@ class FakeMaintenanceRepository : MaintenanceRepository {
     /**
      * Helper to make addMaintenance return a failure.
      */
-    fun setAddFails(shouldFail: Boolean, error: Throwable? = null) {
+    fun setAddFails(shouldFail: Boolean, error: AppError? = null) {
         shouldFailOnAdd = shouldFail
         addError = error
     }
@@ -144,7 +144,7 @@ class FakeMaintenanceRepository : MaintenanceRepository {
     /**
      * Helper to make updateMaintenance return a failure.
      */
-    fun setUpdateFails(shouldFail: Boolean, error: Throwable? = null) {
+    fun setUpdateFails(shouldFail: Boolean, error: AppError? = null) {
         shouldFailOnUpdate = shouldFail
         updateError = error
     }
@@ -152,7 +152,7 @@ class FakeMaintenanceRepository : MaintenanceRepository {
     /**
      * Helper to make markMaintenanceDone return a failure.
      */
-    fun setMarkDoneFails(shouldFail: Boolean, error: Throwable? = null) {
+    fun setMarkDoneFails(shouldFail: Boolean, error: AppError? = null) {
         shouldFailOnMarkDone = shouldFail
         markDoneError = error
     }
@@ -160,7 +160,7 @@ class FakeMaintenanceRepository : MaintenanceRepository {
     /**
      * Helper to make deleteMaintenance return a failure.
      */
-    fun setDeleteFails(shouldFail: Boolean, error: Throwable? = null) {
+    fun setDeleteFails(shouldFail: Boolean, error: AppError? = null) {
         shouldFailOnDelete = shouldFail
         deleteError = error
     }

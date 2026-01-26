@@ -16,8 +16,9 @@ sealed class Result<out T> {
 
     /**
      * Represents a failed operation result.
+     * Only accepts AppError to ensure type-safe error handling.
      */
-    data class Failure(val error: Throwable) : Result<Nothing>()
+    data class Failure(val error: AppError) : Result<Nothing>()
 
     /**
      * Returns true if this result is a success.
@@ -43,7 +44,7 @@ fun <T> Result<T>.getOrNull(): T? = when (this) {
 /**
  * Returns the value if this is a Success, or the result of [default] if this is a Failure.
  */
-inline fun <T> Result<T>.getOrElse(default: (Throwable) -> T): T = when (this) {
+inline fun <T> Result<T>.getOrElse(default: (AppError) -> T): T = when (this) {
     is Result.Success -> value
     is Result.Failure -> default(error)
 }
@@ -80,7 +81,7 @@ inline fun <T, R> Result<T>.flatMap(transform: (T) -> Result<R>): Result<R> = wh
  */
 inline fun <T, R> Result<T>.fold(
     onSuccess: (T) -> R,
-    onFailure: (Throwable) -> R
+    onFailure: (AppError) -> R
 ): R = when (this) {
     is Result.Success -> onSuccess(value)
     is Result.Failure -> onFailure(error)
@@ -101,7 +102,7 @@ inline fun <T> Result<T>.onSuccess(action: (T) -> Unit): Result<T> {
  * Performs the given action if this is a Failure.
  * Returns the original Result unchanged.
  */
-inline fun <T> Result<T>.onFailure(action: (Throwable) -> Unit): Result<T> {
+inline fun <T> Result<T>.onFailure(action: (AppError) -> Unit): Result<T> {
     if (this is Result.Failure) {
         action(error)
     }
@@ -113,6 +114,7 @@ inline fun <T> Result<T>.onFailure(action: (Throwable) -> Unit): Result<T> {
  *
  * IMPORTANT: CancellationException is re-thrown to allow proper coroutine cancellation.
  * Catching and suppressing CancellationException would cause memory leaks.
+ * All other exceptions are converted to AppError via ErrorHandler.
  */
 inline fun <T> runCatching(block: () -> T): Result<T> = try {
     Result.Success(block())
@@ -120,14 +122,14 @@ inline fun <T> runCatching(block: () -> T): Result<T> = try {
     // CRITICAL: Always re-throw CancellationException to prevent memory leaks
     throw e
 } catch (e: Throwable) {
-    Result.Failure(e)
+    Result.Failure(ErrorHandler.handle(e))
 }
 
 /**
  * Converts a nullable value to a Result.
  * Returns Success if the value is not null, Failure with the given error otherwise.
  */
-fun <T> T?.toResult(error: () -> Throwable): Result<T> = if (this != null) {
+fun <T> T?.toResult(error: () -> AppError): Result<T> = if (this != null) {
     Result.Success(this)
 } else {
     Result.Failure(error())

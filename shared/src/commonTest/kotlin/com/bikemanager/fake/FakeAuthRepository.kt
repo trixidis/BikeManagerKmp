@@ -13,9 +13,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 class FakeAuthRepository : AuthRepository {
     private val currentUserFlow = MutableStateFlow<User?>(null)
     private var shouldFailOnSignIn = false
-    private var signInError: Throwable? = null
+    private var signInError: AppError? = null
     private var shouldFailOnSignOut = false
-    private var signOutError: Throwable? = null
+    private var signOutError: AppError? = null
 
     override fun getCurrentUser(): User? = currentUserFlow.value
 
@@ -55,7 +55,7 @@ class FakeAuthRepository : AuthRepository {
     /**
      * Helper to make sign-in return a failure.
      */
-    fun setSignInFails(shouldFail: Boolean, error: Throwable? = null) {
+    fun setSignInFails(shouldFail: Boolean, error: AppError? = null) {
         shouldFailOnSignIn = shouldFail
         signInError = error
     }
@@ -65,14 +65,14 @@ class FakeAuthRepository : AuthRepository {
      * @deprecated Use setSignInFails instead
      */
     @Deprecated("Use setSignInFails instead", ReplaceWith("setSignInFails(shouldThrow, exception)"))
-    fun setSignInThrows(shouldThrow: Boolean, exception: Exception? = null) {
+    fun setSignInThrows(shouldThrow: Boolean, exception: AppError? = null) {
         setSignInFails(shouldThrow, exception)
     }
 
     /**
      * Helper to make sign-out return a failure.
      */
-    fun setSignOutFails(shouldFail: Boolean, error: Throwable? = null) {
+    fun setSignOutFails(shouldFail: Boolean, error: AppError? = null) {
         shouldFailOnSignOut = shouldFail
         signOutError = error
     }

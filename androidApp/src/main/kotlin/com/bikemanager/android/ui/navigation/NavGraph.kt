@@ -14,7 +14,7 @@ import com.bikemanager.android.ui.bikes.BikesScreen
 import com.bikemanager.android.ui.maintenances.MaintenancesScreen
 import com.bikemanager.domain.model.CountingMethod
 import com.bikemanager.presentation.auth.AuthUiState
-import com.bikemanager.presentation.auth.AuthViewModel
+import com.bikemanager.presentation.auth.AuthViewModelMvi
 import org.koin.compose.koinInject
 
 object NavRoutes {
@@ -29,7 +29,7 @@ object NavRoutes {
 
 @Composable
 fun NavGraph(
-    authViewModel: AuthViewModel = koinInject()
+    authViewModel: AuthViewModelMvi = koinInject()
 ) {
     val navController = rememberNavController()
     val authState by authViewModel.uiState.collectAsState()

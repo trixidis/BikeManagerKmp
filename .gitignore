@@ -47,3 +47,4 @@ Podfile.lock
 .worktrees/
 .security-key
 logs/security/
+.knowledge

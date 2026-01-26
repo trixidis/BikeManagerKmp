@@ -15,15 +15,15 @@ class FakeBikeRepository : BikeRepository {
     private val bikesFlow = MutableStateFlow<List<Bike>>(emptyList())
     private var nextId = 1
     private var shouldFailOnGetAll = false
-    private var getAllError: Throwable? = null
+    private var getAllError: AppError? = null
     private var shouldFailOnGetById = false
-    private var getByIdError: Throwable? = null
+    private var getByIdError: AppError? = null
     private var shouldFailOnAdd = false
-    private var addError: Throwable? = null
+    private var addError: AppError? = null
     private var shouldFailOnUpdate = false
-    private var updateError: Throwable? = null
+    private var updateError: AppError? = null
     private var shouldFailOnDelete = false
-    private var deleteError: Throwable? = null
+    private var deleteError: AppError? = null
 
     override fun getAllBikes(): Flow<Result<List<Bike>>> = bikesFlow.map { bikes ->
         if (shouldFailOnGetAll) {
@@ -83,7 +83,7 @@ class FakeBikeRepository : BikeRepository {
     /**
      * Helper to make getAllBikes return a failure.
      */
-    fun setGetAllFails(shouldFail: Boolean, error: Throwable? = null) {
+    fun setGetAllFails(shouldFail: Boolean, error: AppError? = null) {
         shouldFailOnGetAll = shouldFail
         getAllError = error
     }
@@ -91,7 +91,7 @@ class FakeBikeRepository : BikeRepository {
     /**
      * Helper to make getBikeById return a failure.
      */
-    fun setGetByIdFails(shouldFail: Boolean, error: Throwable? = null) {
+    fun setGetByIdFails(shouldFail: Boolean, error: AppError? = null) {
         shouldFailOnGetById = shouldFail
         getByIdError = error
     }
@@ -99,7 +99,7 @@ class FakeBikeRepository : BikeRepository {
     /**
      * Helper to make addBike return a failure.
      */
-    fun setAddFails(shouldFail: Boolean, error: Throwable? = null) {
+    fun setAddFails(shouldFail: Boolean, error: AppError? = null) {
         shouldFailOnAdd = shouldFail
         addError = error
     }
@@ -107,7 +107,7 @@ class FakeBikeRepository : BikeRepository {
     /**
      * Helper to make updateBike return a failure.
      */
-    fun setUpdateFails(shouldFail: Boolean, error: Throwable? = null) {
+    fun setUpdateFails(shouldFail: Boolean, error: AppError? = null) {
         shouldFailOnUpdate = shouldFail
         updateError = error
     }
@@ -115,7 +115,7 @@ class FakeBikeRepository : BikeRepository {
     /**
      * Helper to make deleteBike return a failure.
      */
-    fun setDeleteFails(shouldFail: Boolean, error: Throwable? = null) {
+    fun setDeleteFails(shouldFail: Boolean, error: AppError? = null) {
         shouldFailOnDelete = shouldFail
         deleteError = error
     }

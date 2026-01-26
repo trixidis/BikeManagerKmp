@@ -6,7 +6,7 @@ import androidx.compose.runtime.getValue
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.SlideTransition
 import com.bikemanager.presentation.auth.AuthUiState
-import com.bikemanager.presentation.auth.AuthViewModel
+import com.bikemanager.presentation.auth.AuthViewModelMvi
 import com.bikemanager.ui.navigation.BikesScreenDestination
 import com.bikemanager.ui.navigation.LoginScreenDestination
 import com.bikemanager.ui.theme.BikeManagerTheme
@@ -18,7 +18,7 @@ import org.koin.compose.koinInject
  */
 @Composable
 fun App() {
-    val authViewModel: AuthViewModel = koinInject()
+    val authViewModel: AuthViewModelMvi = koinInject()
     val authState by authViewModel.uiState.collectAsState()
 
     BikeManagerTheme {
