@@ -1,6 +1,7 @@
 package com.bikemanager.domain.usecase.maintenance
 
 import app.cash.turbine.test
+import com.bikemanager.domain.common.Result
 import com.bikemanager.domain.model.Maintenance
 import com.bikemanager.fake.FakeMaintenanceRepository
 import kotlinx.coroutines.test.runTest
@@ -22,7 +23,9 @@ class GetMaintenancesUseCaseTest {
     @Test
     fun `invoke returns empty lists when no maintenances exist`() = runTest {
         useCase(bikeId = "bike1").test {
-            val (done, todo) = awaitItem()
+            val result = awaitItem()
+            assertTrue(result is Result.Success)
+            val (done, todo) = result.value
             assertTrue(done.isEmpty())
             assertTrue(todo.isEmpty())
             cancelAndIgnoreRemainingEvents()
@@ -39,7 +42,9 @@ class GetMaintenancesUseCaseTest {
         repository.setMaintenances(maintenances)
 
         useCase(bikeId = "bike1").test {
-            val (done, todo) = awaitItem()
+            val result = awaitItem()
+            assertTrue(result is Result.Success)
+            val (done, todo) = result.value
             assertEquals(2, done.size)
             assertEquals(1, todo.size)
             assertEquals("Done 1", done[0].name)
@@ -58,43 +63,11 @@ class GetMaintenancesUseCaseTest {
         repository.setMaintenances(maintenances)
 
         useCase(bikeId = "bike1").test {
-            val (done, _) = awaitItem()
+            val result = awaitItem()
+            assertTrue(result is Result.Success)
+            val (done, _) = result.value
             assertEquals(1, done.size)
             assertEquals("Bike 1 Maintenance", done[0].name)
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
-    fun `getDone returns only done maintenances`() = runTest {
-        val maintenances = listOf(
-            Maintenance(id = "m1", name = "Done", isDone = true, bikeId = "bike1"),
-            Maintenance(id = "m2", name = "Todo", isDone = false, bikeId = "bike1")
-        )
-        repository.setMaintenances(maintenances)
-
-        useCase.getDone(bikeId = "bike1").test {
-            val done = awaitItem()
-            assertEquals(1, done.size)
-            assertEquals("Done", done[0].name)
-            assertTrue(done[0].isDone)
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
-    fun `getTodo returns only todo maintenances`() = runTest {
-        val maintenances = listOf(
-            Maintenance(id = "m1", name = "Done", isDone = true, bikeId = "bike1"),
-            Maintenance(id = "m2", name = "Todo", isDone = false, bikeId = "bike1")
-        )
-        repository.setMaintenances(maintenances)
-
-        useCase.getTodo(bikeId = "bike1").test {
-            val todo = awaitItem()
-            assertEquals(1, todo.size)
-            assertEquals("Todo", todo[0].name)
-            assertTrue(!todo[0].isDone)
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -106,7 +79,9 @@ class GetMaintenancesUseCaseTest {
 
         useCase(bikeId = "bike1").test {
             // Initially empty
-            val (done1, todo1) = awaitItem()
+            val initialResult = awaitItem()
+            assertTrue(initialResult is Result.Success)
+            val (done1, todo1) = initialResult.value
             assertTrue(done1.isEmpty())
             assertTrue(todo1.isEmpty())
 
@@ -119,7 +94,9 @@ class GetMaintenancesUseCaseTest {
             )
 
             // Wait for any emissions (could be one or two depending on combine timing)
-            val result = expectMostRecentItem()
+            val finalResult = expectMostRecentItem()
+            assertTrue(finalResult is Result.Success)
+            val result = finalResult.value
             assertEquals(1, result.first.size)
             assertEquals(1, result.second.size)
 
@@ -142,7 +119,9 @@ class GetMaintenancesUseCaseTest {
         repository.setMaintenances(maintenances)
 
         useCase(bikeId = "bike1").test {
-            val (done, _) = awaitItem()
+            val result = awaitItem()
+            assertTrue(result is Result.Success)
+            val (done, _) = result.value
             assertEquals(5000f, done[0].value)
             assertEquals(1700000000000L, done[0].date)
             cancelAndIgnoreRemainingEvents()

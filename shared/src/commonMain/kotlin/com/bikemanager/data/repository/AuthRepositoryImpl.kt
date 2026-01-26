@@ -1,5 +1,7 @@
 package com.bikemanager.data.repository
 
+import com.bikemanager.domain.common.ErrorHandler
+import com.bikemanager.domain.common.Result
 import com.bikemanager.domain.model.User
 import com.bikemanager.domain.repository.AuthRepository
 import dev.gitlive.firebase.Firebase
@@ -28,18 +30,22 @@ class AuthRepositoryImpl : AuthRepository {
         }
     }
 
-    override suspend fun signInWithGoogle(idToken: String): User {
-        Napier.d { "Signing in with Google credential" }
-        val credential = GoogleAuthProvider.credential(idToken, null)
-        val result = auth.signInWithCredential(credential)
-        val user = result.user ?: throw Exception("Sign-in failed: no user returned")
-        Napier.d { "Successfully signed in: ${user.uid}" }
-        return user.toUser()
+    override suspend fun signInWithGoogle(idToken: String): Result<User> {
+        return ErrorHandler.catching("signing in with Google") {
+            Napier.d { "Signing in with Google credential" }
+            val credential = GoogleAuthProvider.credential(idToken, null)
+            val result = auth.signInWithCredential(credential)
+            val user = result.user ?: throw Exception("Sign-in failed: no user returned")
+            Napier.d { "Successfully signed in: ${user.uid}" }
+            user.toUser()
+        }
     }
 
-    override suspend fun signOut() {
-        Napier.d { "Signing out" }
-        auth.signOut()
+    override suspend fun signOut(): Result<Unit> {
+        return ErrorHandler.catching("signing out") {
+            Napier.d { "Signing out" }
+            auth.signOut()
+        }
     }
 
     override fun isSignedIn(): Boolean {

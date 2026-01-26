@@ -42,16 +42,16 @@ iosApp/pods/*
 iosApp/iosApp/Firebase/Debug
 iosApp/iosApp/Firebase/Release
 Podfile.lock
-verdict.md
-.auto-claude/
-publish-android.sh
-.auto-claude-security.json
-.claude_settings.json
 
 # Auto Claude data directory
+.auto-claude/
 
 # Auto Claude generated files
+.auto-claude-security.json
 .auto-claude-status
+.claude_settings.json
 .worktrees/
 .security-key
 logs/security/
+.knowledge
+publish-android.sh

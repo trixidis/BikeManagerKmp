@@ -3,11 +3,9 @@ package com.bikemanager.di
 import com.bikemanager.data.repository.AuthRepositoryImpl
 import com.bikemanager.data.repository.BikeRepositoryImpl
 import com.bikemanager.data.repository.MaintenanceRepositoryImpl
-import com.bikemanager.data.repository.ThemeRepositoryImpl
 import com.bikemanager.domain.repository.AuthRepository
 import com.bikemanager.domain.repository.BikeRepository
 import com.bikemanager.domain.repository.MaintenanceRepository
-import com.bikemanager.domain.repository.ThemeRepository
 import com.bikemanager.domain.usecase.auth.GetCurrentUserUseCase
 import com.bikemanager.domain.usecase.auth.SignInUseCase
 import com.bikemanager.domain.usecase.auth.SignOutUseCase
@@ -19,12 +17,9 @@ import com.bikemanager.domain.usecase.maintenance.AddMaintenanceUseCase
 import com.bikemanager.domain.usecase.maintenance.DeleteMaintenanceUseCase
 import com.bikemanager.domain.usecase.maintenance.GetMaintenancesUseCase
 import com.bikemanager.domain.usecase.maintenance.MarkMaintenanceDoneUseCase
-import com.bikemanager.domain.usecase.theme.GetThemeModeUseCase
-import com.bikemanager.domain.usecase.theme.SetThemeModeUseCase
-import com.bikemanager.presentation.auth.AuthViewModel
-import com.bikemanager.presentation.bikes.BikesViewModel
-import com.bikemanager.presentation.maintenances.MaintenancesViewModel
-import com.bikemanager.presentation.theme.ThemeViewModel
+import com.bikemanager.presentation.auth.AuthViewModelMvi
+import com.bikemanager.presentation.bikes.BikesViewModelMvi
+import com.bikemanager.presentation.maintenances.MaintenancesViewModelMvi
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
@@ -37,7 +32,6 @@ val sharedModule: Module = module {
     single<AuthRepository> { AuthRepositoryImpl() }
     single<BikeRepository> { BikeRepositoryImpl(get()) }
     single<MaintenanceRepository> { MaintenanceRepositoryImpl(get()) }
-    single<ThemeRepository> { ThemeRepositoryImpl(get()) }
 
     // Bike Use Cases
     factory { GetBikesUseCase(get()) }
@@ -56,13 +50,8 @@ val sharedModule: Module = module {
     factory { SignInUseCase(get()) }
     factory { SignOutUseCase(get()) }
 
-    // Theme Use Cases
-    factory { GetThemeModeUseCase(get()) }
-    factory { SetThemeModeUseCase(get()) }
-
-    // ViewModels
-    single { AuthViewModel(get(), get(), get()) }
-    single { BikesViewModel(get(), get(), get(), get(), get()) }
-    factory { (bikeId: String) -> MaintenancesViewModel(bikeId, get(), get(), get(), get()) }
-    single { ThemeViewModel(get(), get()) }
+    // ViewModels (MVI Pattern)
+    single { AuthViewModelMvi(get(), get(), get()) }
+    single { BikesViewModelMvi(get(), get(), get(), get()) }
+    factory { (bikeId: String) -> MaintenancesViewModelMvi(bikeId, get(), get(), get(), get()) }
 }

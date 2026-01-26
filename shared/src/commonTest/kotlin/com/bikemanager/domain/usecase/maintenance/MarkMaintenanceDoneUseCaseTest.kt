@@ -1,5 +1,6 @@
 package com.bikemanager.domain.usecase.maintenance
 
+import com.bikemanager.domain.common.Result
 import com.bikemanager.domain.model.Maintenance
 import com.bikemanager.fake.FakeMaintenanceRepository
 import com.bikemanager.util.currentTimeMillis
@@ -7,7 +8,6 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class MarkMaintenanceDoneUseCaseTest {
@@ -25,8 +25,9 @@ class MarkMaintenanceDoneUseCaseTest {
         val maintenance = Maintenance(id = "m1", name = "Oil Change", isDone = false, bikeId = "bike1")
         repository.setMaintenances(listOf(maintenance))
 
-        useCase(maintenanceId = "m1", bikeId = "bike1", value = 5000f)
+        val result = useCase(maintenanceId = "m1", bikeId = "bike1", value = 5000f)
 
+        assertTrue(result is Result.Success)
         val maintenances = repository.getCurrentMaintenances()
         assertTrue(maintenances[0].isDone)
         assertEquals(5000f, maintenances[0].value)
@@ -34,13 +35,13 @@ class MarkMaintenanceDoneUseCaseTest {
     }
 
     @Test
-    fun `invoke throws exception when value is negative`() = runTest {
+    fun `invoke returns failure when value is negative`() = runTest {
         val maintenance = Maintenance(id = "m1", name = "Test", isDone = false, bikeId = "bike1")
         repository.setMaintenances(listOf(maintenance))
 
-        assertFailsWith<IllegalArgumentException> {
-            useCase(maintenanceId = "m1", bikeId = "bike1", value = -1f)
-        }
+        val result = useCase(maintenanceId = "m1", bikeId = "bike1", value = -1f)
+
+        assertTrue(result is Result.Failure)
     }
 
     @Test
@@ -48,8 +49,9 @@ class MarkMaintenanceDoneUseCaseTest {
         val maintenance = Maintenance(id = "m1", name = "Test", isDone = false, bikeId = "bike1")
         repository.setMaintenances(listOf(maintenance))
 
-        useCase(maintenanceId = "m1", bikeId = "bike1", value = 0f)
+        val result = useCase(maintenanceId = "m1", bikeId = "bike1", value = 0f)
 
+        assertTrue(result is Result.Success)
         val maintenances = repository.getCurrentMaintenances()
         assertEquals(0f, maintenances[0].value)
     }
@@ -62,11 +64,12 @@ class MarkMaintenanceDoneUseCaseTest {
         )
         repository.setMaintenances(maintenances)
 
-        useCase(maintenanceId = "m1", bikeId = "bike1", value = 3000f)
+        val result = useCase(maintenanceId = "m1", bikeId = "bike1", value = 3000f)
 
-        val result = repository.getCurrentMaintenances()
-        assertTrue(result.find { it.id == "m1" }?.isDone == true)
-        assertTrue(result.find { it.id == "m2" }?.isDone == false)
+        assertTrue(result is Result.Success)
+        val maintenancesResult = repository.getCurrentMaintenances()
+        assertTrue(maintenancesResult.find { it.id == "m1" }?.isDone == true)
+        assertTrue(maintenancesResult.find { it.id == "m2" }?.isDone == false)
     }
 
     @Test
@@ -75,12 +78,13 @@ class MarkMaintenanceDoneUseCaseTest {
         repository.setMaintenances(listOf(maintenance))
         val beforeTime = currentTimeMillis()
 
-        useCase(maintenanceId = "m1", bikeId = "bike1", value = 1000f)
+        val result = useCase(maintenanceId = "m1", bikeId = "bike1", value = 1000f)
 
+        assertTrue(result is Result.Success)
         val afterTime = currentTimeMillis()
-        val result = repository.getCurrentMaintenances()[0]
-        assertTrue(result.date >= beforeTime)
-        assertTrue(result.date <= afterTime)
+        val maintenanceResult = repository.getCurrentMaintenances()[0]
+        assertTrue(maintenanceResult.date >= beforeTime)
+        assertTrue(maintenanceResult.date <= afterTime)
     }
 
     @Test
@@ -95,11 +99,12 @@ class MarkMaintenanceDoneUseCaseTest {
         )
         repository.setMaintenances(listOf(maintenance))
 
-        useCase(maintenanceId = "m1", bikeId = "bike42", value = 5000f)
+        val result = useCase(maintenanceId = "m1", bikeId = "bike42", value = 5000f)
 
-        val result = repository.getCurrentMaintenances()[0]
-        assertEquals("Oil Change", result.name)
-        assertEquals("bike42", result.bikeId)
+        assertTrue(result is Result.Success)
+        val maintenanceResult = repository.getCurrentMaintenances()[0]
+        assertEquals("Oil Change", maintenanceResult.name)
+        assertEquals("bike42", maintenanceResult.bikeId)
     }
 
     @Test
@@ -107,10 +112,11 @@ class MarkMaintenanceDoneUseCaseTest {
         val maintenance = Maintenance(id = "m1", name = "Test", isDone = false, bikeId = "bike1")
         repository.setMaintenances(listOf(maintenance))
 
-        useCase(maintenanceId = "m1", bikeId = "bike1", value = 999999f)
+        val result = useCase(maintenanceId = "m1", bikeId = "bike1", value = 999999f)
 
-        val result = repository.getCurrentMaintenances()[0]
-        assertEquals(999999f, result.value)
+        assertTrue(result is Result.Success)
+        val maintenanceResult = repository.getCurrentMaintenances()[0]
+        assertEquals(999999f, maintenanceResult.value)
     }
 
     @Test
@@ -118,9 +124,10 @@ class MarkMaintenanceDoneUseCaseTest {
         val maintenance = Maintenance(id = "m1", name = "Test", isDone = false, bikeId = "bike1")
         repository.setMaintenances(listOf(maintenance))
 
-        useCase(maintenanceId = "m1", bikeId = "bike1", value = 1234.5f)
+        val result = useCase(maintenanceId = "m1", bikeId = "bike1", value = 1234.5f)
 
-        val result = repository.getCurrentMaintenances()[0]
-        assertEquals(1234.5f, result.value)
+        assertTrue(result is Result.Success)
+        val maintenanceResult = repository.getCurrentMaintenances()[0]
+        assertEquals(1234.5f, maintenanceResult.value)
     }
 }

@@ -21,7 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.bikemanager.presentation.auth.AuthUiState
-import com.bikemanager.presentation.auth.AuthViewModel
+import com.bikemanager.presentation.auth.AuthViewModelMvi
 import com.bikemanager.ui.Strings
 import com.mmk.kmpauth.firebase.google.GoogleButtonUiContainerFirebase
 import com.mmk.kmpauth.uihelper.google.GoogleSignInButton
@@ -29,7 +29,7 @@ import org.koin.compose.koinInject
 
 @Composable
 fun LoginScreenContent(
-    viewModel: AuthViewModel = koinInject(),
+    viewModel: AuthViewModelMvi = koinInject(),
     onSignedIn: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()

@@ -57,8 +57,9 @@ import com.bikemanager.android.ui.theme.Teal
 import com.bikemanager.android.ui.theme.White
 import com.bikemanager.domain.model.CountingMethod
 import com.bikemanager.domain.model.Maintenance
+import com.bikemanager.presentation.maintenances.MaintenanceEvent
 import com.bikemanager.presentation.maintenances.MaintenancesUiState
-import com.bikemanager.presentation.maintenances.MaintenancesViewModel
+import com.bikemanager.presentation.maintenances.MaintenancesViewModelMvi
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
@@ -70,7 +71,7 @@ fun MaintenancesScreen(
     bikeName: String,
     countingMethod: CountingMethod,
     onBackClick: () -> Unit,
-    viewModel: MaintenancesViewModel = koinInject { parametersOf(bikeId) }
+    viewModel: MaintenancesViewModelMvi = koinInject { parametersOf(bikeId) }
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val pagerState = rememberPagerState(pageCount = { 2 })
@@ -100,6 +101,36 @@ fun MaintenancesScreen(
     val headerColor = if (pagerState.currentPage == 0) Indigo else Teal
     val maintenanceDeletedText = stringResource(R.string.maintenance_deleted)
     val undoText = stringResource(R.string.undo)
+
+    // Collect events from ViewModel (MVI pattern)
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is MaintenanceEvent.ShowError -> {
+                    snackbarHostState.showSnackbar(
+                        message = event.message,
+                        duration = SnackbarDuration.Short
+                    )
+                }
+                is MaintenanceEvent.ShowSuccess -> {
+                    snackbarHostState.showSnackbar(
+                        message = event.message,
+                        duration = SnackbarDuration.Short
+                    )
+                }
+                is MaintenanceEvent.ShowUndoSnackbar -> {
+                    val result = snackbarHostState.showSnackbar(
+                        message = maintenanceDeletedText,
+                        actionLabel = undoText,
+                        duration = SnackbarDuration.Short
+                    )
+                    if (result == SnackbarResult.ActionPerformed) {
+                        viewModel.undoDelete()
+                    }
+                }
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -250,17 +281,8 @@ fun MaintenancesScreen(
                                                 }
                                             },
                                             onDelete = {
+                                                // MVI: Just send intent, ViewModel will emit event
                                                 viewModel.deleteMaintenance(maintenance)
-                                                scope.launch {
-                                                    val result = snackbarHostState.showSnackbar(
-                                                        message = maintenanceDeletedText,
-                                                        actionLabel = undoText,
-                                                        duration = SnackbarDuration.Short
-                                                    )
-                                                    if (result == SnackbarResult.ActionPerformed) {
-                                                        viewModel.undoDelete()
-                                                    }
-                                                }
                                             }
                                         )
                                     }

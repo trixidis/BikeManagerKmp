@@ -1,6 +1,9 @@
 package com.bikemanager.data.repository
 
 import app.cash.turbine.test
+import com.bikemanager.domain.common.Result
+import com.bikemanager.domain.common.getOrNull
+import com.bikemanager.domain.common.getOrThrow
 import com.bikemanager.domain.model.Bike
 import com.bikemanager.domain.model.CountingMethod
 import com.bikemanager.fake.FakeBikeRepository
@@ -26,8 +29,9 @@ class BikeRepositoryImplTest {
     @Test
     fun `getAllBikes returns empty list initially`() = runTest {
         repository.getAllBikes().test {
-            val bikes = awaitItem()
-            assertTrue(bikes.isEmpty())
+            val result = awaitItem()
+            assertTrue(result is Result.Success)
+            assertTrue(result.value.isEmpty())
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -38,7 +42,9 @@ class BikeRepositoryImplTest {
         repository.addBike(bike)
 
         repository.getAllBikes().test {
-            val bikes = awaitItem()
+            val result = awaitItem()
+            assertTrue(result is Result.Success)
+            val bikes = result.value
             assertEquals(1, bikes.size)
             assertEquals("Yamaha MT-07", bikes[0].name)
             cancelAndIgnoreRemainingEvents()
@@ -49,9 +55,10 @@ class BikeRepositoryImplTest {
     fun `addBike returns generated id`() = runTest {
         val bike = Bike(name = "Honda CRF")
 
-        val id = repository.addBike(bike)
+        val result = repository.addBike(bike)
 
-        assertTrue(id.isNotEmpty())
+        assertTrue(result is Result.Success)
+        assertTrue(result.value.isNotEmpty())
     }
 
     @Test
@@ -61,8 +68,13 @@ class BikeRepositoryImplTest {
             countingMethod = CountingMethod.KM
         )
 
-        val id = repository.addBike(bike)
-        val stored = repository.getBikeById(id)
+        val addResult = repository.addBike(bike)
+        assertTrue(addResult is Result.Success)
+        val id = addResult.value
+
+        val getResult = repository.getBikeById(id)
+        assertTrue(getResult is Result.Success)
+        val stored = getResult.value
 
         assertEquals("Kawasaki Ninja", stored?.name)
         assertEquals(CountingMethod.KM, stored?.countingMethod)
@@ -71,59 +83,84 @@ class BikeRepositoryImplTest {
     @Test
     fun `getBikeById returns null for non-existent id`() = runTest {
         val result = repository.getBikeById("nonexistent")
-        assertNull(result)
+        assertTrue(result is Result.Success)
+        assertNull(result.value)
     }
 
     @Test
     fun `getBikeById returns correct bike`() = runTest {
         repository.addBike(Bike(name = "Bike 1"))
-        val id2 = repository.addBike(Bike(name = "Bike 2"))
+        val addResult2 = repository.addBike(Bike(name = "Bike 2"))
+        assertTrue(addResult2 is Result.Success)
+        val id2 = addResult2.value
         repository.addBike(Bike(name = "Bike 3"))
 
-        val result = repository.getBikeById(id2)
+        val getResult = repository.getBikeById(id2)
+        assertTrue(getResult is Result.Success)
+        val bike = getResult.value
 
-        assertEquals("Bike 2", result?.name)
+        assertEquals("Bike 2", bike?.name)
     }
 
     @Test
     fun `updateBike modifies existing bike`() = runTest {
-        val id = repository.addBike(Bike(name = "Original"))
+        val addResult = repository.addBike(Bike(name = "Original"))
+        assertTrue(addResult is Result.Success)
+        val id = addResult.value
 
-        repository.updateBike(Bike(id = id, name = "Updated", countingMethod = CountingMethod.HOURS))
+        val updateResult = repository.updateBike(Bike(id = id, name = "Updated", countingMethod = CountingMethod.HOURS))
+        assertTrue(updateResult is Result.Success)
 
-        val result = repository.getBikeById(id)
-        assertEquals("Updated", result?.name)
-        assertEquals(CountingMethod.HOURS, result?.countingMethod)
+        val getResult = repository.getBikeById(id)
+        assertTrue(getResult is Result.Success)
+        val bike = getResult.value
+        assertEquals("Updated", bike?.name)
+        assertEquals(CountingMethod.HOURS, bike?.countingMethod)
     }
 
     @Test
     fun `deleteBike removes bike`() = runTest {
-        val id = repository.addBike(Bike(name = "To Delete"))
+        val addResult = repository.addBike(Bike(name = "To Delete"))
+        assertTrue(addResult is Result.Success)
+        val id = addResult.value
 
-        repository.deleteBike(id)
+        val deleteResult = repository.deleteBike(id)
+        assertTrue(deleteResult is Result.Success)
 
-        val result = repository.getBikeById(id)
-        assertNull(result)
+        val getResult = repository.getBikeById(id)
+        assertTrue(getResult is Result.Success)
+        assertNull(getResult.value)
     }
 
     @Test
     fun `deleteBike does not affect other bikes`() = runTest {
-        val id1 = repository.addBike(Bike(name = "Bike 1"))
-        val id2 = repository.addBike(Bike(name = "Bike 2"))
+        val addResult1 = repository.addBike(Bike(name = "Bike 1"))
+        assertTrue(addResult1 is Result.Success)
+        val id1 = addResult1.value
 
-        repository.deleteBike(id1)
+        val addResult2 = repository.addBike(Bike(name = "Bike 2"))
+        assertTrue(addResult2 is Result.Success)
+        val id2 = addResult2.value
 
-        val bike2 = repository.getBikeById(id2)
-        assertEquals("Bike 2", bike2?.name)
+        val deleteResult = repository.deleteBike(id1)
+        assertTrue(deleteResult is Result.Success)
+
+        val getResult = repository.getBikeById(id2)
+        assertTrue(getResult is Result.Success)
+        assertEquals("Bike 2", getResult.value?.name)
     }
 
     @Test
     fun `getAllBikes emits updates reactively`() = runTest {
         repository.getAllBikes().test {
-            assertTrue(awaitItem().isEmpty())
+            val result1 = awaitItem()
+            assertTrue(result1 is Result.Success)
+            assertTrue(result1.value.isEmpty())
 
             repository.addBike(Bike(name = "New Bike"))
-            assertEquals(1, awaitItem().size)
+            val result2 = awaitItem()
+            assertTrue(result2 is Result.Success)
+            assertEquals(1, result2.value.size)
 
             cancelAndIgnoreRemainingEvents()
         }
@@ -136,7 +173,9 @@ class BikeRepositoryImplTest {
         repository.addBike(Bike(name = "Bike C", countingMethod = CountingMethod.KM))
 
         repository.getAllBikes().test {
-            val bikes = awaitItem()
+            val result = awaitItem()
+            assertTrue(result is Result.Success)
+            val bikes = result.value
             assertEquals(3, bikes.size)
             assertEquals(listOf("Bike A", "Bike B", "Bike C"), bikes.map { it.name })
             cancelAndIgnoreRemainingEvents()

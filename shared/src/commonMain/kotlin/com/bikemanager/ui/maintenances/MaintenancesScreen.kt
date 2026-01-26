@@ -19,8 +19,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -38,6 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -52,9 +53,13 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bikemanager.domain.model.CountingMethod
 import com.bikemanager.domain.model.Maintenance
+import com.bikemanager.presentation.maintenances.MaintenanceEvent
 import com.bikemanager.presentation.maintenances.MaintenancesUiState
-import com.bikemanager.presentation.maintenances.MaintenancesViewModel
+import com.bikemanager.presentation.maintenances.MaintenancesViewModelMvi
 import com.bikemanager.ui.Strings
+import com.bikemanager.ui.theme.Indigo
+import com.bikemanager.ui.theme.Teal
+import com.bikemanager.ui.theme.White
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
@@ -65,7 +70,7 @@ fun MaintenancesScreenContent(
     bikeId: String,
     bikeName: String,
     countingMethod: CountingMethod,
-    viewModel: MaintenancesViewModel = koinInject { parametersOf(bikeId) }
+    viewModel: MaintenancesViewModelMvi = koinInject { parametersOf(bikeId) }
 ) {
     val navigator = LocalNavigator.currentOrThrow
     val uiState by viewModel.uiState.collectAsState()
@@ -89,7 +94,37 @@ fun MaintenancesScreenContent(
 
     val tabs = listOf(Strings.TAB_DONE, Strings.TAB_TODO)
 
-    val headerColor = MaterialTheme.colorScheme.primary
+    val headerColor = if (pagerState.currentPage == 0) Indigo else Teal
+
+    // Collect events from ViewModel (MVI pattern)
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is MaintenanceEvent.ShowError -> {
+                    snackbarHostState.showSnackbar(
+                        message = event.message,
+                        duration = SnackbarDuration.Short
+                    )
+                }
+                is MaintenanceEvent.ShowSuccess -> {
+                    snackbarHostState.showSnackbar(
+                        message = event.message,
+                        duration = SnackbarDuration.Short
+                    )
+                }
+                is MaintenanceEvent.ShowUndoSnackbar -> {
+                    val result = snackbarHostState.showSnackbar(
+                        message = Strings.MAINTENANCE_DELETED,
+                        actionLabel = Strings.UNDO,
+                        duration = SnackbarDuration.Short
+                    )
+                    if (result == SnackbarResult.ActionPerformed) {
+                        viewModel.undoDelete()
+                    }
+                }
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -99,15 +134,15 @@ fun MaintenancesScreenContent(
                     navigationIcon = {
                         IconButton(onClick = { navigator.pop() }) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                imageVector = Icons.Default.ArrowBack,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimary
+                                tint = White
                             )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = headerColor,
-                        titleContentColor = MaterialTheme.colorScheme.onPrimary
+                        titleContentColor = White
                     )
                 )
                 Box(
@@ -137,7 +172,7 @@ fun MaintenancesScreenContent(
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = Strings.ADD,
-                        tint = MaterialTheme.colorScheme.onSecondary
+                        tint = White
                     )
                 }
             }
@@ -229,17 +264,8 @@ fun MaintenancesScreenContent(
                                             }
                                         },
                                         onDelete = {
+                                            // MVI: Just send intent, ViewModel will emit event
                                             viewModel.deleteMaintenance(maintenance)
-                                            scope.launch {
-                                                val result = snackbarHostState.showSnackbar(
-                                                    message = Strings.MAINTENANCE_DELETED,
-                                                    actionLabel = Strings.UNDO,
-                                                    duration = SnackbarDuration.Short
-                                                )
-                                                if (result == SnackbarResult.ActionPerformed) {
-                                                    viewModel.undoDelete()
-                                                }
-                                            }
                                         }
                                     )
                                 }

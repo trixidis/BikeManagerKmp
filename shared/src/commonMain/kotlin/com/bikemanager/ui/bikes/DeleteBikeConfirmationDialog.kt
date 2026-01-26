@@ -8,6 +8,14 @@ import androidx.compose.runtime.Composable
 import com.bikemanager.domain.model.Bike
 import com.bikemanager.ui.Strings
 
+/**
+ * Confirmation dialog for deleting a bike.
+ * Warns the user that all associated maintenances will also be deleted.
+ *
+ * @param bike The bike to be deleted
+ * @param onDismiss Callback when dialog is dismissed without confirmation
+ * @param onConfirm Callback when user confirms deletion
+ */
 @Composable
 fun DeleteBikeConfirmationDialog(
     bike: Bike,

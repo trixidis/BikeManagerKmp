@@ -1,6 +1,7 @@
 package com.bikemanager.data.repository
 
 import app.cash.turbine.test
+import com.bikemanager.domain.common.Result
 import com.bikemanager.domain.model.Maintenance
 import com.bikemanager.fake.FakeMaintenanceRepository
 import kotlinx.coroutines.test.runTest
@@ -24,8 +25,9 @@ class MaintenanceRepositoryImplTest {
     @Test
     fun `getMaintenancesByBikeId returns empty list initially`() = runTest {
         repository.getMaintenancesByBikeId("bike1").test {
-            val maintenances = awaitItem()
-            assertTrue(maintenances.isEmpty())
+            val result = awaitItem()
+            assertTrue(result is Result.Success)
+            assertTrue(result.value.isEmpty())
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -37,7 +39,9 @@ class MaintenanceRepositoryImplTest {
         repository.addMaintenance(Maintenance(name = "M3", bikeId = "bike2"))
 
         repository.getMaintenancesByBikeId("bike1").test {
-            val maintenances = awaitItem()
+            val result = awaitItem()
+            assertTrue(result is Result.Success)
+            val maintenances = result.value
             assertEquals(2, maintenances.size)
             assertTrue(maintenances.all { it.bikeId == "bike1" })
             cancelAndIgnoreRemainingEvents()
@@ -51,7 +55,9 @@ class MaintenanceRepositoryImplTest {
         repository.addMaintenance(Maintenance(name = "Done Other", bikeId = "bike2", isDone = true))
 
         repository.getDoneMaintenances("bike1").test {
-            val maintenances = awaitItem()
+            val result = awaitItem()
+            assertTrue(result is Result.Success)
+            val maintenances = result.value
             assertEquals(1, maintenances.size)
             assertEquals("Done", maintenances[0].name)
             assertTrue(maintenances[0].isDone)
@@ -66,7 +72,9 @@ class MaintenanceRepositoryImplTest {
         repository.addMaintenance(Maintenance(name = "Todo 2", bikeId = "bike1", isDone = false))
 
         repository.getTodoMaintenances("bike1").test {
-            val maintenances = awaitItem()
+            val result = awaitItem()
+            assertTrue(result is Result.Success)
+            val maintenances = result.value
             assertEquals(2, maintenances.size)
             assertTrue(maintenances.none { it.isDone })
             cancelAndIgnoreRemainingEvents()
@@ -77,9 +85,10 @@ class MaintenanceRepositoryImplTest {
     fun `addMaintenance returns generated id`() = runTest {
         val maintenance = Maintenance(name = "Oil Change", bikeId = "bike1")
 
-        val id = repository.addMaintenance(maintenance)
+        val result = repository.addMaintenance(maintenance)
 
-        assertTrue(id.isNotEmpty())
+        assertTrue(result is Result.Success)
+        assertTrue(result.value.isNotEmpty())
     }
 
     @Test
@@ -95,7 +104,9 @@ class MaintenanceRepositoryImplTest {
         repository.addMaintenance(maintenance)
 
         repository.getMaintenancesByBikeId("bike1").test {
-            val maintenances = awaitItem()
+            val result = awaitItem()
+            assertTrue(result is Result.Success)
+            val maintenances = result.value
             assertEquals(1, maintenances.size)
             val stored = maintenances[0]
             assertEquals("Chain Lube", stored.name)
@@ -108,9 +119,11 @@ class MaintenanceRepositoryImplTest {
 
     @Test
     fun `updateMaintenance modifies existing maintenance`() = runTest {
-        val id = repository.addMaintenance(Maintenance(name = "Original", bikeId = "bike1"))
+        val addResult = repository.addMaintenance(Maintenance(name = "Original", bikeId = "bike1"))
+        assertTrue(addResult is Result.Success)
+        val id = addResult.value
 
-        repository.updateMaintenance(
+        val updateResult = repository.updateMaintenance(
             Maintenance(
                 id = id,
                 name = "Updated",
@@ -119,9 +132,12 @@ class MaintenanceRepositoryImplTest {
                 bikeId = "bike1"
             )
         )
+        assertTrue(updateResult is Result.Success)
 
         repository.getMaintenancesByBikeId("bike1").test {
-            val maintenances = awaitItem()
+            val result = awaitItem()
+            assertTrue(result is Result.Success)
+            val maintenances = result.value
             assertEquals(1, maintenances.size)
             assertEquals("Updated", maintenances[0].name)
             assertEquals(10000f, maintenances[0].value)
@@ -132,14 +148,19 @@ class MaintenanceRepositoryImplTest {
 
     @Test
     fun `markMaintenanceDone updates isDone value and date`() = runTest {
-        val id = repository.addMaintenance(
+        val addResult = repository.addMaintenance(
             Maintenance(name = "Pending", bikeId = "bike1", isDone = false)
         )
+        assertTrue(addResult is Result.Success)
+        val id = addResult.value
 
-        repository.markMaintenanceDone(id, "bike1", 15000f, 9876543210L)
+        val markResult = repository.markMaintenanceDone(id, "bike1", 15000f, 9876543210L)
+        assertTrue(markResult is Result.Success)
 
         repository.getDoneMaintenances("bike1").test {
-            val maintenances = awaitItem()
+            val result = awaitItem()
+            assertTrue(result is Result.Success)
+            val maintenances = result.value
             assertEquals(1, maintenances.size)
             assertTrue(maintenances[0].isDone)
             assertEquals(15000f, maintenances[0].value)
@@ -150,26 +171,35 @@ class MaintenanceRepositoryImplTest {
 
     @Test
     fun `deleteMaintenance removes maintenance`() = runTest {
-        val id = repository.addMaintenance(Maintenance(name = "To Delete", bikeId = "bike1"))
+        val addResult = repository.addMaintenance(Maintenance(name = "To Delete", bikeId = "bike1"))
+        assertTrue(addResult is Result.Success)
+        val id = addResult.value
 
-        repository.deleteMaintenance(id, "bike1")
+        val deleteResult = repository.deleteMaintenance(id, "bike1")
+        assertTrue(deleteResult is Result.Success)
 
         repository.getMaintenancesByBikeId("bike1").test {
-            val maintenances = awaitItem()
-            assertTrue(maintenances.isEmpty())
+            val result = awaitItem()
+            assertTrue(result is Result.Success)
+            assertTrue(result.value.isEmpty())
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
     fun `deleteMaintenance does not affect other maintenances`() = runTest {
-        val id1 = repository.addMaintenance(Maintenance(name = "M1", bikeId = "bike1"))
+        val addResult1 = repository.addMaintenance(Maintenance(name = "M1", bikeId = "bike1"))
+        assertTrue(addResult1 is Result.Success)
+        val id1 = addResult1.value
         repository.addMaintenance(Maintenance(name = "M2", bikeId = "bike1"))
 
-        repository.deleteMaintenance(id1, "bike1")
+        val deleteResult = repository.deleteMaintenance(id1, "bike1")
+        assertTrue(deleteResult is Result.Success)
 
         repository.getMaintenancesByBikeId("bike1").test {
-            val maintenances = awaitItem()
+            val result = awaitItem()
+            assertTrue(result is Result.Success)
+            val maintenances = result.value
             assertEquals(1, maintenances.size)
             assertEquals("M2", maintenances[0].name)
             cancelAndIgnoreRemainingEvents()
@@ -179,10 +209,14 @@ class MaintenanceRepositoryImplTest {
     @Test
     fun `getMaintenancesByBikeId emits updates reactively`() = runTest {
         repository.getMaintenancesByBikeId("bike1").test {
-            assertTrue(awaitItem().isEmpty())
+            val result1 = awaitItem()
+            assertTrue(result1 is Result.Success)
+            assertTrue(result1.value.isEmpty())
 
             repository.addMaintenance(Maintenance(name = "New", bikeId = "bike1"))
-            assertEquals(1, awaitItem().size)
+            val result2 = awaitItem()
+            assertTrue(result2 is Result.Success)
+            assertEquals(1, result2.value.size)
 
             cancelAndIgnoreRemainingEvents()
         }
@@ -190,25 +224,34 @@ class MaintenanceRepositoryImplTest {
 
     @Test
     fun `markMaintenanceDone moves maintenance from todo to done`() = runTest {
-        val id = repository.addMaintenance(
+        val addResult = repository.addMaintenance(
             Maintenance(name = "Pending", bikeId = "bike1", isDone = false)
         )
+        assertTrue(addResult is Result.Success)
+        val id = addResult.value
 
         // Initially in todo
         repository.getTodoMaintenances("bike1").test {
-            assertEquals(1, awaitItem().size)
+            val result = awaitItem()
+            assertTrue(result is Result.Success)
+            assertEquals(1, result.value.size)
             cancelAndIgnoreRemainingEvents()
         }
 
-        repository.markMaintenanceDone(id, "bike1", 5000f, 1234567890L)
+        val markResult = repository.markMaintenanceDone(id, "bike1", 5000f, 1234567890L)
+        assertTrue(markResult is Result.Success)
 
         // Now in done
         repository.getTodoMaintenances("bike1").test {
-            assertTrue(awaitItem().isEmpty())
+            val result = awaitItem()
+            assertTrue(result is Result.Success)
+            assertTrue(result.value.isEmpty())
             cancelAndIgnoreRemainingEvents()
         }
         repository.getDoneMaintenances("bike1").test {
-            assertEquals(1, awaitItem().size)
+            val result = awaitItem()
+            assertTrue(result is Result.Success)
+            assertEquals(1, result.value.size)
             cancelAndIgnoreRemainingEvents()
         }
     }

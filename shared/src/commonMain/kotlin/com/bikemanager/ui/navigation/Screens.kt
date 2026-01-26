@@ -47,13 +47,3 @@ data class MaintenancesScreenDestination(
         )
     }
 }
-
-/**
- * Voyager Screen for Settings.
- */
-data object SettingsScreenDestination : Screen {
-    @androidx.compose.runtime.Composable
-    override fun Content() {
-        com.bikemanager.ui.settings.SettingsScreenContent()
-    }
-}

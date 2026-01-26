@@ -1,5 +1,6 @@
 package com.bikemanager.domain.repository
 
+import com.bikemanager.domain.common.Result
 import com.bikemanager.domain.model.User
 import kotlinx.coroutines.flow.Flow
 
@@ -20,14 +21,15 @@ interface AuthRepository {
     /**
      * Signs in with Google using the provided ID token.
      * @param idToken The Google ID token
-     * @return The authenticated user
+     * @return Result containing the authenticated user or an error
      */
-    suspend fun signInWithGoogle(idToken: String): User
+    suspend fun signInWithGoogle(idToken: String): Result<User>
 
     /**
      * Signs out the current user.
+     * @return Result indicating success or failure
      */
-    suspend fun signOut()
+    suspend fun signOut(): Result<Unit>
 
     /**
      * Checks if a user is currently signed in.

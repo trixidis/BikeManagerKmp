@@ -27,4 +27,7 @@
     <string name="undo">Annuler</string>
     <string name="error_login">Une erreur est survenue</string>
     <string name="sign_in_with_google">Se connecter avec Google</string>
+    <string name="delete">Supprimer</string>
+    <string name="delete_bike_title">Supprimer cette moto ?</string>
+    <string name="delete_bike_message">Cette action supprimera également tous les entretiens associés. Cette action est irréversible.</string>
 </resources>

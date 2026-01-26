@@ -33,9 +33,15 @@ object Strings {
     const val ERROR_LOGIN = "Une erreur est survenue"
     const val SIGN_IN_WITH_GOOGLE = "Se connecter avec Google"
     const val EDIT = "Modifier"
-    const val SETTINGS = "Paramètres"
-    const val THEME = "Thème"
-    const val THEME_LIGHT = "Clair"
-    const val THEME_DARK = "Sombre"
-    const val THEME_SYSTEM = "Système"
+    const val DELETE = "Supprimer"
+    const val DELETE_BIKE_TITLE = "Supprimer cette moto ?"
+    const val DELETE_BIKE_MESSAGE = "Cette action supprimera également tous les entretiens associés. Cette action est irréversible."
+
+    // Error messages
+    const val ERROR_NETWORK = "Erreur de connexion. Veuillez vérifier votre connexion internet."
+    const val ERROR_AUTH = "Erreur d'authentification. Veuillez vous reconnecter."
+    const val ERROR_DATABASE = "Erreur lors de la sauvegarde. Veuillez réessayer."
+    const val ERROR_VALIDATION = "Saisie invalide. Veuillez vérifier vos données."
+    const val ERROR_UNKNOWN = "Une erreur inattendue est survenue."
+    const val ERROR_RETRY = "Réessayer"
 }

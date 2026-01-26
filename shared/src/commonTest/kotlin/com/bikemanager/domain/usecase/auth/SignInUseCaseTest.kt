@@ -1,11 +1,12 @@
 package com.bikemanager.domain.usecase.auth
 
+import com.bikemanager.domain.common.AppError
+import com.bikemanager.domain.common.Result
 import com.bikemanager.fake.FakeAuthRepository
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -21,8 +22,10 @@ class SignInUseCaseTest {
 
     @Test
     fun `invoke signs in user and returns user`() = runTest {
-        val user = useCase("test-id-token")
+        val result = useCase("test-id-token")
 
+        assertTrue(result is Result.Success)
+        val user = result.value
         assertNotNull(user)
         assertTrue(user.uid.contains("test-id-token"))
         assertEquals("test@example.com", user.email)
@@ -30,32 +33,33 @@ class SignInUseCaseTest {
     }
 
     @Test
-    fun `invoke throws exception when id token is empty`() = runTest {
-        assertFailsWith<IllegalArgumentException> {
-            useCase("")
-        }
+    fun `invoke returns failure when id token is empty`() = runTest {
+        val result = useCase("")
+
+        assertTrue(result is Result.Failure)
     }
 
     @Test
-    fun `invoke throws exception when id token is blank`() = runTest {
-        assertFailsWith<IllegalArgumentException> {
-            useCase("   ")
-        }
+    fun `invoke returns failure when id token is blank`() = runTest {
+        val result = useCase("   ")
+
+        assertTrue(result is Result.Failure)
     }
 
     @Test
-    fun `invoke throws exception when sign in fails`() = runTest {
-        repository.setSignInThrows(true, IllegalStateException("Auth failed"))
+    fun `invoke returns failure when sign in fails`() = runTest {
+        repository.setSignInFails(true, AppError.AuthError("Auth failed"))
 
-        assertFailsWith<IllegalStateException> {
-            useCase("valid-token")
-        }
+        val result = useCase("valid-token")
+
+        assertTrue(result is Result.Failure)
     }
 
     @Test
     fun `invoke updates repository state`() = runTest {
-        useCase("test-token")
+        val result = useCase("test-token")
 
+        assertTrue(result is Result.Success)
         assertTrue(repository.isSignedIn())
         assertNotNull(repository.getCurrentUser())
     }

@@ -45,8 +45,8 @@ class MaintenancesViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun createViewModel(): MaintenancesViewModel {
-        return MaintenancesViewModel(
+    private fun createViewModel(): MaintenancesViewModelMvi {
+        return MaintenancesViewModelMvi(
             bikeId = bikeId,
             getMaintenancesUseCase = getMaintenancesUseCase,
             addMaintenanceUseCase = addMaintenanceUseCase,
@@ -196,17 +196,24 @@ class MaintenancesViewModelTest {
     }
 
     @Test
-    fun `deleteMaintenance removes maintenance from repository`() = runTest {
+    fun `deleteMaintenance removes maintenance from repository and emits ShowUndoSnackbar event`() = runTest {
         val maintenance = Maintenance(id = "m1", name = "To Delete", isDone = true, bikeId = bikeId)
         maintenanceRepository.setMaintenances(listOf(maintenance))
 
         val viewModel = createViewModel()
         advanceUntilIdle()
 
-        viewModel.deleteMaintenance(maintenance)
-        advanceUntilIdle()
+        viewModel.events.test {
+            viewModel.deleteMaintenance(maintenance)
+            advanceUntilIdle()
 
-        assertTrue(maintenanceRepository.getCurrentMaintenances().isEmpty())
+            val event = awaitItem()
+            assertTrue(event is MaintenanceEvent.ShowUndoSnackbar)
+            assertEquals(maintenance, (event as MaintenanceEvent.ShowUndoSnackbar).maintenance)
+
+            assertTrue(maintenanceRepository.getCurrentMaintenances().isEmpty())
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     @Test
@@ -270,6 +277,105 @@ class MaintenancesViewModelTest {
             assertEquals(1, success.todoMaintenances.size)
             assertEquals("Bike 1 Done", success.doneMaintenances[0].name)
             assertEquals("Bike 1 Todo", success.todoMaintenances[0].name)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `observeMaintenances with database error shows French error message`() = runTest {
+        maintenanceRepository.setGetDoneFails(true, com.bikemanager.domain.common.AppError.DatabaseError("Database failed"))
+
+        val viewModel = createViewModel()
+
+        viewModel.uiState.test {
+            assertEquals(MaintenancesUiState.Loading, awaitItem())
+
+            advanceUntilIdle()
+            val errorState = awaitItem()
+            assertTrue(errorState is MaintenancesUiState.Error)
+            assertEquals("Erreur lors de la sauvegarde. Veuillez réessayer.", (errorState as MaintenancesUiState.Error).message)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `addDoneMaintenance with database error emits ShowError event with French message`() = runTest {
+        maintenanceRepository.setAddFails(true, com.bikemanager.domain.common.AppError.DatabaseError("Add failed"))
+
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.events.test {
+            viewModel.addDoneMaintenance(name = "Oil Change", value = 5000f)
+            advanceUntilIdle()
+
+            val event = awaitItem()
+            assertTrue(event is MaintenanceEvent.ShowError)
+            assertEquals("Erreur lors de la sauvegarde. Veuillez réessayer.", (event as MaintenanceEvent.ShowError).message)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `addTodoMaintenance with database error emits ShowError event with French message`() = runTest {
+        maintenanceRepository.setAddFails(true, com.bikemanager.domain.common.AppError.DatabaseError("Add failed"))
+
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.events.test {
+            viewModel.addTodoMaintenance(name = "Future Check")
+            advanceUntilIdle()
+
+            val event = awaitItem()
+            assertTrue(event is MaintenanceEvent.ShowError)
+            assertEquals("Erreur lors de la sauvegarde. Veuillez réessayer.", (event as MaintenanceEvent.ShowError).message)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `markMaintenanceDone with database error emits ShowError event with French message`() = runTest {
+        maintenanceRepository.setMaintenances(
+            listOf(Maintenance(id = "m1", name = "Todo", isDone = false, bikeId = bikeId))
+        )
+        maintenanceRepository.setMarkDoneFails(true, com.bikemanager.domain.common.AppError.DatabaseError("Mark done failed"))
+
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.events.test {
+            viewModel.markMaintenanceDone(maintenanceId = "m1", value = 3000f)
+            advanceUntilIdle()
+
+            val event = awaitItem()
+            assertTrue(event is MaintenanceEvent.ShowError)
+            assertEquals("Erreur lors de la sauvegarde. Veuillez réessayer.", (event as MaintenanceEvent.ShowError).message)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `deleteMaintenance with database error emits ShowError event with French message`() = runTest {
+        val maintenance = Maintenance(id = "m1", name = "To Delete", isDone = true, bikeId = bikeId)
+        maintenanceRepository.setMaintenances(listOf(maintenance))
+        maintenanceRepository.setDeleteFails(true, com.bikemanager.domain.common.AppError.DatabaseError("Delete failed"))
+
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.events.test {
+            viewModel.deleteMaintenance(maintenance)
+            advanceUntilIdle()
+
+            val event = awaitItem()
+            assertTrue(event is MaintenanceEvent.ShowError)
+            assertEquals("Erreur lors de la sauvegarde. Veuillez réessayer.", (event as MaintenanceEvent.ShowError).message)
+
             cancelAndIgnoreRemainingEvents()
         }
     }

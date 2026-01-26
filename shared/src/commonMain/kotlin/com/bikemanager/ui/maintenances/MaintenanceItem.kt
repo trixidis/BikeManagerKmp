@@ -22,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.bikemanager.domain.model.CountingMethod
 import com.bikemanager.domain.model.Maintenance
+import com.bikemanager.ui.theme.DarkRed
+import com.bikemanager.ui.theme.SecondaryText
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -72,14 +74,14 @@ fun MaintenanceItem(
                         Text(
                             text = valueText,
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = SecondaryText
                         )
 
                         if (maintenance.date > 0) {
                             Text(
                                 text = formatDate(maintenance.date),
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = SecondaryText
                             )
                         }
                     }
@@ -90,7 +92,7 @@ fun MaintenanceItem(
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.error
+                    tint = DarkRed
                 )
             }
         }
