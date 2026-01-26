@@ -6,6 +6,7 @@ import com.bikemanager.domain.common.fold
 import com.bikemanager.domain.model.Bike
 import com.bikemanager.domain.model.CountingMethod
 import com.bikemanager.domain.usecase.bike.AddBikeUseCase
+import com.bikemanager.domain.usecase.bike.DeleteBikeUseCase
 import com.bikemanager.domain.usecase.bike.GetBikesUseCase
 import com.bikemanager.domain.usecase.bike.UpdateBikeUseCase
 import com.bikemanager.presentation.base.MviViewModel
@@ -26,11 +27,13 @@ import kotlinx.coroutines.flow.StateFlow
  * @param getBikesUseCase Use case to observe bikes stream
  * @param addBikeUseCase Use case to add a bike
  * @param updateBikeUseCase Use case to update a bike
+ * @param deleteBikeUseCase Use case to delete a bike with cascade
  */
 class BikesViewModelMvi(
     private val getBikesUseCase: GetBikesUseCase,
     private val addBikeUseCase: AddBikeUseCase,
-    private val updateBikeUseCase: UpdateBikeUseCase
+    private val updateBikeUseCase: UpdateBikeUseCase,
+    private val deleteBikeUseCase: DeleteBikeUseCase
 ) : MviViewModel<BikesUiState, BikeEvent>(
     initialState = BikesUiState.Loading
 ) {
@@ -123,6 +126,29 @@ class BikesViewModelMvi(
         if (currentState is BikesUiState.Success) {
             val bike = currentState.bikes.find { it.id == bikeId } ?: return
             updateBike(bike.copy(countingMethod = countingMethod))
+        }
+    }
+
+    /**
+     * Delete a bike and all its associated maintenances (cascade delete).
+     *
+     * Deletion order:
+     * 1. Deletes all maintenances for the bike
+     * 2. Deletes the bike itself
+     *
+     * On success: Emits ShowSuccess event
+     * On failure: Emits ShowError event
+     *
+     * @param bikeId ID of the bike to delete
+     */
+    fun deleteBike(bikeId: String) {
+        execute(
+            onSuccess = {
+                Napier.d { "Bike and associated maintenances deleted successfully: $bikeId" }
+                emitEvent(BikeEvent.ShowSuccess("Vélo supprimé"))
+            }
+        ) {
+            deleteBikeUseCase(bikeId)
         }
     }
 

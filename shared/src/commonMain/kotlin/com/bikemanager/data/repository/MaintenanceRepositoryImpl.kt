@@ -237,4 +237,20 @@ class MaintenanceRepositoryImpl(
             }
         }
     }
+
+    override suspend fun deleteAllMaintenancesForBike(bikeId: String): Result<Unit> {
+        val ref = maintenancesRef(bikeId)
+        if (ref == null) {
+            return Result.Failure(
+                AppError.AuthError("User not authenticated")
+            )
+        }
+
+        return ErrorHandler.catching("deleting all maintenances for bike") {
+            withTimeout(10_000L) { // 10 second timeout
+                ref.removeValue()
+                Napier.d { "All maintenances deleted for bike: $bikeId" }
+            }
+        }
+    }
 }

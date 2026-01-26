@@ -43,4 +43,9 @@ interface MaintenanceRepository {
      * Deletes a maintenance.
      */
     suspend fun deleteMaintenance(id: String, bikeId: String): Result<Unit>
+
+    /**
+     * Deletes all maintenances for a bike (cascade delete).
+     */
+    suspend fun deleteAllMaintenancesForBike(bikeId: String): Result<Unit>
 }
