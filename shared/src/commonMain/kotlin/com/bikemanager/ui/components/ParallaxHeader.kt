@@ -134,6 +134,7 @@ fun ParallaxHeader(
                     )
                 }
             }
+            Spacer(modifier = Modifier.weight(1f))
         }
     }
 }
