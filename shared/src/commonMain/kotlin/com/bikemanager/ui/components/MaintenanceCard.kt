@@ -25,6 +25,8 @@ import bikemanager.shared.generated.resources.*
 import com.bikemanager.ui.Constants
 import org.jetbrains.compose.resources.stringResource
 import com.bikemanager.ui.theme.*
+import com.bikemanager.ui.utils.formatNumber
+import com.bikemanager.ui.utils.formatNumberDecimal
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -235,9 +237,9 @@ fun MaintenanceCard(
 private fun formatMaintenanceValue(value: Float, method: CountingMethod): String {
     val unit = if (method == CountingMethod.KM) "km" else "h"
     return if (value % 1.0f == 0.0f) {
-        "${String.format("%,d", value.toInt()).replace(',', ' ')} $unit"
+        "${formatNumber(value.toInt())} $unit"
     } else {
-        "${String.format("%,.1f", value).replace(',', ' ')} $unit"
+        "${formatNumberDecimal(value)} $unit"
     }
 }
 

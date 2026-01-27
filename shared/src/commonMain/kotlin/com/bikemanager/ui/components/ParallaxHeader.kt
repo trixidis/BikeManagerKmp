@@ -22,6 +22,8 @@ import com.bikemanager.domain.model.CountingMethod
 import bikemanager.shared.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import com.bikemanager.ui.theme.*
+import com.bikemanager.ui.utils.formatNumber
+import com.bikemanager.ui.utils.formatNumberDecimal
 
 /**
  * Premium parallax header with animated gradient background.
@@ -142,8 +144,8 @@ fun ParallaxHeader(
 private fun formatValue(value: Float, method: CountingMethod): String {
     val unit = if (method == CountingMethod.KM) "km" else "h"
     return if (value % 1.0f == 0.0f) {
-        "${String.format("%,d", value.toInt()).replace(',', ' ')} $unit"
+        "${formatNumber(value.toInt())} $unit"
     } else {
-        "${String.format("%,.1f", value).replace(',', ' ')} $unit"
+        "${formatNumberDecimal(value)} $unit"
     }
 }

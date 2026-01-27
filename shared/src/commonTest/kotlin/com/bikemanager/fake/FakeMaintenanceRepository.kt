@@ -97,6 +97,14 @@ class FakeMaintenanceRepository : MaintenanceRepository {
         return Result.Success(Unit)
     }
 
+    override suspend fun deleteAllMaintenancesForBike(bikeId: String): Result<Unit> {
+        if (shouldFailOnDelete) {
+            return Result.Failure(deleteError ?: AppError.DatabaseError("Failed to delete all maintenances"))
+        }
+        maintenancesFlow.value = maintenancesFlow.value.filter { it.bikeId != bikeId }
+        return Result.Success(Unit)
+    }
+
     /**
      * Helper to set maintenances for testing.
      */

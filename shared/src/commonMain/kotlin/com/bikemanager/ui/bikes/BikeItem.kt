@@ -31,6 +31,8 @@ import com.bikemanager.domain.model.CountingMethod
 import com.bikemanager.ui.Constants
 import com.bikemanager.ui.components.IconWrapper
 import com.bikemanager.ui.theme.*
+import com.bikemanager.ui.utils.formatNumber
+import com.bikemanager.ui.utils.formatNumberDecimal
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -256,8 +258,8 @@ private fun MethodBadge(method: CountingMethod) {
 private fun formatBikeValue(value: Float, method: CountingMethod): String {
     val unit = if (method == CountingMethod.KM) Constants.KM_UNIT else Constants.HOURS_UNIT
     return if (value % 1.0f == 0.0f) {
-        "${String.format("%,d", value.toInt()).replace(',', ' ')} $unit"
+        "${formatNumber(value.toInt())} $unit"
     } else {
-        "${String.format("%,.1f", value).replace(',', ' ')} $unit"
+        "${formatNumberDecimal(value)} $unit"
     }
 }
