@@ -57,8 +57,8 @@ fun ToggleGroup(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(BgCard, RoundedCornerShape(12.dp))
-            .border(1.dp, BorderSubtle, RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp))
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
             .padding(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
@@ -91,14 +91,14 @@ fun ToggleGroup(
                         imageVector = option.icon,
                         contentDescription = null,
                         modifier = Modifier.size(20.dp),
-                        tint = if (isSelected) Color.White else TextSecondary
+                        tint = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = option.label,
                         style = MaterialTheme.typography.bodySmall.copy(
                             fontWeight = FontWeight.SemiBold
                         ),
-                        color = if (isSelected) Color.White else TextSecondary
+                        color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

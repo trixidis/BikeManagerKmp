@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.compose.compiler)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.android.library)
     alias(libs.plugins.sqldelight)
     alias(libs.plugins.kover)
@@ -34,6 +35,7 @@ kotlin {
                 implementation(libs.coroutines.core)
                 implementation(libs.napier)
                 implementation(libs.kotlinx.datetime)
+                implementation(libs.kotlinx.serialization.json)
 
                 // Lifecycle ViewModel for KMP
                 implementation(libs.androidx.lifecycle.viewmodel)
@@ -47,11 +49,8 @@ kotlin {
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.components.resources)
 
-                // Voyager Navigation
-                implementation(libs.voyager.navigator)
-                implementation(libs.voyager.screenModel)
-                implementation(libs.voyager.koin)
-                implementation(libs.voyager.transitions)
+                // Navigation Compose (Jetpack)
+                implementation(libs.compose.navigation)
 
                 // Koin Compose Multiplatform
                 implementation(libs.koin.compose.multiplatform)

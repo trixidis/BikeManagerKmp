@@ -31,7 +31,8 @@ import com.bikemanager.ui.utils.formatNumberDecimal
  * Based on PRD specifications:
  * - Height: 200dp
  * - Background gradient: changes based on active tab (blue for Done, teal for Todo)
- * - Overlay gradient: transparent to BgPrimary 80%
+ * - Automatically adapts gradient colors based on current theme
+ * - Overlay gradient: transparent to background 80%
  * - Back button: 44×44dp with blur background
  * - Content: bike name + total value with icon
  * - Transition animation: 300ms
@@ -52,6 +53,7 @@ fun ParallaxHeader(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -62,12 +64,12 @@ fun ParallaxHeader(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
-                    if (activeTab == TabVariant.DONE) Gradients.headerDone
-                    else Gradients.headerTodo
+                    if (activeTab == TabVariant.DONE) Gradients.getHeaderDone()
+                    else Gradients.getHeaderTodo()
                 )
         )
 
-        // Overlay gradient (vertical fade to BgPrimary)
+        // Overlay gradient (vertical fade to background)
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -75,7 +77,7 @@ fun ParallaxHeader(
                     Brush.verticalGradient(
                         colors = listOf(
                             Color.Transparent,
-                            BgPrimary.copy(alpha = 0.8f)
+                            MaterialTheme.colorScheme.background.copy(alpha = 0.8f)
                         )
                     )
                 )
@@ -93,14 +95,14 @@ fun ParallaxHeader(
                 modifier = Modifier
                     .size(Dimens.BackButtonSize)
                     .background(
-                        Color.Black.copy(alpha = 0.4f),
+                        MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
                         RoundedCornerShape(14.dp)
                     )
             ) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = stringResource(Res.string.back),
-                    tint = Color.White
+                    tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
 
@@ -111,7 +113,7 @@ fun ParallaxHeader(
                 Text(
                     text = bikeName,
                     style = MaterialTheme.typography.displayMedium,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
 
                 Spacer(modifier = Modifier.height(Dimens.SpaceSm))
@@ -130,7 +132,7 @@ fun ParallaxHeader(
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontWeight = FontWeight.SemiBold
                         ),
-                        color = Color.White.copy(alpha = 0.7f)
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
                     )
                 }
             }

@@ -99,11 +99,11 @@ fun BikeItem(
             },
         shape = RoundedCornerShape(Dimens.RadiusXl),
         colors = CardDefaults.cardColors(
-            containerColor = if (isHovered) BgCardHover else BgCard
+            containerColor = if (isHovered) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface
         ),
         border = BorderStroke(
             1.dp,
-            if (isHovered) BorderStrong else BorderSubtle
+            if (isHovered) MaterialTheme.colorScheme.outlineVariant else MaterialTheme.colorScheme.outline
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -140,7 +140,7 @@ fun BikeItem(
                         Icon(
                             imageVector = Icons.Filled.Build,
                             contentDescription = null,
-                            tint = Color.White,
+                            tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -151,19 +151,19 @@ fun BikeItem(
                         modifier = Modifier
                             .size(Dimens.BikeCardEditBtnSize)
                             .background(
-                                Color.White.copy(alpha = 0.05f),
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f),
                                 RoundedCornerShape(Dimens.RadiusMd)
                             )
                             .border(
                                 1.dp,
-                                BorderSubtle,
+                                MaterialTheme.colorScheme.outline,
                                 RoundedCornerShape(Dimens.RadiusMd)
                             )
                     ) {
                         Icon(
                             imageVector = Icons.Default.Edit,
                             contentDescription = stringResource(Res.string.edit),
-                            tint = TextSecondary,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -175,7 +175,7 @@ fun BikeItem(
                 Text(
                     text = bike.name,
                     style = MaterialTheme.typography.titleMedium,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Spacer(modifier = Modifier.height(Dimens.SpaceLg))
@@ -223,7 +223,7 @@ private fun BikeStat(value: Float, countingMethod: CountingMethod) {
             style = MaterialTheme.typography.bodySmall.copy(
                 fontWeight = FontWeight.SemiBold
             ),
-            color = TextPrimary
+            color = MaterialTheme.colorScheme.onSurface
         )
     }
 }

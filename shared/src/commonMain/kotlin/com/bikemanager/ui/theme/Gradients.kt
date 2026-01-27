@@ -1,8 +1,11 @@
 package com.bikemanager.ui.theme
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 
 /**
  * Premium gradients for the "Premium Dark Automotive" design system.
@@ -37,9 +40,9 @@ object Gradients {
     )
 
     /**
-     * Header gradient for "Faits" (Done) tab - Blue indigo theme
+     * Header gradient for "Faits" (Done) tab - Blue indigo theme (Dark)
      */
-    val headerDone = Brush.linearGradient(
+    val headerDoneDark = Brush.linearGradient(
         colors = listOf(
             Color(0xFF1A237E),
             Color(0xFF3F51B5),
@@ -50,9 +53,22 @@ object Gradients {
     )
 
     /**
-     * Header gradient for "À faire" (Todo) tab - Teal/green theme
+     * Header gradient for "Faits" (Done) tab - Blue indigo theme (Light)
      */
-    val headerTodo = Brush.linearGradient(
+    val headerDoneLight = Brush.linearGradient(
+        colors = listOf(
+            HeaderDoneStartLight,
+            HeaderDoneMidLight,
+            HeaderDoneEndLight
+        ),
+        start = Offset(0f, 0f),
+        end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+    )
+
+    /**
+     * Header gradient for "À faire" (Todo) tab - Teal/green theme (Dark)
+     */
+    val headerTodoDark = Brush.linearGradient(
         colors = listOf(
             Color(0xFF004D40),
             Color(0xFF009688),
@@ -61,4 +77,39 @@ object Gradients {
         start = Offset(0f, 0f),
         end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
     )
+
+    /**
+     * Header gradient for "À faire" (Todo) tab - Teal/green theme (Light)
+     */
+    val headerTodoLight = Brush.linearGradient(
+        colors = listOf(
+            HeaderTodoStartLight,
+            HeaderTodoMidLight,
+            HeaderTodoEndLight
+        ),
+        start = Offset(0f, 0f),
+        end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+    )
+
+    /**
+     * Get the appropriate "Done" header gradient based on current theme.
+     * Automatically detects theme from MaterialTheme.colorScheme.
+     */
+    @Composable
+    fun getHeaderDone(): Brush {
+        // Detect dark theme by checking if background is dark
+        val isDark = androidx.compose.material3.MaterialTheme.colorScheme.background.luminance() < 0.5f
+        return if (isDark) headerDoneDark else headerDoneLight
+    }
+
+    /**
+     * Get the appropriate "Todo" header gradient based on current theme.
+     * Automatically detects theme from MaterialTheme.colorScheme.
+     */
+    @Composable
+    fun getHeaderTodo(): Brush {
+        // Detect dark theme by checking if background is dark
+        val isDark = androidx.compose.material3.MaterialTheme.colorScheme.background.luminance() < 0.5f
+        return if (isDark) headerTodoDark else headerTodoLight
+    }
 }

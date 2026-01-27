@@ -8,11 +8,11 @@ coroutines = "1.10.2"
 ktor = "3.4.0"
 napier = "2.7.1"
 kotlinxDatetime = "0.7.1"
-composeNavigation = "2.9.6"
+kotlinxSerialization = "1.8.1"
+composeNavigation = "2.9.1"
 coil = "2.7.0"
 composeBom = "2026.01.00"
 composeMultiplatform = "1.10.0"
-voyagerNavigation = "1.0.1"
 activityCompose = "1.12.2"
 coreKtx = "1.17.0"
 lifecycleRuntime = "2.10.0"
@@ -36,12 +36,6 @@ koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin" }
 koin-compose-multiplatform = { module = "io.insert-koin:koin-compose", version.ref = "koinCompose" }
 koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
-
-# Voyager Navigation
-voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "voyagerNavigation" }
-voyager-screenModel = { module = "cafe.adriel.voyager:voyager-screenmodel", version.ref = "voyagerNavigation" }
-voyager-koin = { module = "cafe.adriel.voyager:voyager-koin", version.ref = "voyagerNavigation" }
-voyager-transitions = { module = "cafe.adriel.voyager:voyager-transitions", version.ref = "voyagerNavigation" }
 
 # SQLDelight
 sqldelight-runtime = { module = "app.cash.sqldelight:runtime", version.ref = "sqldelight" }
@@ -67,6 +61,9 @@ napier = { module = "io.github.aakira:napier", version.ref = "napier" }
 # Kotlinx Datetime
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 
+# Kotlinx Serialization
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
+
 # Android
 androidx-core = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 androidx-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycleRuntime" }
@@ -81,7 +78,7 @@ compose-ui-graphics = { module = "androidx.compose.ui:ui-graphics" }
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 compose-material3 = { module = "androidx.compose.material3:material3" }
-compose-navigation = { module = "androidx.navigation:navigation-compose", version.ref = "composeNavigation" }
+compose-navigation = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "composeNavigation" }
 
 # Coil
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
@@ -118,3 +115,4 @@ sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 google-services = { id = "com.google.gms.google-services", version = "4.4.0" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

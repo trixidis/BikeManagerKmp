@@ -20,12 +20,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import bikemanager.shared.generated.resources.Res
+import bikemanager.shared.generated.resources.app_name
+import bikemanager.shared.generated.resources.app_subtitle
+import bikemanager.shared.generated.resources.error_google_sign_in
+import bikemanager.shared.generated.resources.error_user_not_found
+import bikemanager.shared.generated.resources.sign_in_with_google
 import com.bikemanager.presentation.auth.AuthUiState
 import com.bikemanager.presentation.auth.AuthViewModelMvi
-import bikemanager.shared.generated.resources.*
-import org.jetbrains.compose.resources.stringResource
 import com.mmk.kmpauth.firebase.google.GoogleButtonUiContainerFirebase
+import com.mmk.kmpauth.uihelper.google.GoogleButtonMode
 import com.mmk.kmpauth.uihelper.google.GoogleSignInButton
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 @Composable
@@ -40,6 +46,7 @@ fun LoginScreenContent(
         is AuthUiState.Authenticated -> {
             onSignedIn()
         }
+
         else -> {}
     }
 
@@ -143,11 +150,12 @@ private fun GoogleSignInButtonContent(
                     onError(exception.message ?: errorGoogleSignIn)
                 }
             )
-        }
+        }, linkAccount = false
     ) {
         GoogleSignInButton(
             modifier = Modifier.fillMaxWidth().height(56.dp),
-            text = signInText
+            text = signInText,
+            mode = GoogleButtonMode.Dark
         ) {
             this.onClick()
         }

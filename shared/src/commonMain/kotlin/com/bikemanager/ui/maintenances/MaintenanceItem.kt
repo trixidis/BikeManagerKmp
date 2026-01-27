@@ -74,14 +74,14 @@ fun MaintenanceItem(
                         Text(
                             text = valueText,
                             style = MaterialTheme.typography.bodyMedium,
-                            color = TextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
                         if (maintenance.date > 0) {
                             Text(
                                 text = formatDate(maintenance.date),
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = TextSecondary
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }

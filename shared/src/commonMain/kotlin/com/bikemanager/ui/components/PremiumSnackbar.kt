@@ -56,17 +56,17 @@ fun PremiumSnackbarContent(
         SnackbarType.SUCCESS -> Triple(
             Gradients.teal,
             Icons.Default.CheckCircle,
-            Color.White
+            MaterialTheme.colorScheme.onPrimary
         )
         SnackbarType.ERROR -> Triple(
             Brush.linearGradient(listOf(ErrorRed, ErrorRed)),
             Icons.Default.Close,
-            Color.White
+            MaterialTheme.colorScheme.onPrimary
         )
         SnackbarType.INFO -> Triple(
             Brush.linearGradient(listOf(AccentBlue, AccentBlue)),
             Icons.Default.Info,
-            Color.White
+            MaterialTheme.colorScheme.onPrimary
         )
     }
 
@@ -85,7 +85,7 @@ fun PremiumSnackbarContent(
             .background(background, RoundedCornerShape(14.dp))
             .border(
                 1.dp,
-                Color.White.copy(alpha = 0.2f),
+                MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
                 RoundedCornerShape(14.dp)
             )
             .padding(horizontal = 18.dp, vertical = 14.dp)
@@ -104,7 +104,7 @@ fun PremiumSnackbarContent(
             Text(
                 text = message,
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.weight(1f)
             )
         }

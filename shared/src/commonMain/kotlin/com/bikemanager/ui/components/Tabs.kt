@@ -66,8 +66,8 @@ fun Tabs(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = Dimens.Space2xl)
-            .background(BgSecondary, RoundedCornerShape(Dimens.RadiusLg))
-            .border(1.dp, BorderSubtle, RoundedCornerShape(Dimens.RadiusLg))
+            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(Dimens.RadiusLg))
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(Dimens.RadiusLg))
             .padding(6.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
@@ -107,7 +107,7 @@ fun Tabs(
                         style = MaterialTheme.typography.bodySmall.copy(
                             fontWeight = FontWeight.SemiBold
                         ),
-                        color = if (isSelected) Color.White else TextSecondary
+                        color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                     // Count badge
@@ -115,7 +115,7 @@ fun Tabs(
                         modifier = Modifier
                             .defaultMinSize(minWidth = Dimens.TabCountMinWidth)
                             .background(
-                                Color.White.copy(
+                                MaterialTheme.colorScheme.onPrimary.copy(
                                     alpha = if (isSelected) 0.25f else 0.2f
                                 ),
                                 RoundedCornerShape(10.dp)
@@ -129,7 +129,7 @@ fun Tabs(
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.SemiBold
                             ),
-                            color = if (isSelected) Color.White else TextSecondary
+                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }

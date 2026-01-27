@@ -83,7 +83,7 @@ fun MaintenanceCard(
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = null,
-                    tint = Color.White,
+                    tint = MaterialTheme.colorScheme.onError,
                     modifier = Modifier.padding(end = 24.dp)
                 )
             }
@@ -100,9 +100,9 @@ fun MaintenanceCard(
                     ),
                 shape = RoundedCornerShape(Dimens.RadiusLg),
                 colors = CardDefaults.cardColors(
-                    containerColor = BgCard
+                    containerColor = MaterialTheme.colorScheme.surface
                 ),
-                border = androidx.compose.foundation.BorderStroke(1.dp, BorderSubtle),
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
         Row(
@@ -149,7 +149,7 @@ fun MaintenanceCard(
                 Text(
                     text = maintenance.name,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 if (isDone) {
@@ -187,12 +187,12 @@ fun MaintenanceCard(
                             Text(
                                 text = Constants.BULLET,
                                 style = MaterialTheme.typography.labelSmall,
-                                color = TextSecondary
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
                                 text = formatDate(maintenance.date),
                                 style = MaterialTheme.typography.labelSmall,
-                                color = TextSecondary
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
