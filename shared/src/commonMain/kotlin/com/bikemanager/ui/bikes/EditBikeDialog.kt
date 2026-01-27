@@ -12,7 +12,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.bikemanager.domain.model.Bike
 import com.bikemanager.domain.model.CountingMethod
-import com.bikemanager.ui.Strings
+import bikemanager.shared.generated.resources.*
+import com.bikemanager.ui.Constants
+import org.jetbrains.compose.resources.stringResource
 import com.bikemanager.ui.components.BottomSheetDialog
 import com.bikemanager.ui.components.ButtonPrimary
 import com.bikemanager.ui.components.InputField
@@ -34,7 +36,7 @@ fun EditBikeDialog(
     var countingMethod by remember { mutableStateOf(bike.countingMethod) }
 
     BottomSheetDialog(
-        title = Strings.EDIT_BIKE_TITLE,
+        title = stringResource(Res.string.edit_bike_title),
         onDismiss = onDismiss
     ) {
         Spacer(modifier = Modifier.height(Dimens.SpaceLg))
@@ -42,7 +44,7 @@ fun EditBikeDialog(
         InputField(
             value = bikeName,
             onValueChange = { bikeName = it },
-            label = Strings.MY_BIKES
+            label = stringResource(Res.string.my_bikes)
         )
 
         Spacer(modifier = Modifier.height(Dimens.Space2xl))
@@ -50,26 +52,26 @@ fun EditBikeDialog(
         ToggleGroup(
             options = listOf(
                 ToggleOption(
-                    label = Strings.COUNTING_METHOD_KM,
-                    value = "km",
+                    label = stringResource(Res.string.counting_method_km),
+                    value = Constants.COUNTING_METHOD_VALUE_KM,
                     icon = Icons.Default.Build
                 ),
                 ToggleOption(
-                    label = Strings.COUNTING_METHOD_HOURS,
-                    value = "hours",
+                    label = stringResource(Res.string.counting_method_hours),
+                    value = Constants.COUNTING_METHOD_VALUE_HOURS,
                     icon = Icons.Default.Build
                 )
             ),
-            selectedValue = if (countingMethod == CountingMethod.KM) "km" else "hours",
+            selectedValue = if (countingMethod == CountingMethod.KM) Constants.COUNTING_METHOD_VALUE_KM else Constants.COUNTING_METHOD_VALUE_HOURS,
             onValueChange = { value ->
-                countingMethod = if (value == "km") CountingMethod.KM else CountingMethod.HOURS
+                countingMethod = if (value == Constants.COUNTING_METHOD_VALUE_KM) CountingMethod.KM else CountingMethod.HOURS
             }
         )
 
         Spacer(modifier = Modifier.height(Dimens.Space3xl))
 
         ButtonPrimary(
-            text = Strings.CONFIRM,
+            text = stringResource(Res.string.confirm),
             onClick = {
                 if (bikeName.isNotBlank()) {
                     onConfirm(bike.copy(name = bikeName, countingMethod = countingMethod))

@@ -11,6 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import bikemanager.shared.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import com.bikemanager.ui.theme.*
 
 /**
@@ -85,7 +87,7 @@ fun BottomSheetDialog(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "Fermer",
+                        contentDescription = stringResource(Res.string.close),
                         tint = TextSecondary
                     )
                 }

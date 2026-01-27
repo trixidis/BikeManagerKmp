@@ -43,7 +43,8 @@ import com.bikemanager.domain.model.Maintenance
 import com.bikemanager.presentation.maintenances.MaintenanceEvent
 import com.bikemanager.presentation.maintenances.MaintenancesUiState
 import com.bikemanager.presentation.maintenances.MaintenancesViewModelMvi
-import com.bikemanager.ui.Strings
+import bikemanager.shared.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import com.bikemanager.ui.components.EmptyState
 import com.bikemanager.ui.components.Fab
 import com.bikemanager.ui.components.FabVariant
@@ -54,6 +55,7 @@ import com.bikemanager.ui.components.SnackbarType
 import com.bikemanager.ui.components.TabItem
 import com.bikemanager.ui.components.TabVariant
 import com.bikemanager.ui.components.Tabs
+import com.bikemanager.ui.core.rememberFabVisibility
 import com.bikemanager.ui.theme.BgPrimary
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -79,13 +81,9 @@ fun MaintenancesScreenContent(
 
     val doneListState = rememberLazyListState()
     val todoListState = rememberLazyListState()
+    val currentListState = if (pagerState.currentPage == 0) doneListState else todoListState
+    val fabVisible = rememberFabVisibility(currentListState)
 
-    val fabVisible by remember {
-        derivedStateOf {
-            val currentListState = if (pagerState.currentPage == 0) doneListState else todoListState
-            currentListState.firstVisibleItemIndex == 0 || !currentListState.isScrollInProgress
-        }
-    }
 
     // Calculate total km/hours from done maintenances
     val totalValue = when (val state = uiState) {
@@ -108,6 +106,10 @@ fun MaintenancesScreenContent(
         else -> Pair(0, 0)
     }
 
+    // Extract strings before entering LaunchedEffect
+    val maintenanceDeletedText = stringResource(Res.string.maintenance_deleted)
+    val undoText = stringResource(Res.string.undo)
+
     // Collect events from ViewModel (MVI pattern)
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -126,8 +128,8 @@ fun MaintenancesScreenContent(
                 }
                 is MaintenanceEvent.ShowUndoSnackbar -> {
                     val result = snackbarHostState.showSnackbar(
-                        message = Strings.MAINTENANCE_DELETED,
-                        actionLabel = Strings.UNDO,
+                        message = maintenanceDeletedText,
+                        actionLabel = undoText,
                         duration = SnackbarDuration.Short
                     )
                     if (result == SnackbarResult.ActionPerformed) {
@@ -191,12 +193,12 @@ fun MaintenancesScreenContent(
             Tabs(
                 tabs = listOf(
                     TabItem(
-                        label = Strings.TAB_DONE,
+                        label = stringResource(Res.string.tab_done),
                         count = doneCount,
                         variant = TabVariant.DONE
                     ),
                     TabItem(
-                        label = Strings.TAB_TODO,
+                        label = stringResource(Res.string.tab_todo),
                         count = todoCount,
                         variant = TabVariant.TODO
                     )
@@ -254,7 +256,7 @@ fun MaintenancesScreenContent(
                                 contentAlignment = Alignment.Center
                             ) {
                                 EmptyState(
-                                    message = Strings.NO_MAINTENANCE
+                                    message = stringResource(Res.string.no_maintenance)
                                 )
                             }
                         } else {

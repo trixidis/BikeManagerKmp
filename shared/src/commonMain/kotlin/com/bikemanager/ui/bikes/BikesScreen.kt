@@ -44,7 +44,8 @@ import com.bikemanager.domain.usecase.maintenance.GetMaintenancesUseCase
 import com.bikemanager.presentation.bikes.BikeEvent
 import com.bikemanager.presentation.bikes.BikesUiState
 import com.bikemanager.presentation.bikes.BikesViewModelMvi
-import com.bikemanager.ui.Strings
+import bikemanager.shared.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import com.bikemanager.ui.components.EmptyState
 import com.bikemanager.ui.components.Fab
 import com.bikemanager.ui.components.FabVariant
@@ -170,7 +171,7 @@ fun BikesScreenContent(
                 )
             ) {
                 Text(
-                    text = "Mes Entretiens",
+                    text = stringResource(Res.string.my_maintenances),
                     style = MaterialTheme.typography.displayLarge,
                     color = TextPrimary
                 )
@@ -194,7 +195,7 @@ fun BikesScreenContent(
 
                     is BikesUiState.Empty -> {
                         EmptyState(
-                            message = Strings.NO_BIKES,
+                            message = stringResource(Res.string.no_bikes),
                             modifier = Modifier.align(Alignment.Center)
                         )
                     }

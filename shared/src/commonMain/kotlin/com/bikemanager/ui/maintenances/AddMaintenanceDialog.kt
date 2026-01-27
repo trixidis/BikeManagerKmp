@@ -9,7 +9,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.bikemanager.domain.model.CountingMethod
-import com.bikemanager.ui.Strings
+import bikemanager.shared.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import com.bikemanager.ui.components.BottomSheetDialog
 import com.bikemanager.ui.components.ButtonPrimary
 import com.bikemanager.ui.components.InputField
@@ -30,14 +31,14 @@ fun AddMaintenanceDialog(
     var valueText by remember { mutableStateOf("") }
 
     val title = if (isDone) {
-        Strings.ADD_MAINTENANCE_DONE
+        stringResource(Res.string.add_maintenance_done)
     } else {
-        Strings.ADD_MAINTENANCE_TODO
+        stringResource(Res.string.add_maintenance_todo)
     }
 
     val valueHint = when (countingMethod) {
-        CountingMethod.KM -> Strings.NB_KM_HINT
-        CountingMethod.HOURS -> Strings.NB_HOURS_HINT
+        CountingMethod.KM -> stringResource(Res.string.nb_km_hint)
+        CountingMethod.HOURS -> stringResource(Res.string.nb_hours_hint)
     }
 
     val isValid = name.isNotBlank() && (!isDone || valueText.toFloatOrNull() != null)
@@ -51,7 +52,7 @@ fun AddMaintenanceDialog(
         InputField(
             value = name,
             onValueChange = { name = it },
-            label = Strings.MAINTENANCE_NAME
+            label = stringResource(Res.string.maintenance_name)
         )
 
         if (isDone) {
@@ -68,7 +69,7 @@ fun AddMaintenanceDialog(
         Spacer(modifier = Modifier.height(Dimens.Space3xl))
 
         ButtonPrimary(
-            text = Strings.CONFIRM,
+            text = stringResource(Res.string.confirm),
             onClick = {
                 if (isValid) {
                     val value = if (isDone) valueText.toFloatOrNull() ?: 0f else -1f

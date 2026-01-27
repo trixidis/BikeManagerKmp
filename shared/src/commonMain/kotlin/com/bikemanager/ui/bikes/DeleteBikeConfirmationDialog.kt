@@ -6,7 +6,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import com.bikemanager.domain.model.Bike
-import com.bikemanager.ui.Strings
+import bikemanager.shared.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Confirmation dialog for deleting a bike.
@@ -24,10 +25,10 @@ fun DeleteBikeConfirmationDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(Strings.DELETE_BIKE_TITLE) },
+        title = { Text(stringResource(Res.string.delete_bike_title)) },
         text = {
             Text(
-                text = Strings.DELETE_BIKE_MESSAGE,
+                text = stringResource(Res.string.delete_bike_message),
                 style = MaterialTheme.typography.bodyMedium
             )
         },
@@ -36,14 +37,14 @@ fun DeleteBikeConfirmationDialog(
                 onClick = onConfirm
             ) {
                 Text(
-                    text = Strings.DELETE,
+                    text = stringResource(Res.string.delete),
                     color = MaterialTheme.colorScheme.error
                 )
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(Strings.CANCEL)
+                Text(stringResource(Res.string.cancel))
             }
         }
     )

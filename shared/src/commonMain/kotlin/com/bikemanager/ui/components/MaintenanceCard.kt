@@ -21,6 +21,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bikemanager.domain.model.CountingMethod
 import com.bikemanager.domain.model.Maintenance
+import bikemanager.shared.generated.resources.*
+import com.bikemanager.ui.Constants
+import org.jetbrains.compose.resources.stringResource
 import com.bikemanager.ui.theme.*
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
@@ -180,7 +183,7 @@ fun MaintenanceCard(
                         // Date
                         if (maintenance.date > 0) {
                             Text(
-                                text = "•",
+                                text = Constants.BULLET,
                                 style = MaterialTheme.typography.labelSmall,
                                 color = TextSecondary
                             )
@@ -194,7 +197,7 @@ fun MaintenanceCard(
                 } else {
                     // Hint for todo maintenance
                     Text(
-                        text = "Appuyez pour marquer fait",
+                        text = stringResource(Res.string.press_to_mark_done),
                         style = MaterialTheme.typography.labelSmall,
                         color = AccentTeal
                     )

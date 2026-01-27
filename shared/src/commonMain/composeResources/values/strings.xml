@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App info -->
+    <string name="app_name">Mes entretiens moto</string>
+    <string name="app_subtitle">Gérez l\'entretien de vos motos</string>
+
+    <!-- Navigation -->
+    <string name="my_bikes">Mes motos</string>
+    <string name="maintenances">Entretiens</string>
+    <string name="my_maintenances">Mes Entretiens</string>
+    <string name="back">Retour</string>
+    <string name="close">Fermer</string>
+
+    <!-- Empty states -->
+    <string name="no_bikes">Vous n\'avez pour l\'instant ajouté aucune moto</string>
+    <string name="no_maintenance">Aucun entretien pour cette moto</string>
+
+    <!-- Tabs -->
+    <string name="tab_done">Faits</string>
+    <string name="tab_todo">A faire</string>
+
+    <!-- Dialogs -->
+    <string name="add_bike_title">Ajout de moto</string>
+    <string name="add_bike_message">Veuillez renseigner le nom de la moto à ajouter</string>
+    <string name="edit_bike_title">Modifier la moto</string>
+    <string name="delete_bike_title">Supprimer cette moto ?</string>
+    <string name="delete_bike_message">Cette action supprimera également tous les entretiens associés. Cette action est irréversible.</string>
+    <string name="add_maintenance_done">Entretien effectué</string>
+    <string name="add_maintenance_todo">Entretien à faire</string>
+    <string name="mark_done_title">Marquer cet entretien comme terminé</string>
+
+    <!-- Form fields -->
+    <string name="maintenance_name">Nom de l\'entretien</string>
+    <string name="maintenance_type_hint">Type d\'entretien</string>
+    <string name="nb_hours_hint">Nombre d\'heures</string>
+    <string name="nb_km_hint">Nombre de kilomètres</string>
+    <string name="count_by">Compter en :</string>
+
+    <!-- Counting methods -->
+    <string name="counting_method_km">Kilomètres</string>
+    <string name="counting_method_hours">Heures</string>
+    <string name="kilometers_badge">KILOMÈTRES</string>
+    <string name="hours_badge">HEURES</string>
+    <string name="km_unit">km</string>
+    <string name="hours_unit">h</string>
+
+    <!-- Actions -->
+    <string name="add">Ajouter</string>
+    <string name="cancel">Annuler</string>
+    <string name="confirm">Confirmer</string>
+    <string name="confirm_yes">Oui</string>
+    <string name="confirm_no">Non</string>
+    <string name="edit">Modifier</string>
+    <string name="delete">Supprimer</string>
+    <string name="undo">Annuler</string>
+
+    <!-- Messages -->
+    <string name="maintenance_deleted">Entretien supprimé</string>
+    <string name="invalid_input">Saisie invalide</string>
+    <string name="press_to_mark_done">Appuyez pour marquer fait</string>
+    <string name="bullet">•</string>
+
+    <!-- Authentication -->
+    <string name="sign_in_with_google">Se connecter avec Google</string>
+    <string name="error_user_not_found">Utilisateur non trouvé</string>
+    <string name="error_google_sign_in">Erreur de connexion Google</string>
+
+    <!-- Error messages -->
+    <string name="error_login">Une erreur est survenue</string>
+    <string name="error_network">Erreur de connexion. Veuillez vérifier votre connexion internet.</string>
+    <string name="error_auth">Erreur d\'authentification. Veuillez vous reconnecter.</string>
+    <string name="error_database">Erreur lors de la sauvegarde. Veuillez réessayer.</string>
+    <string name="error_validation">Saisie invalide. Veuillez vérifier vos données.</string>
+    <string name="error_unknown">Une erreur inattendue est survenue.</string>
+    <string name="error_retry">Réessayer</string>
+</resources>

@@ -12,7 +12,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.bikemanager.domain.model.CountingMethod
 import com.bikemanager.domain.model.Maintenance
-import com.bikemanager.ui.Strings
+import bikemanager.shared.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import com.bikemanager.ui.components.BottomSheetDialog
 import com.bikemanager.ui.components.ButtonPrimary
 import com.bikemanager.ui.components.InputField
@@ -33,14 +34,14 @@ fun MarkDoneDialog(
     var valueText by remember { mutableStateOf("") }
 
     val valueHint = when (countingMethod) {
-        CountingMethod.KM -> Strings.NB_KM_HINT
-        CountingMethod.HOURS -> Strings.NB_HOURS_HINT
+        CountingMethod.KM -> stringResource(Res.string.nb_km_hint)
+        CountingMethod.HOURS -> stringResource(Res.string.nb_hours_hint)
     }
 
     val isValid = valueText.toFloatOrNull() != null
 
     BottomSheetDialog(
-        title = Strings.MARK_DONE_TITLE,
+        title = stringResource(Res.string.mark_done_title),
         onDismiss = onDismiss
     ) {
         Spacer(modifier = Modifier.height(Dimens.SpaceLg))
@@ -63,7 +64,7 @@ fun MarkDoneDialog(
         Spacer(modifier = Modifier.height(Dimens.Space3xl))
 
         ButtonPrimary(
-            text = Strings.CONFIRM,
+            text = stringResource(Res.string.confirm),
             onClick = {
                 val value = valueText.toFloatOrNull()
                 if (value != null) {

@@ -25,11 +25,13 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import bikemanager.shared.generated.resources.*
 import com.bikemanager.domain.model.Bike
 import com.bikemanager.domain.model.CountingMethod
-import com.bikemanager.ui.Strings
+import com.bikemanager.ui.Constants
 import com.bikemanager.ui.components.IconWrapper
 import com.bikemanager.ui.theme.*
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Premium bike card component with hover effects and animations.
@@ -158,7 +160,7 @@ fun BikeItem(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Edit,
-                            contentDescription = Strings.EDIT,
+                            contentDescription = stringResource(Res.string.edit),
                             tint = TextSecondary,
                             modifier = Modifier.size(20.dp)
                         )
@@ -238,7 +240,7 @@ private fun MethodBadge(method: CountingMethod) {
             .padding(horizontal = 10.dp, vertical = 4.dp)
     ) {
         Text(
-            text = if (method == CountingMethod.KM) "KILOMÈTRES" else "HEURES",
+            text = if (method == CountingMethod.KM) stringResource(Res.string.kilometers_badge) else stringResource(Res.string.hours_badge),
             style = MaterialTheme.typography.labelSmall.copy(
                 fontSize = 11.sp,
                 letterSpacing = 0.5.sp
@@ -252,7 +254,7 @@ private fun MethodBadge(method: CountingMethod) {
  * Format bike value with thousand separators (spaces) and unit
  */
 private fun formatBikeValue(value: Float, method: CountingMethod): String {
-    val unit = if (method == CountingMethod.KM) "km" else "h"
+    val unit = if (method == CountingMethod.KM) Constants.KM_UNIT else Constants.HOURS_UNIT
     return if (value % 1.0f == 0.0f) {
         "${String.format("%,d", value.toInt()).replace(',', ' ')} $unit"
     } else {

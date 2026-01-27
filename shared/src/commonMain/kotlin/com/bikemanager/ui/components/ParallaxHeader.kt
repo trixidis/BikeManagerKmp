@@ -19,6 +19,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.bikemanager.domain.model.CountingMethod
+import bikemanager.shared.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import com.bikemanager.ui.theme.*
 
 /**
@@ -95,7 +97,7 @@ fun ParallaxHeader(
             ) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Retour",
+                    contentDescription = stringResource(Res.string.back),
                     tint = Color.White
                 )
             }
