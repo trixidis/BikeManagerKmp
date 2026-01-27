@@ -22,7 +22,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.bikemanager.presentation.auth.AuthUiState
 import com.bikemanager.presentation.auth.AuthViewModelMvi
-import com.bikemanager.ui.Strings
+import bikemanager.shared.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import com.mmk.kmpauth.firebase.google.GoogleButtonUiContainerFirebase
 import com.mmk.kmpauth.uihelper.google.GoogleSignInButton
 import org.koin.compose.koinInject
@@ -55,7 +56,7 @@ fun LoginScreenContent(
         ) {
             // App title
             Text(
-                text = Strings.APP_NAME,
+                text = stringResource(Res.string.app_name),
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -64,7 +65,7 @@ fun LoginScreenContent(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Gérez l'entretien de vos motos",
+                text = stringResource(Res.string.app_subtitle),
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -123,6 +124,10 @@ private fun GoogleSignInButtonContent(
     onSuccess: () -> Unit,
     onError: (String) -> Unit
 ) {
+    val errorUserNotFound = stringResource(Res.string.error_user_not_found)
+    val errorGoogleSignIn = stringResource(Res.string.error_google_sign_in)
+    val signInText = stringResource(Res.string.sign_in_with_google)
+
     GoogleButtonUiContainerFirebase(
         onResult = { result ->
             result.fold(
@@ -131,18 +136,18 @@ private fun GoogleSignInButtonContent(
                     if (firebaseUser != null) {
                         onSuccess()
                     } else {
-                        onError("Utilisateur non trouvé")
+                        onError(errorUserNotFound)
                     }
                 },
                 onFailure = { exception ->
-                    onError(exception.message ?: "Erreur de connexion Google")
+                    onError(exception.message ?: errorGoogleSignIn)
                 }
             )
         }
     ) {
         GoogleSignInButton(
             modifier = Modifier.fillMaxWidth().height(56.dp),
-            text = "Se connecter avec Google"
+            text = signInText
         ) {
             this.onClick()
         }

@@ -39,7 +39,6 @@ kotlin {
 
                 // Lifecycle ViewModel for KMP
                 implementation(libs.androidx.lifecycle.viewmodel)
-                implementation(libs.androidx.lifecycle.viewmodel.compose)
 
                 // Compose Multiplatform
                 implementation(compose.runtime)
@@ -80,6 +79,8 @@ kotlin {
                 implementation(libs.sqldelight.android)
                 implementation(libs.koin.android)
                 implementation(libs.coroutines.android)
+                // Android-only: Lifecycle ViewModel Compose
+                implementation(libs.androidx.lifecycle.viewmodel.compose)
             }
         }
         val iosX64Main by getting
