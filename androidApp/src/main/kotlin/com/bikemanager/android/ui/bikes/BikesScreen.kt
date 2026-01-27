@@ -162,8 +162,7 @@ fun BikesScreen(
                                 BikeItem(
                                     bike = bike,
                                     onClick = { onBikeClick(bike) },
-                                    onEditClick = { editingBike = bike },
-                                    onDeleteClick = { deletingBike = bike }
+                                    onEditClick = { editingBike = bike }
                                 )
                             }
                         }

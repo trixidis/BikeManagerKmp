@@ -34,6 +34,11 @@ object Strings {
     const val SIGN_IN_WITH_GOOGLE = "Se connecter avec Google"
     const val EDIT = "Modifier"
     const val DELETE = "Supprimer"
+    const val CONFIRM = "Confirmer"
+    const val EDIT_BIKE_TITLE = "Modifier la moto"
+    const val MAINTENANCE_NAME = "Nom de l'entretien"
+    const val COUNTING_METHOD_KM = "Kilomètres"
+    const val COUNTING_METHOD_HOURS = "Heures"
     const val DELETE_BIKE_TITLE = "Supprimer cette moto ?"
     const val DELETE_BIKE_MESSAGE = "Cette action supprimera également tous les entretiens associés. Cette action est irréversible."
 

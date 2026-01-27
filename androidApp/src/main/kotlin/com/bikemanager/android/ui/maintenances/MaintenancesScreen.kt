@@ -52,8 +52,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.bikemanager.android.R
-import com.bikemanager.android.ui.theme.Indigo
-import com.bikemanager.android.ui.theme.Teal
+import com.bikemanager.android.ui.theme.AccentBlue
+import com.bikemanager.android.ui.theme.AccentTeal
 import com.bikemanager.android.ui.theme.White
 import com.bikemanager.domain.model.CountingMethod
 import com.bikemanager.domain.model.Maintenance
@@ -98,7 +98,7 @@ fun MaintenancesScreen(
         stringResource(R.string.tab_todo)
     )
 
-    val headerColor = if (pagerState.currentPage == 0) Indigo else Teal
+    val headerColor = if (pagerState.currentPage == 0) AccentBlue else AccentTeal
     val maintenanceDeletedText = stringResource(R.string.maintenance_deleted)
     val undoText = stringResource(R.string.undo)
 

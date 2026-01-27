@@ -6,37 +6,23 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -48,6 +34,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -57,9 +44,17 @@ import com.bikemanager.presentation.maintenances.MaintenanceEvent
 import com.bikemanager.presentation.maintenances.MaintenancesUiState
 import com.bikemanager.presentation.maintenances.MaintenancesViewModelMvi
 import com.bikemanager.ui.Strings
-import com.bikemanager.ui.theme.Indigo
-import com.bikemanager.ui.theme.Teal
-import com.bikemanager.ui.theme.White
+import com.bikemanager.ui.components.EmptyState
+import com.bikemanager.ui.components.Fab
+import com.bikemanager.ui.components.FabVariant
+import com.bikemanager.ui.components.MaintenanceCard
+import com.bikemanager.ui.components.ParallaxHeader
+import com.bikemanager.ui.components.PremiumSnackbarHost
+import com.bikemanager.ui.components.SnackbarType
+import com.bikemanager.ui.components.TabItem
+import com.bikemanager.ui.components.TabVariant
+import com.bikemanager.ui.components.Tabs
+import com.bikemanager.ui.theme.BgPrimary
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
@@ -92,9 +87,26 @@ fun MaintenancesScreenContent(
         }
     }
 
-    val tabs = listOf(Strings.TAB_DONE, Strings.TAB_TODO)
+    // Calculate total km/hours from done maintenances
+    val totalValue = when (val state = uiState) {
+        is MaintenancesUiState.Success -> {
+            state.doneMaintenances
+                .mapNotNull { it.value }
+                .maxOrNull() ?: 0f
+        }
+        else -> 0f
+    }
 
-    val headerColor = if (pagerState.currentPage == 0) Indigo else Teal
+    // Tab variant based on current page
+    val currentTabVariant = if (pagerState.currentPage == 0) TabVariant.DONE else TabVariant.TODO
+
+    // Count of maintenances for each tab
+    val (doneCount, todoCount) = when (val state = uiState) {
+        is MaintenancesUiState.Success -> {
+            Pair(state.doneMaintenances.size, state.todoMaintenances.size)
+        }
+        else -> Pair(0, 0)
+    }
 
     // Collect events from ViewModel (MVI pattern)
     LaunchedEffect(Unit) {
@@ -127,39 +139,14 @@ fun MaintenancesScreenContent(
     }
 
     Scaffold(
-        topBar = {
-            Column {
-                TopAppBar(
-                    title = { Text(bikeName) },
-                    navigationIcon = {
-                        IconButton(onClick = { navigator.pop() }) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowBack,
-                                contentDescription = null,
-                                tint = White
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = headerColor,
-                        titleContentColor = White
-                    )
-                )
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(150.dp)
-                        .background(headerColor)
-                )
-            }
-        },
+        containerColor = BgPrimary,
         floatingActionButton = {
             AnimatedVisibility(
                 visible = fabVisible,
                 enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
                 exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
             ) {
-                FloatingActionButton(
+                Fab(
                     onClick = {
                         if (pagerState.currentPage == 0) {
                             showAddDoneDialog = true
@@ -167,38 +154,66 @@ fun MaintenancesScreenContent(
                             showAddTodoDialog = true
                         }
                     },
-                    containerColor = MaterialTheme.colorScheme.secondary
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = Strings.ADD,
-                        tint = White
-                    )
-                }
+                    variant = if (pagerState.currentPage == 0) FabVariant.ORANGE else FabVariant.TEAL
+                )
             }
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = {
+            PremiumSnackbarHost(
+                hostState = snackbarHostState,
+                getSnackbarType = { message ->
+                    when {
+                        message.contains("ajouté", ignoreCase = true) ||
+                        message.contains("modifié", ignoreCase = true) ||
+                        message.contains("validé", ignoreCase = true) -> SnackbarType.SUCCESS
+                        message.contains("erreur", ignoreCase = true) -> SnackbarType.ERROR
+                        else -> SnackbarType.INFO
+                    }
+                }
+            )
+        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            TabRow(
-                selectedTabIndex = pagerState.currentPage
-            ) {
-                tabs.forEachIndexed { index, title ->
-                    Tab(
-                        selected = pagerState.currentPage == index,
-                        onClick = {
-                            scope.launch {
-                                pagerState.animateScrollToPage(index)
-                            }
-                        },
-                        text = { Text(title) }
+            // ParallaxHeader with gradient animation
+            ParallaxHeader(
+                bikeName = bikeName,
+                totalValue = totalValue,
+                countingMethod = countingMethod,
+                activeTab = currentTabVariant,
+                onBackClick = { navigator.pop() }
+            )
+
+            // Premium Tabs with overlapping layout
+            Tabs(
+                tabs = listOf(
+                    TabItem(
+                        label = Strings.TAB_DONE,
+                        count = doneCount,
+                        variant = TabVariant.DONE
+                    ),
+                    TabItem(
+                        label = Strings.TAB_TODO,
+                        count = todoCount,
+                        variant = TabVariant.TODO
                     )
+                ),
+                selectedIndex = pagerState.currentPage,
+                onTabSelected = { index ->
+                    scope.launch {
+                        pagerState.animateScrollToPage(index)
+                    }
+                },
+                modifier = Modifier.layout { measurable, constraints ->
+                    val placeable = measurable.measure(constraints)
+                    layout(placeable.width, placeable.height) {
+                        placeable.placeRelative(0, -24.dp.roundToPx())
+                    }
                 }
-            }
+            )
 
             when (val state = uiState) {
                 is MaintenancesUiState.Loading -> {
@@ -238,9 +253,8 @@ fun MaintenancesScreenContent(
                                 modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(
-                                    text = Strings.NO_MAINTENANCE,
-                                    modifier = Modifier.padding(16.dp)
+                                EmptyState(
+                                    message = Strings.NO_MAINTENANCE
                                 )
                             }
                         } else {
@@ -252,19 +266,16 @@ fun MaintenancesScreenContent(
                                 items(
                                     items = maintenances,
                                     key = { maintenance -> maintenance.id }
-                                ) {  maintenance ->
-
-                                    MaintenanceItem(
+                                ) { maintenance ->
+                                    MaintenanceCard(
                                         maintenance = maintenance,
                                         countingMethod = countingMethod,
-                                        isDone = page == 0,
-                                        onClick = {
+                                        onMarkDoneClick = {
                                             if (page == 1) {
                                                 markDoneMaintenance = maintenance
                                             }
                                         },
-                                        onDelete = {
-                                            // MVI: Just send intent, ViewModel will emit event
+                                        onDeleteSwipe = {
                                             viewModel.deleteMaintenance(maintenance)
                                         }
                                     )

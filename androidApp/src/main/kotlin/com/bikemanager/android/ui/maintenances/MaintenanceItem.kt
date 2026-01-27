@@ -30,8 +30,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.bikemanager.android.ui.theme.DarkRed
-import com.bikemanager.android.ui.theme.SecondaryText
+import com.bikemanager.android.ui.theme.ErrorRed
+import com.bikemanager.android.ui.theme.TextSecondary
 import com.bikemanager.domain.model.CountingMethod
 import com.bikemanager.domain.model.Maintenance
 import java.text.SimpleDateFormat
@@ -69,8 +69,8 @@ fun MaintenanceItem(
         backgroundContent = {
             val backgroundColor by animateColorAsState(
                 targetValue = when (dismissState.targetValue) {
-                    SwipeToDismissBoxValue.StartToEnd -> DarkRed
-                    SwipeToDismissBoxValue.EndToStart -> DarkRed
+                    SwipeToDismissBoxValue.StartToEnd -> ErrorRed
+                    SwipeToDismissBoxValue.EndToStart -> ErrorRed
                     else -> Color.Transparent
                 },
                 label = "backgroundColor"
@@ -136,7 +136,7 @@ fun MaintenanceItem(
                                 Text(
                                     text = valueText,
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = SecondaryText
+                                    color = TextSecondary
                                 )
 
                                 if (maintenance.date > 0) {
@@ -144,7 +144,7 @@ fun MaintenanceItem(
                                     Text(
                                         text = dateFormat.format(Date(maintenance.date)),
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = SecondaryText
+                                        color = TextSecondary
                                     )
                                 }
                             }

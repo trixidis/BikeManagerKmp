@@ -2,6 +2,8 @@ package com.bikemanager.ui.maintenances
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -9,70 +11,63 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.bikemanager.domain.model.CountingMethod
+import com.bikemanager.domain.model.Maintenance
 import com.bikemanager.ui.Strings
 import com.bikemanager.ui.components.BottomSheetDialog
 import com.bikemanager.ui.components.ButtonPrimary
 import com.bikemanager.ui.components.InputField
 import com.bikemanager.ui.theme.Dimens
+import com.bikemanager.ui.theme.TextSecondary
 
 /**
- * Premium dialog for adding a maintenance.
+ * Premium dialog for marking a maintenance as done.
  * Uses BottomSheetDialog with InputField and ButtonPrimary.
  */
 @Composable
-fun AddMaintenanceDialog(
-    isDone: Boolean,
+fun MarkDoneDialog(
+    maintenance: Maintenance,
     countingMethod: CountingMethod,
     onDismiss: () -> Unit,
-    onConfirm: (name: String, value: Float) -> Unit
+    onConfirm: (Float) -> Unit
 ) {
-    var name by remember { mutableStateOf("") }
     var valueText by remember { mutableStateOf("") }
-
-    val title = if (isDone) {
-        Strings.ADD_MAINTENANCE_DONE
-    } else {
-        Strings.ADD_MAINTENANCE_TODO
-    }
 
     val valueHint = when (countingMethod) {
         CountingMethod.KM -> Strings.NB_KM_HINT
         CountingMethod.HOURS -> Strings.NB_HOURS_HINT
     }
 
-    val isValid = name.isNotBlank() && (!isDone || valueText.toFloatOrNull() != null)
+    val isValid = valueText.toFloatOrNull() != null
 
     BottomSheetDialog(
-        title = title,
+        title = Strings.MARK_DONE_TITLE,
         onDismiss = onDismiss
     ) {
         Spacer(modifier = Modifier.height(Dimens.SpaceLg))
 
-        InputField(
-            value = name,
-            onValueChange = { name = it },
-            label = Strings.MAINTENANCE_NAME
+        Text(
+            text = maintenance.name,
+            style = MaterialTheme.typography.titleMedium,
+            color = TextSecondary
         )
 
-        if (isDone) {
-            Spacer(modifier = Modifier.height(Dimens.SpaceXl))
+        Spacer(modifier = Modifier.height(Dimens.Space2xl))
 
-            InputField(
-                value = valueText,
-                onValueChange = { valueText = it },
-                label = valueHint,
-                keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
-            )
-        }
+        InputField(
+            value = valueText,
+            onValueChange = { valueText = it },
+            label = valueHint,
+            keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
+        )
 
         Spacer(modifier = Modifier.height(Dimens.Space3xl))
 
         ButtonPrimary(
             text = Strings.CONFIRM,
             onClick = {
-                if (isValid) {
-                    val value = if (isDone) valueText.toFloatOrNull() ?: 0f else -1f
-                    onConfirm(name, value)
+                val value = valueText.toFloatOrNull()
+                if (value != null) {
+                    onConfirm(value)
                 }
             },
             enabled = isValid
