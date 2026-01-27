@@ -35,8 +35,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.currentOrThrow
+import com.bikemanager.ui.navigation.LocalNavController
+import com.bikemanager.ui.navigation.Route
 import com.bikemanager.domain.common.Result
 import com.bikemanager.domain.model.Bike
 import com.bikemanager.domain.model.Maintenance
@@ -52,11 +52,8 @@ import com.bikemanager.ui.components.FabVariant
 import com.bikemanager.ui.components.PremiumSnackbarHost
 import com.bikemanager.ui.components.SnackbarType
 import com.bikemanager.ui.core.rememberFabVisibility
-import com.bikemanager.ui.navigation.MaintenancesScreenDestination
 import com.bikemanager.ui.theme.AccentOrange
-import com.bikemanager.ui.theme.BgPrimary
 import com.bikemanager.ui.theme.Dimens
-import com.bikemanager.ui.theme.TextPrimary
 import kotlinx.coroutines.flow.firstOrNull
 import org.koin.compose.koinInject
 
@@ -66,7 +63,7 @@ fun BikesScreenContent(
     viewModel: BikesViewModelMvi = koinInject(),
     getMaintenancesUseCase: GetMaintenancesUseCase = koinInject()
 ) {
-    val navigator = LocalNavigator.currentOrThrow
+    val navController = LocalNavController.current
     val uiState by viewModel.uiState.collectAsState()
     val showAddDialog = remember { mutableStateOf(false) }
     val editingBike = remember { mutableStateOf<Bike?>(null) }
@@ -130,7 +127,7 @@ fun BikesScreenContent(
     }
 
     Scaffold(
-        containerColor = BgPrimary,
+        containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
             AnimatedVisibility(
                 visible = fabVisible,
@@ -173,7 +170,7 @@ fun BikesScreenContent(
                 Text(
                     text = stringResource(Res.string.my_maintenances),
                     style = MaterialTheme.typography.displayLarge,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = ".",
@@ -214,8 +211,8 @@ fun BikesScreenContent(
                                     bike = bike,
                                     totalKmOrHours = bikeTotals[bike.id] ?: 0f,
                                     onClick = {
-                                        navigator.push(
-                                            MaintenancesScreenDestination(
+                                        navController.navigate(
+                                            Route.Maintenances.create(
                                                 bikeId = bike.id,
                                                 bikeName = bike.name,
                                                 countingMethod = bike.countingMethod

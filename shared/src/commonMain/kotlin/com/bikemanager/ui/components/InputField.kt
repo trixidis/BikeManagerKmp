@@ -54,7 +54,7 @@ fun InputField(
         Text(
             text = label.uppercase(),
             style = MaterialTheme.typography.labelMedium,
-            color = TextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
@@ -71,13 +71,13 @@ fun InputField(
                     spotColor = if (isError) ErrorRed.copy(alpha = 0.15f)
                     else AccentOrange.copy(alpha = 0.15f)
                 )
-                .background(BgCard, RoundedCornerShape(14.dp))
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(14.dp))
                 .border(
                     width = 1.dp,
                     color = when {
                         isError -> ErrorRed
                         isFocused -> AccentOrange
-                        else -> BorderSubtle
+                        else -> MaterialTheme.colorScheme.outline
                     },
                     shape = RoundedCornerShape(14.dp)
                 )
@@ -87,7 +87,7 @@ fun InputField(
                 value = value,
                 onValueChange = onValueChange,
                 modifier = Modifier.fillMaxWidth(),
-                textStyle = MaterialTheme.typography.bodyLarge.copy(color = TextPrimary),
+                textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
                 keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
                 cursorBrush = SolidColor(AccentOrange),
                 decorationBox = { innerTextField ->
@@ -95,7 +95,7 @@ fun InputField(
                         Text(
                             text = placeholder,
                             style = MaterialTheme.typography.bodyLarge,
-                            color = TextMuted
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     innerTextField()

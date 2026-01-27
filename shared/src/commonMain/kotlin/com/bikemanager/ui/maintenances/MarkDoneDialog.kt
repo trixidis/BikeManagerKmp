@@ -49,7 +49,7 @@ fun MarkDoneDialog(
         Text(
             text = maintenance.name,
             style = MaterialTheme.typography.titleMedium,
-            color = TextSecondary
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Spacer(modifier = Modifier.height(Dimens.Space2xl))

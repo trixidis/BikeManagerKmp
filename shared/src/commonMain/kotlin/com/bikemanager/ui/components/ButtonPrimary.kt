@@ -81,7 +81,7 @@ fun ButtonPrimary(
             )
             .background(
                 brush = if (enabled) background else Brush.linearGradient(
-                    listOf(BgCard, BgCard)
+                    listOf(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.surface)
                 ),
                 shape = RoundedCornerShape(14.dp)
             )
@@ -96,7 +96,7 @@ fun ButtonPrimary(
         Text(
             text = text,
             style = MaterialTheme.typography.labelLarge,
-            color = if (enabled) Color.White else TextMuted
+            color = if (enabled) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }

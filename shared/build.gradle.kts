@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.compose.compiler)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.android.library)
     alias(libs.plugins.sqldelight)
     alias(libs.plugins.kover)
@@ -9,10 +10,8 @@ plugins {
 
 kotlin {
     androidTarget {
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = "17"
-            }
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
         }
     }
 
@@ -36,6 +35,7 @@ kotlin {
                 implementation(libs.coroutines.core)
                 implementation(libs.napier)
                 implementation(libs.kotlinx.datetime)
+                implementation(libs.kotlinx.serialization.json)
 
                 // Lifecycle ViewModel for KMP
                 implementation(libs.androidx.lifecycle.viewmodel)
@@ -44,15 +44,13 @@ kotlin {
                 implementation(compose.runtime)
                 implementation(compose.foundation)
                 implementation(compose.material3)
+                implementation(compose.materialIconsExtended)
                 implementation(compose.ui)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.components.resources)
 
-                // Voyager Navigation
-                implementation(libs.voyager.navigator)
-                implementation(libs.voyager.screenModel)
-                implementation(libs.voyager.koin)
-                implementation(libs.voyager.transitions)
+                // Navigation Compose (Jetpack)
+                implementation(libs.compose.navigation)
 
                 // Koin Compose Multiplatform
                 implementation(libs.koin.compose.multiplatform)
@@ -81,6 +79,8 @@ kotlin {
                 implementation(libs.coroutines.android)
                 // Android-only: Lifecycle ViewModel Compose
                 implementation(libs.androidx.lifecycle.viewmodel.compose)
+                // Android-only: UI Tooling Preview for @Preview annotation
+                implementation(libs.compose.ui.tooling.preview)
             }
         }
         val iosX64Main by getting
@@ -122,29 +122,30 @@ sqldelight {
     }
 }
 
-koverReport {
-    filters {
-        excludes {
-            // Exclude generated code and DI
-            packages(
-                "com.bikemanager.data.local.shared",
-                "com.bikemanager.di"
-            )
-            classes(
-                // SQLDelight generated
-                "*Database*Impl*",
-                "*Queries*",
-                // Koin modules
-                "*Module*"
-            )
-        }
-    }
-    defaults {
-        html {
-            onCheck = false
-        }
-        xml {
-            onCheck = false
-        }
-    }
-}
+// Kover configuration commented out - needs update for new Kover version
+// koverReport {
+//     filters {
+//         excludes {
+//             // Exclude generated code and DI
+//             packages(
+//                 "com.bikemanager.data.local.shared",
+//                 "com.bikemanager.di"
+//             )
+//             classes(
+//                 // SQLDelight generated
+//                 "*Database*Impl*",
+//                 "*Queries*",
+//                 // Koin modules
+//                 "*Module*"
+//             )
+//         }
+//     }
+//     defaults {
+//         html {
+//             onCheck = false
+//         }
+//         xml {
+//             onCheck = false
+//         }
+//     }
+// }

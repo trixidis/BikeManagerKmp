@@ -74,14 +74,14 @@ fun EmptyState(
                 .graphicsLayer {
                     translationY = offsetY
                 }
-                .background(BgCard, RoundedCornerShape(30.dp)),
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(30.dp)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
                 modifier = Modifier.size(iconSize),
-                tint = TextMuted
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
@@ -89,7 +89,7 @@ fun EmptyState(
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge,
-            color = TextPrimary,
+            color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center
         )
 
@@ -97,7 +97,7 @@ fun EmptyState(
         Text(
             text = description,
             style = MaterialTheme.typography.bodySmall,
-            color = TextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
             modifier = Modifier.widthIn(max = 260.dp)
         )

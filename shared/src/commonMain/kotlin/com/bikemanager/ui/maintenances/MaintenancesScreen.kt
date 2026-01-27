@@ -36,8 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.currentOrThrow
+import com.bikemanager.ui.navigation.LocalNavController
 import com.bikemanager.domain.model.CountingMethod
 import com.bikemanager.domain.model.Maintenance
 import com.bikemanager.presentation.maintenances.MaintenanceEvent
@@ -56,7 +55,6 @@ import com.bikemanager.ui.components.TabItem
 import com.bikemanager.ui.components.TabVariant
 import com.bikemanager.ui.components.Tabs
 import com.bikemanager.ui.core.rememberFabVisibility
-import com.bikemanager.ui.theme.BgPrimary
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
@@ -69,7 +67,7 @@ fun MaintenancesScreenContent(
     countingMethod: CountingMethod,
     viewModel: MaintenancesViewModelMvi = koinInject { parametersOf(bikeId) }
 ) {
-    val navigator = LocalNavigator.currentOrThrow
+    val navController = LocalNavController.current
     val uiState by viewModel.uiState.collectAsState()
     val pagerState = rememberPagerState(pageCount = { 2 })
     val scope = rememberCoroutineScope()
@@ -141,7 +139,7 @@ fun MaintenancesScreenContent(
     }
 
     Scaffold(
-        containerColor = BgPrimary,
+        containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
             AnimatedVisibility(
                 visible = fabVisible,
@@ -186,7 +184,7 @@ fun MaintenancesScreenContent(
                 totalValue = totalValue,
                 countingMethod = countingMethod,
                 activeTab = currentTabVariant,
-                onBackClick = { navigator.pop() }
+                onBackClick = { navController.popBackStack() }
             )
 
             // Premium Tabs with overlapping layout

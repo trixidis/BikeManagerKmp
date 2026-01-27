@@ -43,8 +43,8 @@ fun BottomSheetDialog(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = BgSecondary,
-        contentColor = TextPrimary,
+        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        contentColor = MaterialTheme.colorScheme.onSurface,
         shape = RoundedCornerShape(topStart = Dimens.Radius2xl, topEnd = Dimens.Radius2xl),
         dragHandle = {
             // Custom drag handle matching PRD
@@ -53,10 +53,10 @@ fun BottomSheetDialog(
                     .padding(top = Dimens.SpaceLg)
                     .width(36.dp)
                     .height(4.dp)
-                    .background(BorderStrong, RoundedCornerShape(2.dp))
+                    .background(MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(2.dp))
             )
         },
-        scrimColor = Color.Black.copy(alpha = 0.7f)
+        scrimColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
     ) {
         Column(
             modifier = Modifier
@@ -73,7 +73,7 @@ fun BottomSheetDialog(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleLarge,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 IconButton(
@@ -81,14 +81,14 @@ fun BottomSheetDialog(
                     modifier = Modifier
                         .size(36.dp)
                         .background(
-                            Color.White.copy(alpha = 0.05f),
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f),
                             RoundedCornerShape(10.dp)
                         )
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = stringResource(Res.string.close),
-                        tint = TextSecondary
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
