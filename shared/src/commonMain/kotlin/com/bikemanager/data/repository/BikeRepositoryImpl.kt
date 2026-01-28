@@ -153,7 +153,7 @@ class BikeRepositoryImpl(
                     "nameBike" to bike.name,
                     "countingMethod" to bike.countingMethod.name
                 )
-                ref.child(bike.id).setValue(bikeData)
+                ref.child(bike.id).updateChildren(bikeData)
                 Napier.d { "Bike updated: ${bike.name}" }
             }
         }
