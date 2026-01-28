@@ -131,7 +131,13 @@ fun MaintenancesScreenContent(
                         duration = SnackbarDuration.Short
                     )
                     if (result == SnackbarResult.ActionPerformed) {
-                        viewModel.undoDelete()
+                        // Process undo in a new coroutine to avoid blocking the event collection
+                        scope.launch {
+                            // Dismiss snackbar and wait for animation to complete
+                            snackbarHostState.currentSnackbarData?.dismiss()
+                            kotlinx.coroutines.delay(100)
+                            viewModel.undoDelete()
+                        }
                     }
                 }
             }

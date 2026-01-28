@@ -167,7 +167,8 @@ class MaintenancesViewModelMvi(
     /**
      * Restore the previously deleted maintenance.
      *
-     * Creates a new maintenance with same data but new ID.
+     * Restores the maintenance at its original position by preserving its ID.
+     * Uses addMaintenance with the original ID to restore at the same position.
      *
      * On success: UI updates automatically via Flow
      * On failure: Emits ShowError event
@@ -177,7 +178,8 @@ class MaintenancesViewModelMvi(
         deletedMaintenance = null
 
         execute {
-            addMaintenanceUseCase(maintenance.copy(id = ""))
+            // Pass maintenance with original ID - repository will use it instead of generating new one
+            addMaintenanceUseCase(maintenance)
         }
     }
 

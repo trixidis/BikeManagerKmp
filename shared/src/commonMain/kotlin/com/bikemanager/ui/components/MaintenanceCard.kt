@@ -58,18 +58,23 @@ fun MaintenanceCard(
     modifier: Modifier = Modifier
 ) {
     val isDone = maintenance.value != null && maintenance.value >= 0
-    val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = { dismissValue ->
-            if (dismissValue == SwipeToDismissBoxValue.EndToStart || dismissValue == SwipeToDismissBoxValue.StartToEnd) {
-                onDeleteSwipe()
-                true
-            } else {
-                false
-            }
-        }
-    )
 
-    SwipeToDismissBox(
+    // Use maintenance object as key to force fresh composition when restored
+    // Since Maintenance is a data class, each new instance has a different hash
+    // This prevents the red background from persisting after undo
+    key(maintenance) {
+        val dismissState = rememberSwipeToDismissBoxState(
+            confirmValueChange = { dismissValue ->
+                if (dismissValue == SwipeToDismissBoxValue.EndToStart || dismissValue == SwipeToDismissBoxValue.StartToEnd) {
+                    onDeleteSwipe()
+                    true
+                } else {
+                    false
+                }
+            }
+        )
+
+        SwipeToDismissBox(
         state = dismissState,
         modifier = modifier.padding(vertical = Dimens.SpaceSm),
         backgroundContent = {
@@ -228,7 +233,8 @@ fun MaintenanceCard(
         }
             }
         }
-    )
+        )
+    }
 }
 
 /**

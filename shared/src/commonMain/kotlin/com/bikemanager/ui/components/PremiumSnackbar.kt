@@ -50,7 +50,9 @@ enum class SnackbarType {
 fun PremiumSnackbarContent(
     message: String,
     type: SnackbarType = SnackbarType.INFO,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    actionLabel: String? = null,
+    onActionClick: (() -> Unit)? = null
 ) {
     val (background, icon, iconTint) = when (type) {
         SnackbarType.SUCCESS -> Triple(
@@ -107,6 +109,21 @@ fun PremiumSnackbarContent(
                 color = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.weight(1f)
             )
+
+            // Action button (when actionLabel is provided)
+            if (actionLabel != null && onActionClick != null) {
+                TextButton(
+                    onClick = onActionClick,
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    )
+                ) {
+                    Text(
+                        text = actionLabel.uppercase(),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            }
         }
     }
 }
@@ -145,7 +162,9 @@ fun PremiumSnackbarHost(
             val type = getSnackbarType(data.visuals.message)
             PremiumSnackbarContent(
                 message = data.visuals.message,
-                type = type
+                type = type,
+                actionLabel = data.visuals.actionLabel,
+                onActionClick = { data.performAction() }
             )
         }
     )
