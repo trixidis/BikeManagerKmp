@@ -42,8 +42,8 @@ android {
         applicationId = "com.bikemanager.android"
         minSdk = 24
         targetSdk = 35
-        versionCode = 6
-        versionName = "1.3.0"
+        versionCode = 7
+        versionName = "1.4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
