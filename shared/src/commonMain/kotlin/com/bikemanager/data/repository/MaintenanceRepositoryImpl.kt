@@ -154,16 +154,22 @@ class MaintenanceRepositoryImpl(
 
         return ErrorHandler.catching("adding maintenance") {
             withTimeout(10_000L) { // 10 second timeout
-                val newRef = ref.push()
+                // Use existing ID if provided (for undo), otherwise generate new one
+                val targetRef = if (maintenance.id.isNotEmpty()) {
+                    ref.child(maintenance.id)
+                } else {
+                    ref.push()
+                }
+
                 val data = mapOf(
                     "nameMaintenance" to maintenance.name,
                     "nbHoursMaintenance" to maintenance.value,
                     "dateMaintenance" to maintenance.date,
                     "isDone" to maintenance.isDone
                 )
-                newRef.setValue(data)
+                targetRef.setValue(data)
 
-                val key = newRef.key ?: throw IllegalStateException("Failed to get Firebase key")
+                val key = targetRef.key ?: throw IllegalStateException("Failed to get Firebase key")
                 Napier.d { "Maintenance added: ${maintenance.name} (id=$key)" }
                 key
             }

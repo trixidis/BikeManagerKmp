@@ -32,6 +32,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateMap
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.layout
@@ -76,6 +78,30 @@ fun MaintenancesScreenContent(
     var showAddDoneDialog by remember { mutableStateOf(false) }
     var showAddTodoDialog by remember { mutableStateOf(false) }
     var markDoneMaintenance by remember { mutableStateOf<Maintenance?>(null) }
+
+    // Track restoration versions to force fresh composition after undo
+    val restorationVersions = remember { mutableStateMapOf<String, Int>() }
+
+    // Track previous maintenance IDs to detect restorations
+    val previousMaintenanceIds = remember { mutableStateOf<Set<String>>(emptySet()) }
+
+    // Detect when items are restored and increment their version
+    LaunchedEffect(uiState) {
+        val currentState = uiState
+        if (currentState is MaintenancesUiState.Success) {
+            val currentIds = (currentState.doneMaintenances + currentState.todoMaintenances).map { it.id }.toSet()
+            val restoredIds = currentIds - previousMaintenanceIds.value
+
+            // Increment version for restored items (items that reappeared)
+            restoredIds.forEach { id ->
+                if (previousMaintenanceIds.value.isNotEmpty()) { // Skip initial load
+                    restorationVersions[id] = (restorationVersions[id] ?: 0) + 1
+                }
+            }
+
+            previousMaintenanceIds.value = currentIds
+        }
+    }
 
     val doneListState = rememberLazyListState()
     val todoListState = rememberLazyListState()
@@ -131,7 +157,13 @@ fun MaintenancesScreenContent(
                         duration = SnackbarDuration.Short
                     )
                     if (result == SnackbarResult.ActionPerformed) {
-                        viewModel.undoDelete()
+                        // Process undo in a new coroutine to avoid blocking the event collection
+                        scope.launch {
+                            // Dismiss snackbar and wait for animation to complete
+                            snackbarHostState.currentSnackbarData?.dismiss()
+                            kotlinx.coroutines.delay(100)
+                            viewModel.undoDelete()
+                        }
                     }
                 }
             }
@@ -265,7 +297,11 @@ fun MaintenancesScreenContent(
                             ) {
                                 items(
                                     items = maintenances,
-                                    key = { maintenance -> maintenance.id }
+                                    key = { maintenance ->
+                                        // Use composite key: ID + restoration version
+                                        // This forces new composition when item is restored
+                                        "${maintenance.id}_${restorationVersions[maintenance.id] ?: 0}"
+                                    }
                                 ) { maintenance ->
                                     MaintenanceCard(
                                         maintenance = maintenance,

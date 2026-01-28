@@ -1,7 +1,6 @@
 package com.bikemanager.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -15,21 +14,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import bikemanager.shared.generated.resources.*
 import com.bikemanager.domain.model.CountingMethod
 import com.bikemanager.domain.model.Maintenance
-import bikemanager.shared.generated.resources.*
 import com.bikemanager.ui.Constants
-import org.jetbrains.compose.resources.stringResource
 import com.bikemanager.ui.theme.*
 import com.bikemanager.ui.utils.formatNumber
 import com.bikemanager.ui.utils.formatNumberDecimal
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Premium maintenance card component with Done/Todo variants.
@@ -58,177 +55,186 @@ fun MaintenanceCard(
     modifier: Modifier = Modifier
 ) {
     val isDone = maintenance.value != null && maintenance.value >= 0
-    val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = { dismissValue ->
-            if (dismissValue == SwipeToDismissBoxValue.EndToStart || dismissValue == SwipeToDismissBoxValue.StartToEnd) {
-                onDeleteSwipe()
-                true
-            } else {
-                false
-            }
-        }
-    )
 
-    SwipeToDismissBox(
-        state = dismissState,
-        modifier = modifier.padding(vertical = Dimens.SpaceSm),
-        backgroundContent = {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = Dimens.Space2xl)
-                    .background(ErrorRed, RoundedCornerShape(Dimens.RadiusLg)),
-                contentAlignment = Alignment.CenterEnd
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onError,
-                    modifier = Modifier.padding(end = 24.dp)
-                )
-            }
-        },
-        content = {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Dimens.Space2xl)
-                    .then(
-                        if (!isDone) {
-                            Modifier.clickable { onMarkDoneClick() }
-                        } else Modifier
-                    ),
-                shape = RoundedCornerShape(Dimens.RadiusLg),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
-                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-            ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 18.dp, vertical = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceLg),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Icon wrapper
-            IconWrapper(
-                size = Dimens.MaintenanceCardIconSize,
-                cornerRadius = Dimens.RadiusMd,
-                background = if (isDone) {
-                    Brush.linearGradient(
-                        listOf(
-                            AccentBlue.copy(alpha = 0.15f),
-                            AccentBlue.copy(alpha = 0.15f)
-                        )
-                    )
+    // Use maintenance object as key to force fresh composition when restored
+    // Since Maintenance is a data class, each new instance has a different hash
+    // This prevents the red background from persisting after undo
+    key(maintenance) {
+        val dismissState = rememberSwipeToDismissBoxState(
+            confirmValueChange = { dismissValue ->
+                if (dismissValue == SwipeToDismissBoxValue.EndToStart || dismissValue == SwipeToDismissBoxValue.StartToEnd) {
+                    onDeleteSwipe()
+                    true
                 } else {
-                    Brush.linearGradient(
-                        listOf(
-                            AccentTeal.copy(alpha = 0.15f),
-                            AccentTeal.copy(alpha = 0.15f)
-                        )
-                    )
-                },
-                shadowColor = Color.Transparent
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Build,
-                    contentDescription = null,
-                    tint = if (isDone) AccentBlue else AccentTeal,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-
-            // Content
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    text = maintenance.name,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
-                if (isDone) {
-                    // Metadata for done maintenance
-                    // Note: Using orange/gray dots temporarily instead of custom icons
-                    // TODO: Create and use custom speedometer/clock/calendar SVG icons per PRD section 4.2
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Value with colored dot
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(6.dp)
-                                    .background(AccentOrange, CircleShape)
-                            )
-                            Text(
-                                text = formatMaintenanceValue(
-                                    maintenance.value!!,
-                                    countingMethod
-                                ),
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontWeight = FontWeight.SemiBold
-                                ),
-                                color = AccentOrange
-                            )
-                        }
-
-                        // Date
-                        if (maintenance.date > 0) {
-                            Text(
-                                text = Constants.BULLET,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = formatDate(maintenance.date),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                } else {
-                    // Hint for todo maintenance
-                    Text(
-                        text = stringResource(Res.string.press_to_mark_done),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = AccentTeal
-                    )
+                    false
                 }
             }
+        )
 
-            // Check indicator for todo
-            if (!isDone) {
+        SwipeToDismissBox(
+            state = dismissState,
+            modifier = modifier.padding(vertical = Dimens.SpaceSm),
+            backgroundContent = {
                 Box(
                     modifier = Modifier
-                        .size(Dimens.MaintenanceCheckSize)
-                        .background(
-                            AccentTeal.copy(alpha = 0.15f),
-                            RoundedCornerShape(10.dp)
-                        ),
-                    contentAlignment = Alignment.Center
+                        .fillMaxSize()
+                        .padding(horizontal = Dimens.Space2xl)
+                        .background(ErrorRed, RoundedCornerShape(Dimens.RadiusLg))
+                        .padding(10.dp),
+                    contentAlignment = Alignment.CenterEnd
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Check,
+                        imageVector = Icons.Default.Delete,
                         contentDescription = null,
-                        tint = AccentTeal,
-                        modifier = Modifier.size(16.dp)
+                        tint = MaterialTheme.colorScheme.onError,
+                        modifier = Modifier.padding(end = 24.dp)
                     )
                 }
+            },
+            content = {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = Dimens.Space2xl)
+                        .then(
+                            if (!isDone) {
+                                Modifier.clickable { onMarkDoneClick() }
+                            } else Modifier
+                        ),
+                    shape = RoundedCornerShape(Dimens.RadiusLg),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    border = androidx.compose.foundation.BorderStroke(
+                        1.dp,
+                        MaterialTheme.colorScheme.outline
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 18.dp, vertical = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceLg),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Icon wrapper
+                        IconWrapper(
+                            size = Dimens.MaintenanceCardIconSize,
+                            cornerRadius = Dimens.RadiusMd,
+                            background = if (isDone) {
+                                Brush.linearGradient(
+                                    listOf(
+                                        AccentBlue.copy(alpha = 0.15f),
+                                        AccentBlue.copy(alpha = 0.15f)
+                                    )
+                                )
+                            } else {
+                                Brush.linearGradient(
+                                    listOf(
+                                        AccentTeal.copy(alpha = 0.15f),
+                                        AccentTeal.copy(alpha = 0.15f)
+                                    )
+                                )
+                            },
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Build,
+                                contentDescription = null,
+                                tint = if (isDone) AccentBlue else AccentTeal,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+
+                        // Content
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = maintenance.name,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+
+                            if (isDone) {
+                                // Metadata for done maintenance
+                                // Note: Using orange/gray dots temporarily instead of custom icons
+                                // TODO: Create and use custom speedometer/clock/calendar SVG icons per PRD section 4.2
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    // Value with colored dot
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(6.dp)
+                                                .background(AccentOrange, CircleShape)
+                                        )
+                                        Text(
+                                            text = formatMaintenanceValue(
+                                                maintenance.value!!,
+                                                countingMethod
+                                            ),
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                fontWeight = FontWeight.SemiBold
+                                            ),
+                                            color = AccentOrange
+                                        )
+                                    }
+
+                                    // Date
+                                    if (maintenance.date > 0) {
+                                        Text(
+                                            text = Constants.BULLET,
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Text(
+                                            text = formatDate(maintenance.date),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            } else {
+                                // Hint for todo maintenance
+                                Text(
+                                    text = stringResource(Res.string.press_to_mark_done),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = AccentTeal
+                                )
+                            }
+                        }
+
+                        // Check indicator for todo
+                        if (!isDone) {
+                            Box(
+                                modifier = Modifier
+                                    .size(Dimens.MaintenanceCheckSize)
+                                    .background(
+                                        AccentTeal.copy(alpha = 0.15f),
+                                        RoundedCornerShape(10.dp)
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = null,
+                                    tint = AccentTeal,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                    }
+                }
             }
-        }
-            }
-        }
-    )
+        )
+    }
 }
 
 /**

@@ -43,12 +43,6 @@ fun IconWrapper(
     Box(
         modifier = modifier
             .size(size)
-            .shadow(
-                elevation = 8.dp,
-                shape = RoundedCornerShape(cornerRadius),
-                ambientColor = shadowColor.copy(alpha = 0.25f),
-                spotColor = shadowColor.copy(alpha = 0.25f)
-            )
             .background(background, RoundedCornerShape(cornerRadius)),
         contentAlignment = Alignment.Center
     ) {
