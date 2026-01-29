@@ -81,6 +81,8 @@ kotlin {
                 implementation(libs.androidx.lifecycle.viewmodel.compose)
                 // Android-only: UI Tooling Preview for @Preview annotation
                 implementation(libs.compose.ui.tooling.preview)
+                // WorkManager for notifications
+                implementation("androidx.work:work-runtime-ktx:2.9.0")
             }
         }
         val iosX64Main by getting

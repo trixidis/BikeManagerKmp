@@ -65,7 +65,8 @@ fun BikeManagerNavGraph(
                 com.bikemanager.ui.maintenances.MaintenancesScreenContent(
                     bikeId = route.bikeId,
                     bikeName = route.bikeName,
-                    countingMethod = route.getCountingMethod()
+                    countingMethod = route.getCountingMethod(),
+                    initialTab = route.initialTab
                 )
             }
         }

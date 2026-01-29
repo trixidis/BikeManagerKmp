@@ -42,6 +42,8 @@ iosApp/pods/*
 iosApp/iosApp/Firebase/Debug
 iosApp/iosApp/Firebase/Release
 Podfile.lock
+CLAUDE.md
+claude.md
 
 # Auto Claude data directory
 .auto-claude/

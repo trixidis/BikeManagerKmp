@@ -15,14 +15,21 @@ sealed interface Route {
     data class Maintenances(
         val bikeId: String,
         val bikeName: String,
-        val countingMethodString: String
+        val countingMethodString: String,
+        val initialTab: Int = 0 // 0 = Fait, 1 = À faire
     ) : Route {
         companion object {
-            fun create(bikeId: String, bikeName: String, countingMethod: CountingMethod): Maintenances {
+            fun create(
+                bikeId: String,
+                bikeName: String,
+                countingMethod: CountingMethod,
+                initialTab: Int = 0
+            ): Maintenances {
                 return Maintenances(
                     bikeId = bikeId,
                     bikeName = bikeName,
-                    countingMethodString = countingMethod.name
+                    countingMethodString = countingMethod.name,
+                    initialTab = initialTab
                 )
             }
         }

@@ -67,13 +67,21 @@ fun MaintenancesScreenContent(
     bikeId: String,
     bikeName: String,
     countingMethod: CountingMethod,
+    initialTab: Int = 0,
     viewModel: MaintenancesViewModelMvi = koinInject { parametersOf(bikeId) }
 ) {
     val navController = LocalNavController.current
     val uiState by viewModel.uiState.collectAsState()
-    val pagerState = rememberPagerState(pageCount = { 2 })
+    val currentBike by viewModel.currentBike.collectAsState()
+    val pagerState = rememberPagerState(
+        initialPage = initialTab.coerceIn(0, 1),
+        pageCount = { 2 }
+    )
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // Use live countingMethod from ViewModel if available, fallback to parameter
+    val activeCountingMethod = currentBike?.countingMethod ?: countingMethod
 
     var showAddDoneDialog by remember { mutableStateOf(false) }
     var showAddTodoDialog by remember { mutableStateOf(false) }
@@ -166,6 +174,10 @@ fun MaintenancesScreenContent(
                         }
                     }
                 }
+                MaintenanceEvent.BikeDeleted -> {
+                    // Navigate back - bike was deleted
+                    navController.popBackStack()
+                }
             }
         }
     }
@@ -214,7 +226,7 @@ fun MaintenancesScreenContent(
             ParallaxHeader(
                 bikeName = bikeName,
                 totalValue = totalValue,
-                countingMethod = countingMethod,
+                countingMethod = activeCountingMethod,
                 activeTab = currentTabVariant,
                 onBackClick = { navController.popBackStack() }
             )
@@ -305,7 +317,7 @@ fun MaintenancesScreenContent(
                                 ) { maintenance ->
                                     MaintenanceCard(
                                         maintenance = maintenance,
-                                        countingMethod = countingMethod,
+                                        countingMethod = activeCountingMethod,
                                         onMarkDoneClick = {
                                             if (page == 1) {
                                                 markDoneMaintenance = maintenance
@@ -327,7 +339,7 @@ fun MaintenancesScreenContent(
     if (showAddDoneDialog) {
         AddMaintenanceDialog(
             isDone = true,
-            countingMethod = countingMethod,
+            countingMethod = activeCountingMethod,
             onDismiss = { showAddDoneDialog = false },
             onConfirm = { name, value ->
                 viewModel.addDoneMaintenance(name, value)
@@ -339,7 +351,7 @@ fun MaintenancesScreenContent(
     if (showAddTodoDialog) {
         AddMaintenanceDialog(
             isDone = false,
-            countingMethod = countingMethod,
+            countingMethod = activeCountingMethod,
             onDismiss = { showAddTodoDialog = false },
             onConfirm = { name, _ ->
                 viewModel.addTodoMaintenance(name)
@@ -351,7 +363,7 @@ fun MaintenancesScreenContent(
     markDoneMaintenance?.let { maintenance ->
         MarkDoneDialog(
             maintenance = maintenance,
-            countingMethod = countingMethod,
+            countingMethod = activeCountingMethod,
             onDismiss = { markDoneMaintenance = null },
             onConfirm = { value ->
                 viewModel.markMaintenanceDone(maintenance.id, value)

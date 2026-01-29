@@ -153,6 +153,9 @@ dependencies {
     implementation(libs.kmpauth.firebase)
     implementation(libs.kmpauth.uihelper)
 
+    // WorkManager
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+
     // Testing
     testImplementation(libs.junit)
 }

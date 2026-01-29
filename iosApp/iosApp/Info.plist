@@ -60,5 +60,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>BikeManager vous enverra des rappels pour vos maintenances à faire.</string>
 </dict>
 </plist>
