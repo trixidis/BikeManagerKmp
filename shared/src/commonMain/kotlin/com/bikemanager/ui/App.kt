@@ -26,7 +26,7 @@ fun App(deepLinkRoute: Route? = null) {
     val authViewModel: AuthViewModelMvi = koinInject()
     val authState by authViewModel.uiState.collectAsState()
     val navController = rememberNavController()
-    var hasNavigatedToDeepLink by remember { mutableStateOf(false) }
+    var lastNavigatedDeepLink by remember { mutableStateOf<Route?>(null) }
 
     BikeManagerTheme {
         // Determine start destination based on auth state
@@ -46,14 +46,14 @@ fun App(deepLinkRoute: Route? = null) {
                 is AuthUiState.Authenticated -> {
                     val currentRoute = navController.currentDestination?.route
 
-                    // Navigate to deep link if provided and not yet navigated
-                    if (deepLinkRoute != null && !hasNavigatedToDeepLink) {
+                    // Navigate to deep link if provided and different from last navigated
+                    if (deepLinkRoute != null && deepLinkRoute != lastNavigatedDeepLink) {
                         navController.navigate(deepLinkRoute) {
                             if (currentRoute?.contains("Login") == true) {
                                 popUpTo<Route.Login> { inclusive = true }
                             }
                         }
-                        hasNavigatedToDeepLink = true
+                        lastNavigatedDeepLink = deepLinkRoute
                     } else if (currentRoute?.contains("Login") == true) {
                         // Navigate to bikes if not already there
                         navController.navigate(Route.Bikes) {

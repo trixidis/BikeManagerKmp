@@ -53,7 +53,7 @@ class MaintenanceNotificationWorker(
                         body = body,
                         bikeId = bikeId,
                         bikeName = bikeName ?: "",
-                        countingMethod = countingMethod ?: "KILOMETERS",
+                        countingMethod = countingMethod ?: "KM",
                         openTab = openTab ?: "todo"
                     )
                     ListenableWorker.Result.success()

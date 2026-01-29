@@ -53,6 +53,7 @@ class BikeManagerApp : Application() {
         startKoin {
             androidLogger()
             androidContext(this@BikeManagerApp)
+            workManagerFactory()
             modules(
                 androidModule,
                 sharedModule
@@ -63,12 +64,6 @@ class BikeManagerApp : Application() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel()
         }
-
-        // Configurer WorkManager avec Koin
-        val workManagerConfig = Configuration.Builder()
-            .setWorkerFactory(workManagerFactory())
-            .build()
-        WorkManager.initialize(this, workManagerConfig)
     }
 
     private fun createNotificationChannel() {

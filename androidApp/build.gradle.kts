@@ -132,6 +132,7 @@ dependencies {
     // Koin
     implementation(libs.koin.android)
     implementation(libs.koin.compose)
+    implementation("io.insert-koin:koin-androidx-workmanager:3.5.3")
 
     // Coil
     implementation(libs.coil.compose)

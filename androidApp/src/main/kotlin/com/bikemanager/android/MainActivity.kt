@@ -50,14 +50,14 @@ class MainActivity : ComponentActivity() {
         if (uri.scheme == "bikemanager" && uri.host == "maintenance") {
             val bikeId = uri.getQueryParameter("bikeId") ?: return null
             val bikeName = uri.getQueryParameter("bikeName") ?: return null
-            val countingMethodStr = uri.getQueryParameter("countingMethod") ?: "KILOMETERS"
+            val countingMethodStr = uri.getQueryParameter("countingMethod") ?: "KM"
             val openTab = uri.getQueryParameter("openTab")
 
             val countingMethod = try {
                 CountingMethod.valueOf(countingMethodStr)
             } catch (e: IllegalArgumentException) {
-                Napier.w { "Méthode de comptage invalide : $countingMethodStr, utilisation de KILOMETERS par défaut" }
-                CountingMethod.KILOMETERS
+                Napier.w { "Méthode de comptage invalide : $countingMethodStr, utilisation de KM par défaut" }
+                CountingMethod.KM
             }
 
             val initialTab = if (openTab == "todo") 1 else 0
