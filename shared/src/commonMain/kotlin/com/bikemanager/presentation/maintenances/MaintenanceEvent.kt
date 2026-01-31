@@ -30,4 +30,10 @@ sealed interface MaintenanceEvent {
      * @param maintenance The deleted maintenance that can be restored
      */
     data class ShowUndoSnackbar(val maintenance: Maintenance) : MaintenanceEvent
+
+    /**
+     * Bike was deleted while viewing maintenances.
+     * UI should navigate back to bikes screen.
+     */
+    data object BikeDeleted : MaintenanceEvent
 }

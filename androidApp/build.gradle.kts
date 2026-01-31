@@ -132,6 +132,7 @@ dependencies {
     // Koin
     implementation(libs.koin.android)
     implementation(libs.koin.compose)
+    implementation("io.insert-koin:koin-androidx-workmanager:3.5.3")
 
     // Coil
     implementation(libs.coil.compose)
@@ -152,6 +153,9 @@ dependencies {
     implementation(libs.kmpauth.google)
     implementation(libs.kmpauth.firebase)
     implementation(libs.kmpauth.uihelper)
+
+    // WorkManager
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
 
     // Testing
     testImplementation(libs.junit)

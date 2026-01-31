@@ -1,16 +1,24 @@
 package com.bikemanager.presentation.maintenances
 
+import androidx.lifecycle.viewModelScope
 import com.bikemanager.domain.common.AppError
 import com.bikemanager.domain.common.ErrorMessages
 import com.bikemanager.domain.common.fold
+import com.bikemanager.domain.model.Bike
 import com.bikemanager.domain.model.Maintenance
+import com.bikemanager.domain.repository.BikeRepository
 import com.bikemanager.domain.usecase.maintenance.AddMaintenanceUseCase
 import com.bikemanager.domain.usecase.maintenance.DeleteMaintenanceUseCase
 import com.bikemanager.domain.usecase.maintenance.GetMaintenancesUseCase
 import com.bikemanager.domain.usecase.maintenance.MarkMaintenanceDoneUseCase
+import com.bikemanager.domain.usecase.notification.CancelMaintenanceReminderUseCase
+import com.bikemanager.domain.usecase.notification.ScheduleMaintenanceReminderUseCase
 import com.bikemanager.presentation.base.MviViewModel
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 /**
  * ViewModel for managing bike maintenances.
@@ -28,13 +36,19 @@ import kotlinx.coroutines.flow.StateFlow
  * @param addMaintenanceUseCase Use case to add a maintenance
  * @param markMaintenanceDoneUseCase Use case to mark maintenance as done
  * @param deleteMaintenanceUseCase Use case to delete a maintenance
+ * @param bikeRepository Repository to fetch current bike data
+ * @param scheduleReminderUseCase Use case to schedule maintenance reminders
+ * @param cancelReminderUseCase Use case to cancel maintenance reminders
  */
 class MaintenancesViewModelMvi(
     private val bikeId: String,
     private val getMaintenancesUseCase: GetMaintenancesUseCase,
     private val addMaintenanceUseCase: AddMaintenanceUseCase,
     private val markMaintenanceDoneUseCase: MarkMaintenanceDoneUseCase,
-    private val deleteMaintenanceUseCase: DeleteMaintenanceUseCase
+    private val deleteMaintenanceUseCase: DeleteMaintenanceUseCase,
+    private val bikeRepository: BikeRepository,
+    private val scheduleReminderUseCase: ScheduleMaintenanceReminderUseCase,
+    private val cancelReminderUseCase: CancelMaintenanceReminderUseCase
 ) : MviViewModel<MaintenancesUiState, MaintenanceEvent>(
     initialState = MaintenancesUiState.Loading
 ) {
@@ -51,8 +65,16 @@ class MaintenancesViewModelMvi(
      */
     private var deletedMaintenance: Maintenance? = null
 
+    /**
+     * Current bike state with live countingMethod.
+     * Used to fix race condition when countingMethod is changed.
+     */
+    private val _currentBike = MutableStateFlow<Bike?>(null)
+    val currentBike: StateFlow<Bike?> = _currentBike.asStateFlow()
+
     init {
         observeMaintenances()
+        observeBike()
     }
 
     // ========== Public API - Intent Handlers ==========
@@ -95,7 +117,10 @@ class MaintenancesViewModelMvi(
      * - isDone = false
      * - User-provided name
      *
-     * On success: UI updates automatically via Flow
+     * On success:
+     * - UI updates automatically via Flow
+     * - Schedules a reminder notification
+     *
      * On failure: Emits ShowError event
      *
      * @param name Maintenance name (must not be blank)
@@ -103,7 +128,38 @@ class MaintenancesViewModelMvi(
     fun addTodoMaintenance(name: String) {
         if (name.isBlank()) return
 
-        execute {
+        execute(
+            onSuccess = { result ->
+                // Schedule reminder notification for the newly created todo maintenance
+                val maintenanceId = result as? String
+                if (maintenanceId != null) {
+                    val bike = _currentBike.value
+                    if (bike != null) {
+                        viewModelScope.launch {
+                            scheduleReminderUseCase(
+                                maintenanceId = maintenanceId,
+                                maintenanceName = name,
+                                bikeId = bikeId,
+                                bikeName = bike.name,
+                                countingMethod = bike.countingMethod
+                            ).fold(
+                                onSuccess = {
+                                    Napier.d { "Notification planifiée pour la maintenance $maintenanceId" }
+                                },
+                                onFailure = { error ->
+                                    // Ne pas bloquer l'UI, juste logger
+                                    Napier.w { "Échec de planification de notification : ${error.message}" }
+                                }
+                            )
+                        }
+                    } else {
+                        Napier.w { "Bike non disponible, notification non planifiée" }
+                    }
+                } else {
+                    Napier.w { "ID de maintenance invalide, notification non planifiée" }
+                }
+            }
+        ) {
             addMaintenanceUseCase(
                 Maintenance(
                     name = name,
@@ -124,7 +180,10 @@ class MaintenancesViewModelMvi(
      * - New value (current km/hours)
      * - Current timestamp
      *
-     * On success: UI updates automatically via Flow
+     * On success:
+     * - UI updates automatically via Flow
+     * - Cancels the reminder notification
+     *
      * On failure: Emits ShowError event
      *
      * @param maintenanceId ID of the maintenance to mark as done
@@ -133,7 +192,22 @@ class MaintenancesViewModelMvi(
     fun markMaintenanceDone(maintenanceId: String, value: Float) {
         if (value < 0) return
 
-        execute {
+        execute(
+            onSuccess = {
+                // Cancel reminder notification when maintenance is marked as done
+                viewModelScope.launch {
+                    cancelReminderUseCase(maintenanceId).fold(
+                        onSuccess = {
+                            Napier.d { "Notification annulée pour la maintenance $maintenanceId" }
+                        },
+                        onFailure = { error ->
+                            // Ne pas bloquer l'UI, juste logger
+                            Napier.w { "Échec d'annulation de notification : ${error.message}" }
+                        }
+                    )
+                }
+            }
+        ) {
             markMaintenanceDoneUseCase(maintenanceId, bikeId, value)
         }
     }
@@ -146,6 +220,7 @@ class MaintenancesViewModelMvi(
      * On success:
      * - UI updates automatically via Flow
      * - Emits ShowUndoSnackbar event for UI to display snackbar
+     * - Cancels the reminder notification
      *
      * On failure: Emits ShowError event
      *
@@ -158,6 +233,19 @@ class MaintenancesViewModelMvi(
             onSuccess = {
                 // Emit event for UI to show snackbar with undo option
                 emitEvent(MaintenanceEvent.ShowUndoSnackbar(maintenance))
+
+                // Cancel reminder notification when maintenance is deleted
+                viewModelScope.launch {
+                    cancelReminderUseCase(maintenance.id).fold(
+                        onSuccess = {
+                            Napier.d { "Notification annulée pour la maintenance supprimée ${maintenance.id}" }
+                        },
+                        onFailure = { error ->
+                            // Ne pas bloquer l'UI, juste logger
+                            Napier.w { "Échec d'annulation de notification : ${error.message}" }
+                        }
+                    )
+                }
             }
         ) {
             deleteMaintenanceUseCase(maintenance.id, bikeId)
@@ -172,6 +260,9 @@ class MaintenancesViewModelMvi(
      *
      * On success: UI updates automatically via Flow
      * On failure: Emits ShowError event
+     *
+     * Note: Ne re-planifie PAS de notification - la notification originale persiste.
+     * C'est le comportement souhaité car elle était déjà planifiée.
      */
     fun undoDelete() {
         val maintenance = deletedMaintenance ?: return
@@ -216,6 +307,30 @@ class MaintenancesViewModelMvi(
                 )
             }
         )
+    }
+
+    /**
+     * Fetch the current bike to get live countingMethod.
+     * Handles bike deletion case by emitting BikeDeleted event.
+     */
+    private fun observeBike() {
+        viewModelScope.launch {
+            val result = bikeRepository.getBikeById(bikeId)
+            result.fold(
+                onSuccess = { bike ->
+                    if (bike != null) {
+                        _currentBike.value = bike
+                    } else {
+                        // Bike was deleted
+                        emitEvent(MaintenanceEvent.BikeDeleted)
+                    }
+                },
+                onFailure = { error ->
+                    // Don't block UI, log error
+                    Napier.w { "Failed to fetch bike: ${error.message}" }
+                }
+            )
+        }
     }
 
     /**

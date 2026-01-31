@@ -2,9 +2,12 @@ import SwiftUI
 import shared
 import FirebaseCore
 import GoogleSignIn
+import UserNotifications
 
 @main
 struct iOSApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @State private var deepLinkRoute: Route? = nil
 
     init() {
         // Configure Firebase on app launch
@@ -34,11 +37,32 @@ struct iOSApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(deepLinkRoute: $deepLinkRoute)
                 .onOpenURL { url in
                     // Handle Google Sign-In callback URL
                     GIDSignIn.sharedInstance.handle(url)
                 }
+                .onAppear {
+                    // Configure notification delegate handler
+                    appDelegate.notificationDelegate.deepLinkHandler = { route in
+                        deepLinkRoute = route
+                    }
+                }
         }
+    }
+}
+
+// AppDelegate pour configurer les notifications
+class AppDelegate: NSObject, UIApplicationDelegate {
+    let notificationDelegate = NotificationDelegate()
+
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
+    ) -> Bool {
+        // Configurer le delegate des notifications
+        UNUserNotificationCenter.current().delegate = notificationDelegate
+        print("[BikeManager] Notification delegate configuré")
+        return true
     }
 }
