@@ -42,27 +42,30 @@ struct iOSApp: App {
                     // Handle Google Sign-In callback URL
                     GIDSignIn.sharedInstance.handle(url)
                 }
-                .onAppear {
-                    // Configure notification delegate handler
-                    appDelegate.notificationDelegate.deepLinkHandler = { route in
-                        deepLinkRoute = route
-                    }
-                }
+                // TODO: Réactiver après avoir ajouté NotificationDelegate.swift au projet Xcode
+                // .onAppear {
+                //     // Configure notification delegate handler
+                //     appDelegate.notificationDelegate.deepLinkHandler = { route in
+                //         deepLinkRoute = route
+                //     }
+                // }
         }
     }
 }
 
 // AppDelegate pour configurer les notifications
 class AppDelegate: NSObject, UIApplicationDelegate {
-    let notificationDelegate = NotificationDelegate()
+    // TODO: Réactiver après avoir ajouté NotificationDelegate.swift au projet Xcode
+    // let notificationDelegate = NotificationDelegate()
 
     func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
-        // Configurer le delegate des notifications
-        UNUserNotificationCenter.current().delegate = notificationDelegate
-        print("[BikeManager] Notification delegate configuré")
+        // TODO: Réactiver après avoir ajouté NotificationDelegate.swift au projet Xcode
+        // // Configurer le delegate des notifications
+        // UNUserNotificationCenter.current().delegate = notificationDelegate
+        // print("[BikeManager] Notification delegate configuré")
         return true
     }
 }
