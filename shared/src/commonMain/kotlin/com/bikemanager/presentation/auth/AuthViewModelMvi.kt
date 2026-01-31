@@ -5,6 +5,7 @@ import com.bikemanager.domain.common.ErrorMessages
 import com.bikemanager.domain.common.fold
 import com.bikemanager.domain.usecase.auth.GetCurrentUserUseCase
 import com.bikemanager.domain.usecase.auth.SignInUseCase
+import com.bikemanager.domain.usecase.auth.SignInWithAppleUseCase
 import com.bikemanager.domain.usecase.auth.SignOutUseCase
 import com.bikemanager.presentation.base.MviViewModel
 import io.github.aakira.napier.Napier
@@ -23,11 +24,13 @@ import kotlinx.coroutines.flow.StateFlow
  *
  * @param getCurrentUserUseCase Use case to get current authenticated user
  * @param signInUseCase Use case to sign in with Google
+ * @param signInWithAppleUseCase Use case to sign in with Apple
  * @param signOutUseCase Use case to sign out
  */
 class AuthViewModelMvi(
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val signInUseCase: SignInUseCase,
+    private val signInWithAppleUseCase: SignInWithAppleUseCase,
     private val signOutUseCase: SignOutUseCase
 ) : MviViewModel<AuthUiState, AuthEvent>(
     initialState = AuthUiState.Checking
@@ -98,6 +101,41 @@ class AuthViewModelMvi(
             }
         ) {
             signInUseCase(idToken)
+        }
+    }
+
+    /**
+     * Sign in with Apple using the provided ID token.
+     *
+     * On success:
+     * - Updates state to Authenticated
+     * - Navigates to main screen (handled by UI)
+     *
+     * On failure:
+     * - Updates state to Error
+     * - Emits ShowError event
+     *
+     * @param idToken The Apple ID token
+     * @param nonce Optional nonce for additional security
+     */
+    fun signInWithApple(idToken: String, nonce: String? = null) {
+        if (idToken.isBlank()) {
+            updateState { AuthUiState.Error(ErrorMessages.AUTH_INVALID_CREDENTIALS) }
+            emitEvent(AuthEvent.ShowError(ErrorMessages.AUTH_INVALID_CREDENTIALS))
+            return
+        }
+
+        updateState { AuthUiState.Loading }
+
+        execute(
+            onSuccess = { value ->
+                val user = value as? com.bikemanager.domain.model.User
+                if (user != null) {
+                    updateState { AuthUiState.Authenticated(user) }
+                }
+            }
+        ) {
+            signInWithAppleUseCase(idToken, nonce)
         }
     }
 

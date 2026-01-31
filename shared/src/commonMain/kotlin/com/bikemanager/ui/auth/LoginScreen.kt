@@ -23,8 +23,10 @@ import androidx.compose.ui.unit.dp
 import bikemanager.shared.generated.resources.Res
 import bikemanager.shared.generated.resources.app_name
 import bikemanager.shared.generated.resources.app_subtitle
+import bikemanager.shared.generated.resources.error_apple_sign_in
 import bikemanager.shared.generated.resources.error_google_sign_in
 import bikemanager.shared.generated.resources.error_user_not_found
+import bikemanager.shared.generated.resources.sign_in_with_apple
 import bikemanager.shared.generated.resources.sign_in_with_google
 import com.bikemanager.presentation.auth.AuthUiState
 import com.bikemanager.presentation.auth.AuthViewModelMvi
@@ -104,6 +106,16 @@ fun LoginScreenContent(
                             viewModel.setError(error)
                         }
                     )
+                    // TODO: Ajouter Apple Sign In quand la configuration Firebase/Apple sera complète
+                    // Spacer(modifier = Modifier.height(16.dp))
+                    // AppleSignInButtonContent(
+                    //     onSuccess = {
+                    //         viewModel.checkAuthState()
+                    //     },
+                    //     onError = { error ->
+                    //         viewModel.setError(error)
+                    //     }
+                    // )
                 }
 
                 is AuthUiState.NotAuthenticated -> {
@@ -116,6 +128,16 @@ fun LoginScreenContent(
                             viewModel.setError(error)
                         }
                     )
+                    // TODO: Ajouter Apple Sign In quand la configuration Firebase/Apple sera complète
+                    // Spacer(modifier = Modifier.height(16.dp))
+                    // AppleSignInButtonContent(
+                    //     onSuccess = {
+                    //         viewModel.checkAuthState()
+                    //     },
+                    //     onError = { error ->
+                    //         viewModel.setError(error)
+                    //     }
+                    // )
                 }
 
                 is AuthUiState.Authenticated -> {
@@ -161,3 +183,21 @@ private fun GoogleSignInButtonContent(
         }
     }
 }
+
+// TODO: Implémenter Apple Sign In avec expect/actual pattern
+// L'approche avec KMPAuth nécessite une configuration spécifique par plateforme
+// car AppleButtonUiContainerFirebase n'existe pas dans KMPAuth v2.3.1
+//
+// Pour l'implémentation complète :
+// 1. Créer expect fun AppleSignInButton() dans commonMain
+// 2. Implémenter actual sur iOS avec ASAuthorizationAppleIDButton natif
+// 3. Implémenter actual sur Android avec SignInWithApple web flow
+// 4. Configurer Firebase Console et Apple Developer Portal
+//
+// @Composable
+// private fun AppleSignInButtonContent(
+//     onSuccess: () -> Unit,
+//     onError: (String) -> Unit
+// ) {
+//     // Implementation à venir
+// }

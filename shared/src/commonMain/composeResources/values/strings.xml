@@ -62,8 +62,10 @@
 
     <!-- Authentication -->
     <string name="sign_in_with_google">Se connecter avec Google</string>
+    <string name="sign_in_with_apple">Se connecter avec Apple</string>
     <string name="error_user_not_found">Utilisateur non trouvé</string>
     <string name="error_google_sign_in">Erreur de connexion Google</string>
+    <string name="error_apple_sign_in">Erreur de connexion Apple</string>
 
     <!-- Error messages -->
     <string name="error_login">Une erreur est survenue</string>

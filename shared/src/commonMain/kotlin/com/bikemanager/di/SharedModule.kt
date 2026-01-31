@@ -8,6 +8,7 @@ import com.bikemanager.domain.repository.BikeRepository
 import com.bikemanager.domain.repository.MaintenanceRepository
 import com.bikemanager.domain.usecase.auth.GetCurrentUserUseCase
 import com.bikemanager.domain.usecase.auth.SignInUseCase
+import com.bikemanager.domain.usecase.auth.SignInWithAppleUseCase
 import com.bikemanager.domain.usecase.auth.SignOutUseCase
 import com.bikemanager.domain.usecase.bike.AddBikeUseCase
 import com.bikemanager.domain.usecase.bike.DeleteBikeUseCase
@@ -57,10 +58,11 @@ val sharedModule: Module = module {
     // Auth Use Cases
     factory { GetCurrentUserUseCase(get()) }
     factory { SignInUseCase(get()) }
+    factory { SignInWithAppleUseCase(get()) }
     factory { SignOutUseCase(get()) }
 
     // ViewModels (MVI Pattern)
-    single { AuthViewModelMvi(get(), get(), get()) }
+    single { AuthViewModelMvi(get(), get(), get(), get()) }
     single { BikesViewModelMvi(get(), get(), get(), get()) }
     factory { (bikeId: String) ->
         MaintenancesViewModelMvi(
