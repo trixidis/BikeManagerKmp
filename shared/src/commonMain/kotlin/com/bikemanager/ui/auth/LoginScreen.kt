@@ -106,16 +106,21 @@ fun LoginScreenContent(
                             viewModel.setError(error)
                         }
                     )
-                    // TODO: Ajouter Apple Sign In quand la configuration Firebase/Apple sera complète
-                    // Spacer(modifier = Modifier.height(16.dp))
-                    // AppleSignInButtonContent(
-                    //     onSuccess = {
-                    //         viewModel.checkAuthState()
-                    //     },
-                    //     onError = { error ->
-                    //         viewModel.setError(error)
-                    //     }
-                    // )
+                    // TODO: Apple Sign In - En attente d'une version stable de KMPAuth
+                    // Le backend est prêt (AuthRepository.signInWithApple + use case)
+                    // Mais KMPAuth 2.5.0-alpha01 n'a pas encore d'API stable pour Apple UI
+                    // Voir: https://github.com/mirzemehdi/KMPAuth/releases
+                    /*
+                    Spacer(modifier = Modifier.height(16.dp))
+                    AppleSignInButtonContent(
+                        onSuccess = {
+                            viewModel.checkAuthState()
+                        },
+                        onError = { error ->
+                            viewModel.setError(error)
+                        }
+                    )
+                    */
                 }
 
                 is AuthUiState.NotAuthenticated -> {
@@ -128,16 +133,21 @@ fun LoginScreenContent(
                             viewModel.setError(error)
                         }
                     )
-                    // TODO: Ajouter Apple Sign In quand la configuration Firebase/Apple sera complète
-                    // Spacer(modifier = Modifier.height(16.dp))
-                    // AppleSignInButtonContent(
-                    //     onSuccess = {
-                    //         viewModel.checkAuthState()
-                    //     },
-                    //     onError = { error ->
-                    //         viewModel.setError(error)
-                    //     }
-                    // )
+                    // TODO: Apple Sign In - En attente d'une version stable de KMPAuth
+                    // Le backend est prêt (AuthRepository.signInWithApple + use case)
+                    // Mais KMPAuth 2.5.0-alpha01 n'a pas encore d'API stable pour Apple UI
+                    // Voir: https://github.com/mirzemehdi/KMPAuth/releases
+                    /*
+                    Spacer(modifier = Modifier.height(16.dp))
+                    AppleSignInButtonContent(
+                        onSuccess = {
+                            viewModel.checkAuthState()
+                        },
+                        onError = { error ->
+                            viewModel.setError(error)
+                        }
+                    )
+                    */
                 }
 
                 is AuthUiState.Authenticated -> {
@@ -184,20 +194,30 @@ private fun GoogleSignInButtonContent(
     }
 }
 
-// TODO: Implémenter Apple Sign In avec expect/actual pattern
-// L'approche avec KMPAuth nécessite une configuration spécifique par plateforme
-// car AppleButtonUiContainerFirebase n'existe pas dans KMPAuth v2.3.1
-//
-// Pour l'implémentation complète :
-// 1. Créer expect fun AppleSignInButton() dans commonMain
-// 2. Implémenter actual sur iOS avec ASAuthorizationAppleIDButton natif
-// 3. Implémenter actual sur Android avec SignInWithApple web flow
-// 4. Configurer Firebase Console et Apple Developer Portal
-//
-// @Composable
-// private fun AppleSignInButtonContent(
-//     onSuccess: () -> Unit,
-//     onError: (String) -> Unit
-// ) {
-//     // Implementation à venir
-// }
+/*
+ * TODO: Implémenter AppleSignInButtonContent quand KMPAuth aura une API stable
+ *
+ * Le backend est prêt :
+ * - AuthRepository.signInWithApple() ✅
+ * - SignInWithAppleUseCase ✅
+ * - AuthViewModelMvi.signInWithApple() ✅
+ * - Tests unitaires ✅
+ *
+ * En attente :
+ * - API stable pour Apple UI dans KMPAuth (actuellement alpha)
+ * - Configuration Firebase Console + Apple Developer Portal
+ *
+ * Exemple d'implémentation (à décommenter quand prêt) :
+ *
+ * @Composable
+ * private fun AppleSignInButtonContent(
+ *     onSuccess: () -> Unit,
+ *     onError: (String) -> Unit
+ * ) {
+ *     val signInText = stringResource(Res.string.sign_in_with_apple)
+ *     val errorAppleSignIn = stringResource(Res.string.error_apple_sign_in)
+ *
+ *     // Utiliser AppleButtonUiContainer de KMPAuth quand disponible
+ *     // Voir: https://github.com/mirzemehdi/KMPAuth
+ * }
+ */
