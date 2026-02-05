@@ -26,6 +26,10 @@ struct iOSApp: App {
             print("[BikeManager] ERROR: Could not get Firebase client ID")
         }
 
+        // Initialize Apple Sign In Helper (sets up notification observers)
+        _ = AppleSignInHelper.shared
+        print("[BikeManager] AppleSignInHelper initialized")
+
         print("[BikeManager] Init complete, starting UI...")
 
         #if DEBUG

@@ -140,6 +140,55 @@ class AuthViewModelMvi(
     }
 
     /**
+     * Handle Apple Sign In flow using Firebase Auth SDK directly.
+     *
+     * This method orchestrates the entire Apple Sign In process:
+     * 1. Creates native handler (iOS: Firebase iOS SDK, Android: Firebase Android SDK)
+     * 2. Triggers the sign-in flow (Firebase gère le nonce et l'authentification)
+     * 3. Handles the result (Success, Failure, Cancelled)
+     * 4. Refreshes auth state since Firebase has already authenticated the user
+     *
+     * Note: Firebase Auth SDK gère directement l'authentification, donc on n'a pas besoin
+     * d'appeler signInWithAppleUseCase. On rafraîchit juste l'état avec checkAuthState().
+     *
+     * @param onSuccess Callback when sign in completes successfully
+     * @param onError Callback when sign in fails with error message
+     */
+    fun handleAppleSignIn(
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        updateState { AuthUiState.Loading }
+
+        execute {
+            val handler = com.bikemanager.ui.auth.AppleSignInHandler()
+            val result = handler.signIn()
+
+            when (result) {
+                is com.bikemanager.ui.auth.AppleSignInResult.Success -> {
+                    Napier.d { "Apple Sign In handler success, Firebase has authenticated the user" }
+                    // Firebase a déjà authentifié l'utilisateur en interne
+                    // On rafraîchit juste l'état d'authentification
+                    checkAuthState()
+                    onSuccess()
+                }
+                is com.bikemanager.ui.auth.AppleSignInResult.Failure -> {
+                    Napier.e { "Apple Sign In handler failure: ${result.error}" }
+                    updateState { AuthUiState.Error(result.error) }
+                    onError(result.error)
+                }
+                com.bikemanager.ui.auth.AppleSignInResult.Cancelled -> {
+                    Napier.d { "Apple Sign In cancelled by user" }
+                    // Ne pas afficher d'erreur, juste retourner à NotAuthenticated
+                    updateState { AuthUiState.NotAuthenticated }
+                }
+            }
+
+            com.bikemanager.domain.common.Result.Success(Unit)
+        }
+    }
+
+    /**
      * Sign out the current user.
      *
      * On success or failure:

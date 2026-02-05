@@ -23,19 +23,20 @@ import androidx.compose.ui.unit.dp
 import bikemanager.shared.generated.resources.Res
 import bikemanager.shared.generated.resources.app_name
 import bikemanager.shared.generated.resources.app_subtitle
-import bikemanager.shared.generated.resources.error_apple_sign_in
 import bikemanager.shared.generated.resources.error_google_sign_in
 import bikemanager.shared.generated.resources.error_user_not_found
-import bikemanager.shared.generated.resources.sign_in_with_apple
 import bikemanager.shared.generated.resources.sign_in_with_google
 import com.bikemanager.presentation.auth.AuthUiState
 import com.bikemanager.presentation.auth.AuthViewModelMvi
+import com.mmk.kmpauth.core.KMPAuthInternalApi
+import com.mmk.kmpauth.core.di.isAndroidPlatform
 import com.mmk.kmpauth.firebase.google.GoogleButtonUiContainerFirebase
 import com.mmk.kmpauth.uihelper.google.GoogleButtonMode
 import com.mmk.kmpauth.uihelper.google.GoogleSignInButton
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
+@OptIn(KMPAuthInternalApi::class)
 @Composable
 fun LoginScreenContent(
     viewModel: AuthViewModelMvi = koinInject(),
@@ -106,21 +107,18 @@ fun LoginScreenContent(
                             viewModel.setError(error)
                         }
                     )
-                    // TODO: Apple Sign In - En attente d'une version stable de KMPAuth
-                    // Le backend est prêt (AuthRepository.signInWithApple + use case)
-                    // Mais KMPAuth 2.5.0-alpha01 n'a pas encore d'API stable pour Apple UI
-                    // Voir: https://github.com/mirzemehdi/KMPAuth/releases
-                    /*
-                    Spacer(modifier = Modifier.height(16.dp))
-                    AppleSignInButtonContent(
-                        onSuccess = {
-                            viewModel.checkAuthState()
-                        },
-                        onError = { error ->
-                            viewModel.setError(error)
-                        }
-                    )
-                    */
+                    if (isAndroidPlatform().not()) {
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        AppleSignInButtonContent(
+                            onSuccess = {
+                                viewModel.checkAuthState()
+                            },
+                            onError = { error ->
+                                viewModel.setError(error)
+                            }
+                        )
+                    }
                 }
 
                 is AuthUiState.NotAuthenticated -> {
@@ -133,21 +131,17 @@ fun LoginScreenContent(
                             viewModel.setError(error)
                         }
                     )
-                    // TODO: Apple Sign In - En attente d'une version stable de KMPAuth
-                    // Le backend est prêt (AuthRepository.signInWithApple + use case)
-                    // Mais KMPAuth 2.5.0-alpha01 n'a pas encore d'API stable pour Apple UI
-                    // Voir: https://github.com/mirzemehdi/KMPAuth/releases
-                    /*
-                    Spacer(modifier = Modifier.height(16.dp))
-                    AppleSignInButtonContent(
-                        onSuccess = {
-                            viewModel.checkAuthState()
-                        },
-                        onError = { error ->
-                            viewModel.setError(error)
-                        }
-                    )
-                    */
+                    if (isAndroidPlatform().not()) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        AppleSignInButtonContent(
+                            onSuccess = {
+                                viewModel.checkAuthState()
+                            },
+                            onError = { error ->
+                                viewModel.setError(error)
+                            }
+                        )
+                    }
                 }
 
                 is AuthUiState.Authenticated -> {
@@ -194,30 +188,37 @@ private fun GoogleSignInButtonContent(
     }
 }
 
-/*
- * TODO: Implémenter AppleSignInButtonContent quand KMPAuth aura une API stable
+/**
+ * Apple Sign In button avec gestion du flow Firebase natif.
  *
- * Le backend est prêt :
- * - AuthRepository.signInWithApple() ✅
- * - SignInWithAppleUseCase ✅
- * - AuthViewModelMvi.signInWithApple() ✅
- * - Tests unitaires ✅
+ * Cette implémentation utilise Firebase Auth SDK directement :
+ * - iOS : Firebase Auth iOS SDK via CocoaPods
+ * - Android : Firebase Auth Android SDK avec OAuthProvider
  *
- * En attente :
- * - API stable pour Apple UI dans KMPAuth (actuellement alpha)
- * - Configuration Firebase Console + Apple Developer Portal
+ * Firebase gère automatiquement :
+ * - Le flow natif Apple Sign In
+ * - La génération/validation du nonce
+ * - La création de l'utilisateur Firebase
  *
- * Exemple d'implémentation (à décommenter quand prêt) :
- *
- * @Composable
- * private fun AppleSignInButtonContent(
- *     onSuccess: () -> Unit,
- *     onError: (String) -> Unit
- * ) {
- *     val signInText = stringResource(Res.string.sign_in_with_apple)
- *     val errorAppleSignIn = stringResource(Res.string.error_apple_sign_in)
- *
- *     // Utiliser AppleButtonUiContainer de KMPAuth quand disponible
- *     // Voir: https://github.com/mirzemehdi/KMPAuth
- * }
+ * Après succès, on rafraîchit l'état d'authentification car Firebase
+ * a déjà authentifié l'utilisateur en interne.
  */
+@Composable
+private fun AppleSignInButtonContent(
+    onSuccess: () -> Unit,
+    onError: (String) -> Unit
+) {
+    val viewModel: AuthViewModelMvi = koinInject()
+
+    AppleSignInButton(
+        onClick = {
+            // Le handler est suspend, il faut utiliser une coroutine
+            // Pour éviter de bloquer l'UI, on délègue la gestion au ViewModel
+            viewModel.handleAppleSignIn(
+                onSuccess = onSuccess,
+                onError = onError
+            )
+        },
+        modifier = Modifier.fillMaxWidth()
+    )
+}
