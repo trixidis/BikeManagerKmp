@@ -7,6 +7,7 @@ import com.bikemanager.domain.repository.AuthRepository
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.FirebaseUser
 import dev.gitlive.firebase.auth.GoogleAuthProvider
+import dev.gitlive.firebase.auth.OAuthProvider
 import dev.gitlive.firebase.auth.auth
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
@@ -37,6 +38,31 @@ class AuthRepositoryImpl : AuthRepository {
             val result = auth.signInWithCredential(credential)
             val user = result.user ?: throw Exception("Sign-in failed: no user returned")
             Napier.d { "Successfully signed in: ${user.uid}" }
+            user.toUser()
+        }
+    }
+
+    override suspend fun signInWithApple(idToken: String, nonce: String?): Result<User> {
+        return ErrorHandler.catching("signing in with Apple") {
+            Napier.d { "Signing in with Apple credential" }
+
+            val credential = if (nonce != null) {
+                OAuthProvider.credential(
+                    providerId = "apple.com",
+                    idToken = idToken,
+                    rawNonce = nonce
+                )
+            } else {
+                OAuthProvider.credential(
+                    providerId = "apple.com",
+                    idToken = idToken,
+                    rawNonce = null
+                )
+            }
+
+            val result = auth.signInWithCredential(credential)
+            val user = result.user ?: throw Exception("Sign-in failed: no user returned")
+            Napier.d { "Successfully signed in with Apple: ${user.uid}" }
             user.toUser()
         }
     }

@@ -28,12 +28,15 @@ import bikemanager.shared.generated.resources.error_user_not_found
 import bikemanager.shared.generated.resources.sign_in_with_google
 import com.bikemanager.presentation.auth.AuthUiState
 import com.bikemanager.presentation.auth.AuthViewModelMvi
+import com.mmk.kmpauth.core.KMPAuthInternalApi
+import com.mmk.kmpauth.core.di.isAndroidPlatform
 import com.mmk.kmpauth.firebase.google.GoogleButtonUiContainerFirebase
 import com.mmk.kmpauth.uihelper.google.GoogleButtonMode
 import com.mmk.kmpauth.uihelper.google.GoogleSignInButton
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
+@OptIn(KMPAuthInternalApi::class)
 @Composable
 fun LoginScreenContent(
     viewModel: AuthViewModelMvi = koinInject(),
@@ -104,6 +107,18 @@ fun LoginScreenContent(
                             viewModel.setError(error)
                         }
                     )
+                    if (isAndroidPlatform().not()) {
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        AppleSignInButtonContent(
+                            onSuccess = {
+                                viewModel.checkAuthState()
+                            },
+                            onError = { error ->
+                                viewModel.setError(error)
+                            }
+                        )
+                    }
                 }
 
                 is AuthUiState.NotAuthenticated -> {
@@ -116,6 +131,17 @@ fun LoginScreenContent(
                             viewModel.setError(error)
                         }
                     )
+                    if (isAndroidPlatform().not()) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        AppleSignInButtonContent(
+                            onSuccess = {
+                                viewModel.checkAuthState()
+                            },
+                            onError = { error ->
+                                viewModel.setError(error)
+                            }
+                        )
+                    }
                 }
 
                 is AuthUiState.Authenticated -> {
@@ -160,4 +186,39 @@ private fun GoogleSignInButtonContent(
             this.onClick()
         }
     }
+}
+
+/**
+ * Apple Sign In button avec gestion du flow Firebase natif.
+ *
+ * Cette implémentation utilise Firebase Auth SDK directement :
+ * - iOS : Firebase Auth iOS SDK via CocoaPods
+ * - Android : Firebase Auth Android SDK avec OAuthProvider
+ *
+ * Firebase gère automatiquement :
+ * - Le flow natif Apple Sign In
+ * - La génération/validation du nonce
+ * - La création de l'utilisateur Firebase
+ *
+ * Après succès, on rafraîchit l'état d'authentification car Firebase
+ * a déjà authentifié l'utilisateur en interne.
+ */
+@Composable
+private fun AppleSignInButtonContent(
+    onSuccess: () -> Unit,
+    onError: (String) -> Unit
+) {
+    val viewModel: AuthViewModelMvi = koinInject()
+
+    AppleSignInButton(
+        onClick = {
+            // Le handler est suspend, il faut utiliser une coroutine
+            // Pour éviter de bloquer l'UI, on délègue la gestion au ViewModel
+            viewModel.handleAppleSignIn(
+                onSuccess = onSuccess,
+                onError = onError
+            )
+        },
+        modifier = Modifier.fillMaxWidth()
+    )
 }

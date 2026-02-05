@@ -24,7 +24,7 @@ turbine = "1.2.1"
 kover = "0.9.4"
 # KMP Firebase & Auth
 gitliveFirebase = "2.4.0"
-kmpAuth = "2.3.1"
+kmpAuth = "2.5.0-alpha01"
 
 [libraries]
 # Kotlin

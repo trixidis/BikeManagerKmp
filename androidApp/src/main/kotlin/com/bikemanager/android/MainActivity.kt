@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.bikemanager.domain.model.CountingMethod
 import com.bikemanager.ui.App
+import com.bikemanager.ui.auth.ActivityProvider
 import com.bikemanager.ui.navigation.Route
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
@@ -18,6 +19,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Register this activity for Apple Sign In (and other features requiring Activity)
+        ActivityProvider.currentActivity = this
 
         // Initialize Napier logging in debug mode
         if (BuildConfig.DEBUG) {
@@ -30,6 +34,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             App(deepLinkRoute = deepLinkRoute)
         }
+    }
+
+    override fun onDestroy() {
+        // Clear activity reference to avoid memory leaks
+        if (ActivityProvider.currentActivity == this) {
+            ActivityProvider.currentActivity = null
+        }
+        super.onDestroy()
     }
 
     override fun onNewIntent(intent: Intent) {

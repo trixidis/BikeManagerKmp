@@ -6,7 +6,11 @@ import com.bikemanager.domain.usecase.maintenance.AddMaintenanceUseCase
 import com.bikemanager.domain.usecase.maintenance.DeleteMaintenanceUseCase
 import com.bikemanager.domain.usecase.maintenance.GetMaintenancesUseCase
 import com.bikemanager.domain.usecase.maintenance.MarkMaintenanceDoneUseCase
+import com.bikemanager.domain.usecase.notification.CancelMaintenanceReminderUseCase
+import com.bikemanager.domain.usecase.notification.ScheduleMaintenanceReminderUseCase
+import com.bikemanager.fake.FakeBikeRepository
 import com.bikemanager.fake.FakeMaintenanceRepository
+import com.bikemanager.fake.FakeNotificationScheduler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -23,10 +27,13 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalCoroutinesApi::class)
 class MaintenancesViewModelTest {
     private lateinit var maintenanceRepository: FakeMaintenanceRepository
+    private lateinit var bikeRepository: FakeBikeRepository
     private lateinit var getMaintenancesUseCase: GetMaintenancesUseCase
     private lateinit var addMaintenanceUseCase: AddMaintenanceUseCase
     private lateinit var markMaintenanceDoneUseCase: MarkMaintenanceDoneUseCase
     private lateinit var deleteMaintenanceUseCase: DeleteMaintenanceUseCase
+    private lateinit var scheduleReminderUseCase: ScheduleMaintenanceReminderUseCase
+    private lateinit var cancelReminderUseCase: CancelMaintenanceReminderUseCase
     private val testDispatcher = StandardTestDispatcher()
     private val bikeId = "bike1"
 
@@ -34,10 +41,13 @@ class MaintenancesViewModelTest {
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         maintenanceRepository = FakeMaintenanceRepository()
+        bikeRepository = FakeBikeRepository()
         getMaintenancesUseCase = GetMaintenancesUseCase(maintenanceRepository)
         addMaintenanceUseCase = AddMaintenanceUseCase(maintenanceRepository)
         markMaintenanceDoneUseCase = MarkMaintenanceDoneUseCase(maintenanceRepository)
         deleteMaintenanceUseCase = DeleteMaintenanceUseCase(maintenanceRepository)
+        scheduleReminderUseCase = ScheduleMaintenanceReminderUseCase(FakeNotificationScheduler())
+        cancelReminderUseCase = CancelMaintenanceReminderUseCase(FakeNotificationScheduler())
     }
 
     @AfterTest
@@ -51,7 +61,10 @@ class MaintenancesViewModelTest {
             getMaintenancesUseCase = getMaintenancesUseCase,
             addMaintenanceUseCase = addMaintenanceUseCase,
             markMaintenanceDoneUseCase = markMaintenanceDoneUseCase,
-            deleteMaintenanceUseCase = deleteMaintenanceUseCase
+            deleteMaintenanceUseCase = deleteMaintenanceUseCase,
+            bikeRepository = bikeRepository,
+            scheduleReminderUseCase = scheduleReminderUseCase,
+            cancelReminderUseCase = cancelReminderUseCase
         )
     }
 

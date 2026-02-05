@@ -26,6 +26,14 @@ interface AuthRepository {
     suspend fun signInWithGoogle(idToken: String): Result<User>
 
     /**
+     * Signs in with Apple using the provided ID token.
+     * @param idToken The Apple ID token
+     * @param nonce Optional nonce for additional security
+     * @return Result containing the authenticated user or an error
+     */
+    suspend fun signInWithApple(idToken: String, nonce: String? = null): Result<User>
+
+    /**
      * Signs out the current user.
      * @return Result indicating success or failure
      */

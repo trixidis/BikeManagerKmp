@@ -35,6 +35,20 @@ class FakeAuthRepository : AuthRepository {
         return Result.Success(user)
     }
 
+    override suspend fun signInWithApple(idToken: String, nonce: String?): Result<User> {
+        if (shouldFailOnSignIn) {
+            return Result.Failure(signInError ?: AppError.AuthError("Sign in failed"))
+        }
+        val user = User(
+            uid = "test-uid-$idToken",
+            email = "test@example.com",
+            displayName = "Test User",
+            photoUrl = null
+        )
+        currentUserFlow.value = user
+        return Result.Success(user)
+    }
+
     override suspend fun signOut(): Result<Unit> {
         if (shouldFailOnSignOut) {
             return Result.Failure(signOutError ?: AppError.AuthError("Sign out failed"))
