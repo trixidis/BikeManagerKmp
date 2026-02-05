@@ -64,7 +64,7 @@ class AppleSignInHelper: NSObject, ASAuthorizationControllerDelegate, ASAuthoriz
         let credential = OAuthProvider.credential(
             withProviderID: "apple.com",
             idToken: idTokenString,
-            rawNonce: ""
+            rawNonce: nil
         )
 
         // Authentifier avec Firebase
