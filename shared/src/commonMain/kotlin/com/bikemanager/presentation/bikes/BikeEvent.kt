@@ -5,6 +5,8 @@ package com.bikemanager.presentation.bikes
  * These are consumed once and don't persist in state.
  *
  * Events are delivered via Channel to guarantee one-time delivery.
+ * Success events use typed objects instead of raw strings so that
+ * the UI layer can resolve localized string resources.
  */
 sealed interface BikeEvent {
 
@@ -16,9 +18,12 @@ sealed interface BikeEvent {
     data class ShowError(val message: String) : BikeEvent
 
     /**
-     * Show a success message to the user.
-     *
-     * @param message The success message to display
+     * A bike was successfully added.
      */
-    data class ShowSuccess(val message: String) : BikeEvent
+    data object BikeAdded : BikeEvent
+
+    /**
+     * A bike was successfully deleted.
+     */
+    data object BikeDeleted : BikeEvent
 }

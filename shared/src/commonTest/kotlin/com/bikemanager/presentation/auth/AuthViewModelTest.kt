@@ -2,6 +2,7 @@ package com.bikemanager.presentation.auth
 
 import app.cash.turbine.test
 import com.bikemanager.domain.model.User
+import com.bikemanager.domain.usecase.auth.DeleteAccountUseCase
 import com.bikemanager.domain.usecase.auth.GetCurrentUserUseCase
 import com.bikemanager.domain.usecase.auth.SignInUseCase
 import com.bikemanager.domain.usecase.auth.SignInWithAppleUseCase
@@ -27,6 +28,7 @@ class AuthViewModelTest {
     private lateinit var signInUseCase: SignInUseCase
     private lateinit var signInWithAppleUseCase: SignInWithAppleUseCase
     private lateinit var signOutUseCase: SignOutUseCase
+    private lateinit var deleteAccountUseCase: DeleteAccountUseCase
     private val testDispatcher = StandardTestDispatcher()
 
     @BeforeTest
@@ -37,6 +39,7 @@ class AuthViewModelTest {
         signInUseCase = SignInUseCase(repository)
         signInWithAppleUseCase = SignInWithAppleUseCase(repository)
         signOutUseCase = SignOutUseCase(repository)
+        deleteAccountUseCase = DeleteAccountUseCase(repository)
     }
 
     @AfterTest
@@ -46,7 +49,7 @@ class AuthViewModelTest {
 
     @Test
     fun `initial state is Checking then NotAuthenticated when no user`() = runTest {
-        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase)
+        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase, deleteAccountUseCase)
 
         viewModel.uiState.test {
             assertEquals(AuthUiState.Checking, awaitItem())
@@ -68,7 +71,7 @@ class AuthViewModelTest {
         )
         repository.setCurrentUser(testUser)
 
-        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase)
+        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase, deleteAccountUseCase)
 
         viewModel.uiState.test {
             assertEquals(AuthUiState.Checking, awaitItem())
@@ -84,7 +87,7 @@ class AuthViewModelTest {
 
     @Test
     fun `signInWithGoogle transitions to Loading then Authenticated on success`() = runTest {
-        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase)
+        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase, deleteAccountUseCase)
         advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -107,7 +110,7 @@ class AuthViewModelTest {
     fun `signInWithGoogle with auth error shows French error message`() = runTest {
         repository.setSignInFails(true, com.bikemanager.domain.common.AppError.AuthError("Auth failed"))
 
-        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase)
+        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase, deleteAccountUseCase)
         advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -131,7 +134,7 @@ class AuthViewModelTest {
     fun `signInWithGoogle with network error shows French error message`() = runTest {
         repository.setSignInFails(true, com.bikemanager.domain.common.AppError.NetworkError("Network failed"))
 
-        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase)
+        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase, deleteAccountUseCase)
         advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -153,7 +156,7 @@ class AuthViewModelTest {
 
     @Test
     fun `signInWithGoogle with blank token shows French validation error`() = runTest {
-        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase)
+        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase, deleteAccountUseCase)
         advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -174,7 +177,7 @@ class AuthViewModelTest {
             User(uid = "uid", email = null, displayName = null, photoUrl = null)
         )
 
-        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase)
+        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase, deleteAccountUseCase)
         advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -193,7 +196,7 @@ class AuthViewModelTest {
 
     @Test
     fun `clearError resets from Error to NotAuthenticated`() = runTest {
-        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase)
+        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase, deleteAccountUseCase)
         advanceUntilIdle()
 
         // Trigger an error
@@ -212,7 +215,7 @@ class AuthViewModelTest {
 
     @Test
     fun `checkAuthState refreshes auth state`() = runTest {
-        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase)
+        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase, deleteAccountUseCase)
         advanceUntilIdle()
 
         // Set up a user
@@ -241,7 +244,7 @@ class AuthViewModelTest {
 
     @Test
     fun `signInWithApple transitions to Loading then Authenticated on success`() = runTest {
-        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase)
+        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase, deleteAccountUseCase)
         advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -262,7 +265,7 @@ class AuthViewModelTest {
 
     @Test
     fun `signInWithApple with nonce transitions to Loading then Authenticated on success`() = runTest {
-        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase)
+        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase, deleteAccountUseCase)
         advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -285,7 +288,7 @@ class AuthViewModelTest {
     fun `signInWithApple with auth error shows French error message`() = runTest {
         repository.setSignInFails(true, com.bikemanager.domain.common.AppError.AuthError("Auth failed"))
 
-        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase)
+        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase, deleteAccountUseCase)
         advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -307,7 +310,7 @@ class AuthViewModelTest {
 
     @Test
     fun `signInWithApple with blank token shows French validation error`() = runTest {
-        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase)
+        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase, deleteAccountUseCase)
         advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -317,6 +320,54 @@ class AuthViewModelTest {
             val state = awaitItem()
             assertTrue(state is AuthUiState.Error)
             assertEquals("Identifiants invalides. Veuillez réessayer.", (state as AuthUiState.Error).message)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `deleteAccount transitions to Loading then NotAuthenticated on success`() = runTest {
+        val testUser = User(uid = "uid", email = null, displayName = null, photoUrl = null)
+        repository.setCurrentUser(testUser)
+
+        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase, deleteAccountUseCase)
+        advanceUntilIdle()
+
+        viewModel.uiState.test {
+            val authenticated = awaitItem()
+            assertTrue(authenticated is AuthUiState.Authenticated)
+
+            viewModel.deleteAccount()
+
+            assertEquals(AuthUiState.Loading, awaitItem())
+
+            advanceUntilIdle()
+            assertEquals(AuthUiState.NotAuthenticated, awaitItem())
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `deleteAccount shows error on failure`() = runTest {
+        val testUser = User(uid = "uid", email = null, displayName = null, photoUrl = null)
+        repository.setCurrentUser(testUser)
+        repository.setDeleteAccountFails(true, com.bikemanager.domain.common.AppError.AuthError("Recent login required"))
+
+        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase, deleteAccountUseCase)
+        advanceUntilIdle()
+
+        viewModel.uiState.test {
+            val authenticated = awaitItem()
+            assertTrue(authenticated is AuthUiState.Authenticated)
+
+            viewModel.deleteAccount()
+
+            assertEquals(AuthUiState.Loading, awaitItem())
+
+            advanceUntilIdle()
+            val state = awaitItem()
+            assertTrue(state is AuthUiState.Error)
 
             cancelAndIgnoreRemainingEvents()
         }

@@ -16,6 +16,8 @@ class FakeAuthRepository : AuthRepository {
     private var signInError: AppError? = null
     private var shouldFailOnSignOut = false
     private var signOutError: AppError? = null
+    private var shouldFailOnDeleteAccount = false
+    private var deleteAccountError: AppError? = null
 
     override fun getCurrentUser(): User? = currentUserFlow.value
 
@@ -57,6 +59,21 @@ class FakeAuthRepository : AuthRepository {
         return Result.Success(Unit)
     }
 
+    override suspend fun deleteUserData(uid: String): Result<Unit> {
+        if (shouldFailOnDeleteAccount) {
+            return Result.Failure(deleteAccountError ?: AppError.DatabaseError("Delete user data failed"))
+        }
+        return Result.Success(Unit)
+    }
+
+    override suspend fun deleteAccount(): Result<Unit> {
+        if (shouldFailOnDeleteAccount) {
+            return Result.Failure(deleteAccountError ?: AppError.AuthError("Delete account failed"))
+        }
+        currentUserFlow.value = null
+        return Result.Success(Unit)
+    }
+
     override fun isSignedIn(): Boolean = currentUserFlow.value != null
 
     /**
@@ -89,5 +106,13 @@ class FakeAuthRepository : AuthRepository {
     fun setSignOutFails(shouldFail: Boolean, error: AppError? = null) {
         shouldFailOnSignOut = shouldFail
         signOutError = error
+    }
+
+    /**
+     * Helper to make delete account return a failure.
+     */
+    fun setDeleteAccountFails(shouldFail: Boolean, error: AppError? = null) {
+        shouldFailOnDeleteAccount = shouldFail
+        deleteAccountError = error
     }
 }

@@ -3,6 +3,7 @@ package com.bikemanager.presentation.auth
 import com.bikemanager.domain.common.AppError
 import com.bikemanager.domain.common.ErrorMessages
 import com.bikemanager.domain.common.fold
+import com.bikemanager.domain.usecase.auth.DeleteAccountUseCase
 import com.bikemanager.domain.usecase.auth.GetCurrentUserUseCase
 import com.bikemanager.domain.usecase.auth.SignInUseCase
 import com.bikemanager.domain.usecase.auth.SignInWithAppleUseCase
@@ -26,12 +27,14 @@ import kotlinx.coroutines.flow.StateFlow
  * @param signInUseCase Use case to sign in with Google
  * @param signInWithAppleUseCase Use case to sign in with Apple
  * @param signOutUseCase Use case to sign out
+ * @param deleteAccountUseCase Use case to delete account and all user data
  */
 class AuthViewModelMvi(
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val signInUseCase: SignInUseCase,
     private val signInWithAppleUseCase: SignInWithAppleUseCase,
-    private val signOutUseCase: SignOutUseCase
+    private val signOutUseCase: SignOutUseCase,
+    private val deleteAccountUseCase: DeleteAccountUseCase
 ) : MviViewModel<AuthUiState, AuthEvent>(
     initialState = AuthUiState.Checking
 ) {
@@ -211,6 +214,27 @@ class AuthViewModelMvi(
                 )
                 updateState { AuthUiState.NotAuthenticated }
             }
+        }
+    }
+
+    /**
+     * Delete the current user's account and all associated data.
+     *
+     * On success:
+     * - Updates state to NotAuthenticated (navigation auto towards Login)
+     *
+     * On failure:
+     * - Updates state to Error with appropriate message
+     */
+    fun deleteAccount() {
+        updateState { AuthUiState.Loading }
+
+        execute(
+            onSuccess = {
+                updateState { AuthUiState.NotAuthenticated }
+            }
+        ) {
+            deleteAccountUseCase()
         }
     }
 

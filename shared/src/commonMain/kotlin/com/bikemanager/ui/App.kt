@@ -10,6 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.navigation.compose.rememberNavController
 import com.bikemanager.presentation.auth.AuthUiState
 import com.bikemanager.presentation.auth.AuthViewModelMvi
+import com.bikemanager.presentation.bikes.BikesViewModelMvi
 import com.bikemanager.ui.navigation.BikeManagerNavGraph
 import com.bikemanager.ui.navigation.Route
 import com.bikemanager.ui.theme.BikeManagerTheme
@@ -24,9 +25,11 @@ import org.koin.compose.koinInject
 @Composable
 fun App(deepLinkRoute: Route? = null) {
     val authViewModel: AuthViewModelMvi = koinInject()
+    val bikesViewModel: BikesViewModelMvi = koinInject()
     val authState by authViewModel.uiState.collectAsState()
     val navController = rememberNavController()
     var lastNavigatedDeepLink by remember { mutableStateOf<Route?>(null) }
+    var previousAuthState by remember { mutableStateOf<AuthUiState?>(null) }
 
     BikeManagerTheme {
         // Determine start destination based on auth state
@@ -44,6 +47,13 @@ fun App(deepLinkRoute: Route? = null) {
         LaunchedEffect(authState, deepLinkRoute) {
             when (authState) {
                 is AuthUiState.Authenticated -> {
+                    // Reload bikes when transitioning from non-authenticated to authenticated
+                    // (after sign-out/sign-in or account deletion/re-creation)
+                    if (previousAuthState is AuthUiState.NotAuthenticated ||
+                        previousAuthState is AuthUiState.Error) {
+                        bikesViewModel.reload()
+                    }
+
                     val currentRoute = navController.currentDestination?.route
 
                     // Navigate to deep link if provided and different from last navigated
@@ -74,6 +84,8 @@ fun App(deepLinkRoute: Route? = null) {
                     // Loading/Checking states - do nothing
                 }
             }
+
+            previousAuthState = authState
         }
     }
 }
