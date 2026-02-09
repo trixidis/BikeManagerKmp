@@ -47,10 +47,10 @@ fun App(deepLinkRoute: Route? = null) {
         LaunchedEffect(authState, deepLinkRoute) {
             when (authState) {
                 is AuthUiState.Authenticated -> {
-                    // Reload bikes when transitioning from non-authenticated to authenticated
-                    // (after sign-out/sign-in or account deletion/re-creation)
-                    if (previousAuthState is AuthUiState.NotAuthenticated ||
-                        previousAuthState is AuthUiState.Error) {
+                    // Reload bikes when transitioning from any non-authenticated state to authenticated
+                    // (covers NotAuthenticated, Error, Loading, and Checking after sign-out/sign-in
+                    // or account deletion/re-creation via Apple Sign-In)
+                    if (previousAuthState != null && previousAuthState !is AuthUiState.Authenticated) {
                         bikesViewModel.reload()
                     }
 
