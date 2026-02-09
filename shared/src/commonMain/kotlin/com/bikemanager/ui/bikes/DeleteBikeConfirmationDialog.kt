@@ -25,11 +25,18 @@ fun DeleteBikeConfirmationDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(Res.string.delete_bike_title)) },
+        containerColor = MaterialTheme.colorScheme.background,
+        title = {
+            Text(
+                stringResource(Res.string.delete_bike_title),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        },
         text = {
             Text(
                 text = stringResource(Res.string.delete_bike_message),
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         },
         confirmButton = {
@@ -44,7 +51,10 @@ fun DeleteBikeConfirmationDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(Res.string.cancel))
+                Text(
+                    stringResource(Res.string.cancel),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             }
         }
     )

@@ -87,7 +87,7 @@ class BikesViewModelTest {
     }
 
     @Test
-    fun `addBike adds bike to repository and emits ShowSuccess event`() = runTest {
+    fun `addBike adds bike to repository and emits BikeAdded event`() = runTest {
         val viewModel = BikesViewModelMvi(getBikesUseCase, addBikeUseCase, updateBikeUseCase, deleteBikeUseCase)
         advanceUntilIdle()
 
@@ -96,8 +96,7 @@ class BikesViewModelTest {
             advanceUntilIdle()
 
             val event = awaitItem()
-            assertTrue(event is BikeEvent.ShowSuccess)
-            assertEquals("Vélo ajouté", (event as BikeEvent.ShowSuccess).message)
+            assertTrue(event is BikeEvent.BikeAdded)
 
             val bikes = bikeRepository.getCurrentBikes()
             assertEquals(1, bikes.size)

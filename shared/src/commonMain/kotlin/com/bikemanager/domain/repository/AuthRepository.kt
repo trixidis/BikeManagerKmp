@@ -40,6 +40,19 @@ interface AuthRepository {
     suspend fun signOut(): Result<Unit>
 
     /**
+     * Deletes all user data from Firebase Realtime Database (users/{uid}/).
+     * @param uid The user ID whose data should be deleted
+     * @return Result indicating success or failure
+     */
+    suspend fun deleteUserData(uid: String): Result<Unit>
+
+    /**
+     * Deletes the current Firebase Auth account.
+     * @return Result indicating success or failure
+     */
+    suspend fun deleteAccount(): Result<Unit>
+
+    /**
      * Checks if a user is currently signed in.
      */
     fun isSignedIn(): Boolean

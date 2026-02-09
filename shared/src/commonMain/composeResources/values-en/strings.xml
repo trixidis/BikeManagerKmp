@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Account management -->
+    <string name="account">Account</string>
+    <string name="sign_out">Sign out</string>
+    <string name="delete_account_title">Delete my account</string>
+    <string name="delete_account_message">This action is irreversible. All your data (bikes, maintenances) will be permanently deleted.</string>
+    <string name="delete_account_confirm">Delete my account</string>
+    <string name="account_deleted">Account successfully deleted</string>
+    <string name="error_delete_account">Failed to delete account. Please try again.</string>
+    <string name="error_delete_account_reauth">To delete your account, please sign out and sign back in before trying again.</string>
+
+    <!-- Success messages -->
+    <string name="bike_added">Bike added</string>
+    <string name="bike_deleted">Bike deleted</string>
+</resources>

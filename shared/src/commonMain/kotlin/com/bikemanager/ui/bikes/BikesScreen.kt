@@ -17,14 +17,20 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -34,33 +40,46 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.bikemanager.ui.navigation.LocalNavController
-import com.bikemanager.ui.navigation.Route
+import bikemanager.shared.generated.resources.Res
+import bikemanager.shared.generated.resources.account
+import bikemanager.shared.generated.resources.bike_added
+import bikemanager.shared.generated.resources.bike_deleted
+import bikemanager.shared.generated.resources.cancel
+import bikemanager.shared.generated.resources.delete_account_confirm
+import bikemanager.shared.generated.resources.delete_account_message
+import bikemanager.shared.generated.resources.delete_account_title
+import bikemanager.shared.generated.resources.my_maintenances
+import bikemanager.shared.generated.resources.no_bikes
+import bikemanager.shared.generated.resources.sign_out
 import com.bikemanager.domain.common.Result
 import com.bikemanager.domain.model.Bike
 import com.bikemanager.domain.model.Maintenance
 import com.bikemanager.domain.usecase.maintenance.GetMaintenancesUseCase
+import com.bikemanager.presentation.auth.AuthViewModelMvi
 import com.bikemanager.presentation.bikes.BikeEvent
 import com.bikemanager.presentation.bikes.BikesUiState
 import com.bikemanager.presentation.bikes.BikesViewModelMvi
-import bikemanager.shared.generated.resources.*
-import org.jetbrains.compose.resources.stringResource
 import com.bikemanager.ui.components.EmptyState
 import com.bikemanager.ui.components.Fab
 import com.bikemanager.ui.components.FabVariant
 import com.bikemanager.ui.components.PremiumSnackbarHost
 import com.bikemanager.ui.components.SnackbarType
 import com.bikemanager.ui.core.rememberFabVisibility
+import com.bikemanager.ui.navigation.LocalNavController
+import com.bikemanager.ui.navigation.Route
 import com.bikemanager.ui.theme.AccentOrange
 import com.bikemanager.ui.theme.Dimens
 import kotlinx.coroutines.flow.firstOrNull
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BikesScreenContent(
     viewModel: BikesViewModelMvi = koinInject(),
+    authViewModel: AuthViewModelMvi = koinInject(),
     getMaintenancesUseCase: GetMaintenancesUseCase = koinInject()
 ) {
     val navController = LocalNavController.current
@@ -68,6 +87,8 @@ fun BikesScreenContent(
     val showAddDialog = remember { mutableStateOf(false) }
     val editingBike = remember { mutableStateOf<Bike?>(null) }
     val deletingBike = remember { mutableStateOf<Bike?>(null) }
+    val showAccountMenu = remember { mutableStateOf(false) }
+    val showDeleteAccountDialog = remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
     val fabVisible = rememberFabVisibility(listState)
     val snackbarHostState = remember { SnackbarHostState() }
@@ -97,6 +118,7 @@ fun BikesScreenContent(
                             }
                             bikeTotals[currentBike.id] = maxValue
                         }
+
                         is Result.Failure -> {
                             // Ignore errors, keep default 0
                         }
@@ -106,19 +128,37 @@ fun BikesScreenContent(
         }
     }
 
+    // Extract strings for use inside LaunchedEffect (non-composable context)
+    val bikeAddedText = stringResource(Res.string.bike_added)
+    val bikeDeletedText = stringResource(Res.string.bike_deleted)
+
+    // Track snackbar type for PremiumSnackbarHost (avoids fragile text-content detection)
+    val lastSnackbarType = remember { mutableStateOf(SnackbarType.INFO) }
+
     // Collect events from ViewModel (MVI pattern)
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
                 is BikeEvent.ShowError -> {
+                    lastSnackbarType.value = SnackbarType.ERROR
                     snackbarHostState.showSnackbar(
                         message = event.message,
                         duration = SnackbarDuration.Short
                     )
                 }
-                is BikeEvent.ShowSuccess -> {
+
+                is BikeEvent.BikeAdded -> {
+                    lastSnackbarType.value = SnackbarType.SUCCESS
                     snackbarHostState.showSnackbar(
-                        message = event.message,
+                        message = bikeAddedText,
+                        duration = SnackbarDuration.Short
+                    )
+                }
+
+                is BikeEvent.BikeDeleted -> {
+                    lastSnackbarType.value = SnackbarType.SUCCESS
+                    snackbarHostState.showSnackbar(
+                        message = bikeDeletedText,
                         duration = SnackbarDuration.Short
                     )
                 }
@@ -143,15 +183,7 @@ fun BikesScreenContent(
         snackbarHost = {
             PremiumSnackbarHost(
                 hostState = snackbarHostState,
-                getSnackbarType = { message ->
-                    when {
-                        message.contains("ajouté", ignoreCase = true) ||
-                        message.contains("modifié", ignoreCase = true) ||
-                        message.contains("supprimé", ignoreCase = true) -> SnackbarType.SUCCESS
-                        message.contains("erreur", ignoreCase = true) -> SnackbarType.ERROR
-                        else -> SnackbarType.INFO
-                    }
-                }
+                getSnackbarType = { _ -> lastSnackbarType.value }
             )
         }
     ) { paddingValues ->
@@ -160,12 +192,13 @@ fun BikesScreenContent(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Premium Header with orange dot
+            // Premium Header with orange dot and account menu
             Row(
                 modifier = Modifier.padding(
                     horizontal = Dimens.Space2xl,
                     vertical = Dimens.Space3xl
-                )
+                ),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = stringResource(Res.string.my_maintenances),
@@ -177,6 +210,46 @@ fun BikesScreenContent(
                     style = MaterialTheme.typography.displayLarge,
                     color = AccentOrange
                 )
+                Spacer(modifier = Modifier.weight(1f))
+                Box {
+                    IconButton(onClick = { showAccountMenu.value = true }) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = stringResource(Res.string.account),
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = showAccountMenu.value,
+                        onDismissRequest = { showAccountMenu.value = false },
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    ) {
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    stringResource(Res.string.sign_out),
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            },
+                            onClick = {
+                                showAccountMenu.value = false
+                                authViewModel.signOut()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = stringResource(Res.string.delete_account_title),
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            },
+                            onClick = {
+                                showAccountMenu.value = false
+                                showDeleteAccountDialog.value = true
+                            }
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(Dimens.SpaceMd))
@@ -269,6 +342,47 @@ fun BikesScreenContent(
             onConfirm = {
                 viewModel.deleteBike(bike.id)
                 deletingBike.value = null
+            }
+        )
+    }
+
+    if (showDeleteAccountDialog.value) {
+        AlertDialog(
+            onDismissRequest = { showDeleteAccountDialog.value = false },
+            containerColor = MaterialTheme.colorScheme.background,
+            title = {
+                Text(
+                    stringResource(Res.string.delete_account_title),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(Res.string.delete_account_message),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteAccountDialog.value = false
+                        authViewModel.deleteAccount()
+                    }
+                ) {
+                    Text(
+                        text = stringResource(Res.string.delete_account_confirm),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteAccountDialog.value = false }) {
+                    Text(
+                        stringResource(Res.string.cancel),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
             }
         )
     }

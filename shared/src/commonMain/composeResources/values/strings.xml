@@ -54,6 +54,10 @@
     <string name="delete">Supprimer</string>
     <string name="undo">Annuler</string>
 
+    <!-- Success messages -->
+    <string name="bike_added">Moto ajoutée</string>
+    <string name="bike_deleted">Moto supprimée</string>
+
     <!-- Messages -->
     <string name="maintenance_deleted">Entretien supprimé</string>
     <string name="invalid_input">Saisie invalide</string>
@@ -66,6 +70,16 @@
     <string name="error_user_not_found">Utilisateur non trouvé</string>
     <string name="error_google_sign_in">Erreur de connexion Google</string>
     <string name="error_apple_sign_in">Erreur de connexion Apple</string>
+
+    <!-- Account management -->
+    <string name="account">Compte</string>
+    <string name="sign_out">Déconnexion</string>
+    <string name="delete_account_title">Supprimer mon compte</string>
+    <string name="delete_account_message">Cette action est irréversible. Toutes vos données (motos, entretiens) seront définitivement supprimées.</string>
+    <string name="delete_account_confirm">Supprimer mon compte</string>
+    <string name="account_deleted">Compte supprimé avec succès</string>
+    <string name="error_delete_account">Échec de la suppression du compte. Veuillez réessayer.</string>
+    <string name="error_delete_account_reauth">Pour supprimer votre compte, veuillez vous déconnecter puis vous reconnecter avant de réessayer.</string>
 
     <!-- Error messages -->
     <string name="error_login">Une erreur est survenue</string>

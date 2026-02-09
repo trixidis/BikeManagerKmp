@@ -9,9 +9,11 @@ import dev.gitlive.firebase.auth.FirebaseUser
 import dev.gitlive.firebase.auth.GoogleAuthProvider
 import dev.gitlive.firebase.auth.OAuthProvider
 import dev.gitlive.firebase.auth.auth
+import dev.gitlive.firebase.database.database
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withTimeout
 
 /**
  * Common implementation of AuthRepository using GitLive Firebase SDK.
@@ -71,6 +73,27 @@ class AuthRepositoryImpl : AuthRepository {
         return ErrorHandler.catching("signing out") {
             Napier.d { "Signing out" }
             auth.signOut()
+        }
+    }
+
+    override suspend fun deleteUserData(uid: String): Result<Unit> {
+        return ErrorHandler.catching("deleting user data") {
+            withTimeout(15_000L) {
+                Napier.d { "Deleting all data for user: $uid" }
+                Firebase.database.reference("users").child(uid).removeValue()
+                Napier.d { "Successfully deleted user data for: $uid" }
+            }
+        }
+    }
+
+    override suspend fun deleteAccount(): Result<Unit> {
+        return ErrorHandler.catching("deleting account") {
+            withTimeout(15_000L) {
+                Napier.d { "Deleting Firebase Auth account" }
+                val user = auth.currentUser ?: throw Exception("No authenticated user")
+                user.delete()
+                Napier.d { "Successfully deleted Firebase Auth account" }
+            }
         }
     }
 

@@ -1,5 +1,6 @@
 package com.bikemanager.presentation.bikes
 
+import androidx.lifecycle.viewModelScope
 import com.bikemanager.domain.common.AppError
 import com.bikemanager.domain.common.ErrorMessages
 import com.bikemanager.domain.common.fold
@@ -11,7 +12,12 @@ import com.bikemanager.domain.usecase.bike.GetBikesUseCase
 import com.bikemanager.domain.usecase.bike.UpdateBikeUseCase
 import com.bikemanager.presentation.base.MviViewModel
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 /**
  * ViewModel for managing bikes list screen.
@@ -44,11 +50,22 @@ class BikesViewModelMvi(
      */
     val uiState: StateFlow<BikesUiState> = state
 
+    private var bikesObserveJob: Job? = null
+
     init {
         observeBikes()
     }
 
     // ========== Public API - Intent Handlers ==========
+
+    /**
+     * Reload bikes by cancelling the current observation and re-subscribing.
+     * Called when the user re-authenticates (e.g. after sign-out/sign-in or account deletion).
+     */
+    fun reload() {
+        updateState { BikesUiState.Loading }
+        observeBikes()
+    }
 
     /**
      * Add a new bike with the given name.
@@ -69,7 +86,7 @@ class BikesViewModelMvi(
         execute(
             onSuccess = {
                 Napier.d { "Bike added successfully" }
-                emitEvent(BikeEvent.ShowSuccess("Vélo ajouté"))
+                emitEvent(BikeEvent.BikeAdded)
             }
         ) {
             addBikeUseCase(Bike(name = name))
@@ -145,7 +162,7 @@ class BikesViewModelMvi(
         execute(
             onSuccess = {
                 Napier.d { "Bike and associated maintenances deleted successfully: $bikeId" }
-                emitEvent(BikeEvent.ShowSuccess("Vélo supprimé"))
+                emitEvent(BikeEvent.BikeDeleted)
             }
         ) {
             deleteBikeUseCase(bikeId)
@@ -157,10 +174,8 @@ class BikesViewModelMvi(
     /**
      * Observe bikes stream and update state reactively.
      *
-     * Uses observeFlow() helper from base class which:
-     * - Handles CancellationException properly
-     * - Manages coroutine lifecycle
-     * - Updates state automatically
+     * Cancels any previous observation before starting a new one to prevent
+     * duplicate subscriptions (e.g. after sign-out/sign-in cycle).
      *
      * State transitions:
      * - Loading → Success/Empty (on success)
@@ -168,24 +183,34 @@ class BikesViewModelMvi(
      * - Success → Success/Empty (on updates)
      */
     private fun observeBikes() {
-        observeFlow(
-            flow = getBikesUseCase(),
-            transform = { result ->
-                result.fold(
-                    onSuccess = { bikes ->
-                        if (bikes.isEmpty()) {
-                            BikesUiState.Empty()
-                        } else {
-                            BikesUiState.Success(bikes)
-                        }
-                    },
-                    onFailure = { error ->
-                        // error is AppError (type-safe)
-                        BikesUiState.Error(ErrorMessages.getMessage(error))
+        bikesObserveJob?.cancel()
+        bikesObserveJob = viewModelScope.launch {
+            getBikesUseCase()
+                .catch { error ->
+                    ensureActive()
+                    // Only log - don't emit user-facing error.
+                    // Flow termination is expected during sign-out/account deletion
+                    // (Firebase listener gets "Permission denied" when auth is revoked).
+                    // reload() will re-subscribe with valid auth.
+                    Napier.w(error) { "Bikes observation terminated" }
+                }
+                .collect { result ->
+                    updateState {
+                        result.fold(
+                            onSuccess = { bikes ->
+                                if (bikes.isEmpty()) {
+                                    BikesUiState.Empty()
+                                } else {
+                                    BikesUiState.Success(bikes)
+                                }
+                            },
+                            onFailure = { error ->
+                                BikesUiState.Error(ErrorMessages.getMessage(error))
+                            }
+                        )
                     }
-                )
-            }
-        )
+                }
+        }
     }
 
     /**

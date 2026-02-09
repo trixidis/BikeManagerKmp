@@ -48,11 +48,7 @@ fun BikeManagerNavGraph(
         ) {
             composable<Route.Login> {
                 com.bikemanager.ui.auth.LoginScreenContent(
-                    onSignedIn = {
-                        navController.navigate(Route.Bikes) {
-                            popUpTo<Route.Login> { inclusive = true }
-                        }
-                    }
+                    onSignedIn = { /* Navigation handled by App.kt auth state observer */ }
                 )
             }
 
