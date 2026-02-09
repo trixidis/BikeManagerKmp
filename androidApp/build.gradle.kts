@@ -42,8 +42,8 @@ android {
         applicationId = "com.bikemanager.android"
         minSdk = 24
         targetSdk = 35
-        versionCode = 6
-        versionName = "1.4.0"
+        versionCode = 8
+        versionName = "1.4.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -77,6 +77,7 @@ android {
 
             isMinifyEnabled = true
             isShrinkResources = true
+            ndk { debugSymbolLevel = "FULL" }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

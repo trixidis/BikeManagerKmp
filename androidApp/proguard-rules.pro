@@ -8,6 +8,8 @@
 # Keep Koin
 -keepclassmembers class * extends org.koin.core.scope.Scope { *; }
 -keep class org.koin.** { *; }
+-dontwarn org.koin.core.annotation.KoinReflectAPI
+-dontwarn org.koin.core.instance.InstanceBuilderKt
 
 # Keep SQLDelight
 -keep class app.cash.sqldelight.** { *; }
