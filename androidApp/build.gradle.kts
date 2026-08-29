@@ -42,7 +42,7 @@ android {
     defaultConfig {
         applicationId = "com.bikemanager.android"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 8
         versionName = "1.4.2"
 
