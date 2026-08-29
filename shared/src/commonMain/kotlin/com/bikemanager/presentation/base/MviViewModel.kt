@@ -6,6 +6,7 @@ import com.bikemanager.domain.common.AppError
 import com.bikemanager.domain.common.Result
 import com.bikemanager.domain.common.onFailure
 import com.bikemanager.domain.common.onSuccess
+import com.bikemanager.util.crash.CrashReporter
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
@@ -113,6 +114,7 @@ abstract class MviViewModel<State, Event>(
             } catch (e: Throwable) {
                 // Unexpected exception (shouldn't happen if operation properly returns Result)
                 Napier.e(e) { "Unexpected exception in execute()" }
+                CrashReporter.recordException(e, "Unexpected exception in execute()")
                 val appError = when (e) {
                     is AppError -> e
                     else -> AppError.UnknownError(
@@ -202,6 +204,7 @@ abstract class MviViewModel<State, Event>(
 
                     // If we reach here, it's not a CancellationException
                     Napier.e(error) { "Error in flow observation" }
+                    CrashReporter.recordException(error, "Error in flow observation")
 
                     // Convert to AppError and handle
                     val appError = when (error) {
@@ -223,6 +226,7 @@ abstract class MviViewModel<State, Event>(
                     } catch (e: Throwable) {
                         // Unexpected exception in transform
                         Napier.e(e) { "Error transforming state" }
+                        CrashReporter.recordException(e, "Error transforming state")
                         val appError = when (e) {
                             is AppError -> e
                             else -> AppError.UnknownError(

@@ -4,6 +4,7 @@ import com.bikemanager.domain.common.ErrorHandler
 import com.bikemanager.domain.common.Result
 import com.bikemanager.domain.model.User
 import com.bikemanager.domain.repository.AuthRepository
+import com.bikemanager.util.crash.CrashReporter
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.FirebaseUser
 import dev.gitlive.firebase.auth.GoogleAuthProvider
@@ -40,6 +41,7 @@ class AuthRepositoryImpl : AuthRepository {
             val result = auth.signInWithCredential(credential)
             val user = result.user ?: throw Exception("Sign-in failed: no user returned")
             Napier.d { "Successfully signed in: ${user.uid}" }
+            CrashReporter.setUserId(user.uid)
             user.toUser()
         }
     }
@@ -65,6 +67,7 @@ class AuthRepositoryImpl : AuthRepository {
             val result = auth.signInWithCredential(credential)
             val user = result.user ?: throw Exception("Sign-in failed: no user returned")
             Napier.d { "Successfully signed in with Apple: ${user.uid}" }
+            CrashReporter.setUserId(user.uid)
             user.toUser()
         }
     }
@@ -73,6 +76,7 @@ class AuthRepositoryImpl : AuthRepository {
         return ErrorHandler.catching("signing out") {
             Napier.d { "Signing out" }
             auth.signOut()
+            CrashReporter.setUserId("")
         }
     }
 

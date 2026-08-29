@@ -58,6 +58,7 @@ kotlin {
                 // GitLive Firebase KMP SDK
                 implementation(libs.gitlive.firebase.auth)
                 implementation(libs.gitlive.firebase.database)
+                implementation(libs.gitlive.firebase.crashlytics)
 
                 // KMPAuth for Google Sign-In
                 implementation(libs.kmpauth.google)

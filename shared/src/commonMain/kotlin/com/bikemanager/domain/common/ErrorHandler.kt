@@ -1,5 +1,6 @@
 package com.bikemanager.domain.common
 
+import com.bikemanager.util.crash.CrashReporter
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CancellationException
 
@@ -25,7 +26,7 @@ object ErrorHandler {
             Napier.e(throwable) { "Error occurred" }
         }
 
-        return when {
+        val appError = when {
             // Network-related errors
             isNetworkError(throwable) -> AppError.NetworkError(
                 errorMessage = throwable.message ?: "Network error",
@@ -55,6 +56,14 @@ object ErrorHandler {
                 originalCause = throwable
             )
         }
+
+        // Report unexpected/technical failures to Crashlytics as non-fatals.
+        // ValidationError is expected user input and isn't reported.
+        if (appError !is AppError.ValidationError) {
+            CrashReporter.recordException(throwable, context)
+        }
+
+        return appError
     }
 
     /**
