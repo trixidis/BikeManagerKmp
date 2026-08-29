@@ -101,6 +101,7 @@
 				7555FF79242A565900829871 /* Resources */,
 				8347712D058E07B34D1F5937 /* [CP] Embed Pods Frameworks */,
 				7A91E5902F24F99900886A57 /* Copy Firebase Config */,
+				7A91E5912F24F99A00886A58 /* Upload Crashlytics Symbols */,
 			);
 			buildRules = (
 			);
@@ -192,6 +193,26 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# Select the right GoogleService-Info.plist based on configuration\nif [ \"${CONFIGURATION}\" == \"Debug\" ]; then\n    echo \"Using DEBUG Firebase config...\"\n    FIREBASE_PLIST=\"${SRCROOT}/iosApp/Firebase/Debug/GoogleService-Info.plist\"\nelse\n    echo \"Using RELEASE Firebase config...\"\n    FIREBASE_PLIST=\"${SRCROOT}/iosApp/Firebase/Release/GoogleService-Info.plist\"\nfi\n\n# Copy GoogleService-Info.plist to app bundle\ncp \"${FIREBASE_PLIST}\" \"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/\"\n\n# Extract CLIENT_ID and REVERSED_CLIENT_ID from the plist\nCLIENT_ID=$(/usr/libexec/PlistBuddy -c \"Print :CLIENT_ID\" \"${FIREBASE_PLIST}\")\nREVERSED_CLIENT_ID=$(/usr/libexec/PlistBuddy -c \"Print :REVERSED_CLIENT_ID\" \"${FIREBASE_PLIST}\")\n\necho \"CLIENT_ID: ${CLIENT_ID}\"\necho \"REVERSED_CLIENT_ID: ${REVERSED_CLIENT_ID}\"\n\n# Update the app's Info.plist with GIDClientID\nAPP_PLIST=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/Info.plist\"\n/usr/libexec/PlistBuddy -c \"Delete :GIDClientID\" \"${APP_PLIST}\" 2>/dev/null || true\n/usr/libexec/PlistBuddy -c \"Add :GIDClientID string ${CLIENT_ID}\" \"${APP_PLIST}\"\n\n# Update CFBundleURLSchemes with the correct REVERSED_CLIENT_ID\n/usr/libexec/PlistBuddy -c \"Set :CFBundleURLTypes:0:CFBundleURLSchemes:0 ${REVERSED_CLIENT_ID}\" \"${APP_PLIST}\"\n\necho \"Firebase config and Google Sign-In configured for ${CONFIGURATION} build\"\n";
+		};
+		7A91E5912F24F99A00886A58 /* Upload Crashlytics Symbols */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}",
+				"$(SRCROOT)/$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)",
+			);
+			name = "Upload Crashlytics Symbols";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/FirebaseCrashlytics/run\"\n";
 		};
 		8347712D058E07B34D1F5937 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;

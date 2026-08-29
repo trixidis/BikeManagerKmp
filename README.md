@@ -45,6 +45,7 @@ BikeManager helps motorcycle enthusiasts track their bikes' maintenance needs an
 - **Firebase**: Cloud backend and real-time sync
   - Firebase Authentication (via GitLive KMP SDK 2.4.0)
   - Firebase Realtime Database (via GitLive KMP SDK 2.4.0)
+  - Firebase Crashlytics (via GitLive KMP SDK 2.4.0): crash & error reporting
 - **SQLDelight 2.2.1**: Local database with type-safe SQL
 - **Kotlinx Serialization 1.8.1**: JSON serialization/deserialization
 

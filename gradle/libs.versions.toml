@@ -25,6 +25,7 @@ kover = "0.9.4"
 # KMP Firebase & Auth
 gitliveFirebase = "2.4.0"
 kmpAuth = "2.5.0-alpha01"
+firebaseCrashlyticsPlugin = "3.0.1"
 
 [libraries]
 # Kotlin
@@ -92,6 +93,7 @@ play-services-auth = { module = "com.google.android.gms:play-services-auth", ver
 # GitLive Firebase KMP SDK
 gitlive-firebase-auth = { module = "dev.gitlive:firebase-auth", version.ref = "gitliveFirebase" }
 gitlive-firebase-database = { module = "dev.gitlive:firebase-database", version.ref = "gitliveFirebase" }
+gitlive-firebase-crashlytics = { module = "dev.gitlive:firebase-crashlytics", version.ref = "gitliveFirebase" }
 
 # KMPAuth
 kmpauth-google = { module = "io.github.mirzemehdi:kmpauth-google", version.ref = "kmpAuth" }
@@ -112,7 +114,8 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
-google-services = { id = "com.google.gms.google-services", version = "4.4.0" }
+google-services = { id = "com.google.gms.google-services", version = "4.4.4" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
