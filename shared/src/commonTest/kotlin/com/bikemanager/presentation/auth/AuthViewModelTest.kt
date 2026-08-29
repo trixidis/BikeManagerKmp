@@ -86,6 +86,36 @@ class AuthViewModelTest {
     }
 
     @Test
+    fun `auth state updates when session is restored after a delay without an explicit refresh`() = runTest {
+        // Simulates the real cold-start scenario where Firebase asynchronously restores a
+        // cached session slightly after the app starts: the ViewModel must react to the
+        // auth-state stream on its own, without any caller invoking checkAuthState().
+        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase, deleteAccountUseCase)
+
+        viewModel.uiState.test {
+            assertEquals(AuthUiState.Checking, awaitItem())
+
+            advanceUntilIdle()
+            assertEquals(AuthUiState.NotAuthenticated, awaitItem())
+
+            val restoredUser = User(
+                uid = "restored-uid",
+                email = "restored@example.com",
+                displayName = "Restored User",
+                photoUrl = null
+            )
+            repository.setCurrentUser(restoredUser)
+            advanceUntilIdle()
+
+            val state = awaitItem()
+            assertTrue(state is AuthUiState.Authenticated)
+            assertEquals(restoredUser, (state as AuthUiState.Authenticated).user)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
     fun `signInWithGoogle transitions to Loading then Authenticated on success`() = runTest {
         val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase, deleteAccountUseCase)
         advanceUntilIdle()
