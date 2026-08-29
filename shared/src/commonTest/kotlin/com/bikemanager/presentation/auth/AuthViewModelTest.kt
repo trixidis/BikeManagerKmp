@@ -29,6 +29,7 @@ class AuthViewModelTest {
     private lateinit var signInWithAppleUseCase: SignInWithAppleUseCase
     private lateinit var signOutUseCase: SignOutUseCase
     private lateinit var deleteAccountUseCase: DeleteAccountUseCase
+    private lateinit var viewModel: AuthViewModelMvi
     private val testDispatcher = StandardTestDispatcher()
 
     @BeforeTest
@@ -40,6 +41,7 @@ class AuthViewModelTest {
         signInWithAppleUseCase = SignInWithAppleUseCase(repository)
         signOutUseCase = SignOutUseCase(repository)
         deleteAccountUseCase = DeleteAccountUseCase(repository)
+        viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase, deleteAccountUseCase)
     }
 
     @AfterTest
@@ -80,6 +82,34 @@ class AuthViewModelTest {
             val state = awaitItem()
             assertTrue(state is AuthUiState.Authenticated)
             assertEquals(testUser, (state as AuthUiState.Authenticated).user)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `auth state updates when session is restored after a delay without an explicit refresh`() = runTest {
+        viewModel.uiState.test {
+            // Given: the ViewModel just started and Firebase hasn't restored any session yet
+            assertEquals(AuthUiState.Checking, awaitItem())
+
+            advanceUntilIdle()
+            assertEquals(AuthUiState.NotAuthenticated, awaitItem())
+
+            // When: Firebase asynchronously restores a cached session after startup
+            val restoredUser = User(
+                uid = "restored-uid",
+                email = "restored@example.com",
+                displayName = "Restored User",
+                photoUrl = null
+            )
+            repository.setCurrentUser(restoredUser)
+            advanceUntilIdle()
+
+            // Then: the ViewModel reflects the restored session on its own, without checkAuthState()
+            val state = awaitItem()
+            assertTrue(state is AuthUiState.Authenticated)
+            assertEquals(restoredUser, (state as AuthUiState.Authenticated).user)
 
             cancelAndIgnoreRemainingEvents()
         }

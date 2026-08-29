@@ -2,6 +2,7 @@ package com.bikemanager.presentation.auth
 
 import com.bikemanager.domain.common.AppError
 import com.bikemanager.domain.common.ErrorMessages
+import com.bikemanager.domain.common.Result
 import com.bikemanager.domain.common.fold
 import com.bikemanager.domain.usecase.auth.DeleteAccountUseCase
 import com.bikemanager.domain.usecase.auth.GetCurrentUserUseCase
@@ -11,6 +12,7 @@ import com.bikemanager.domain.usecase.auth.SignOutUseCase
 import com.bikemanager.presentation.base.MviViewModel
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 
 /**
  * ViewModel for managing authentication state.
@@ -46,7 +48,17 @@ class AuthViewModelMvi(
     val uiState: StateFlow<AuthUiState> = state
 
     init {
-        checkAuthState()
+        observeFlow(
+            flow = getCurrentUserUseCase.observeAuthState().map { user -> Result.Success(user) },
+            transform = { result ->
+                result.fold(
+                    onSuccess = { user ->
+                        if (user != null) AuthUiState.Authenticated(user) else AuthUiState.NotAuthenticated
+                    },
+                    onFailure = { AuthUiState.NotAuthenticated }
+                )
+            }
+        )
     }
 
     // ========== Public API - Intent Handlers ==========
