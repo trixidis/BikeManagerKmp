@@ -48,9 +48,6 @@ class AuthViewModelMvi(
     val uiState: StateFlow<AuthUiState> = state
 
     init {
-        // Subscribe to Firebase's auth state stream instead of doing a single synchronous
-        // read at startup: on cold start the SDK restores the cached session asynchronously,
-        // so a one-shot check can race it and wrongly report the user as signed out.
         observeFlow(
             flow = getCurrentUserUseCase.observeAuthState().map { user -> Result.Success(user) },
             transform = { result ->
