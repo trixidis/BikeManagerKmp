@@ -9,6 +9,7 @@ import com.bikemanager.domain.model.Maintenance
 import com.bikemanager.domain.repository.BikeRepository
 import com.bikemanager.domain.usecase.maintenance.AddMaintenanceUseCase
 import com.bikemanager.domain.usecase.maintenance.DeleteMaintenanceUseCase
+import com.bikemanager.domain.usecase.maintenance.ExportMaintenanceHistoryUseCase
 import com.bikemanager.domain.usecase.maintenance.GetMaintenancesUseCase
 import com.bikemanager.domain.usecase.maintenance.MarkMaintenanceDoneUseCase
 import com.bikemanager.domain.usecase.notification.CancelMaintenanceReminderUseCase
@@ -39,6 +40,7 @@ import kotlinx.coroutines.launch
  * @param bikeRepository Repository to fetch current bike data
  * @param scheduleReminderUseCase Use case to schedule maintenance reminders
  * @param cancelReminderUseCase Use case to cancel maintenance reminders
+ * @param exportMaintenanceHistoryUseCase Use case to export done maintenances to a shareable PDF
  */
 class MaintenancesViewModelMvi(
     private val bikeId: String,
@@ -48,7 +50,8 @@ class MaintenancesViewModelMvi(
     private val deleteMaintenanceUseCase: DeleteMaintenanceUseCase,
     private val bikeRepository: BikeRepository,
     private val scheduleReminderUseCase: ScheduleMaintenanceReminderUseCase,
-    private val cancelReminderUseCase: CancelMaintenanceReminderUseCase
+    private val cancelReminderUseCase: CancelMaintenanceReminderUseCase,
+    private val exportMaintenanceHistoryUseCase: ExportMaintenanceHistoryUseCase
 ) : MviViewModel<MaintenancesUiState, MaintenanceEvent>(
     initialState = MaintenancesUiState.Loading
 ) {
@@ -271,6 +274,31 @@ class MaintenancesViewModelMvi(
         execute {
             // Pass maintenance with original ID - repository will use it instead of generating new one
             addMaintenanceUseCase(maintenance)
+        }
+    }
+
+    /**
+     * Export the bike's completed maintenance history as a PDF and open the native share sheet.
+     * Intended for resale: only done maintenances are included, most recent first.
+     *
+     * On success: Emits ShowSuccess event
+     * On failure: Emits ShowError event
+     */
+    fun exportMaintenanceHistory() {
+        val currentState = uiState.value
+        if (currentState !is MaintenancesUiState.Success) return
+        val bike = _currentBike.value ?: return
+
+        execute(
+            onSuccess = {
+                emitEvent(MaintenanceEvent.ShowSuccess("Historique des entretiens prêt à partager"))
+            }
+        ) {
+            exportMaintenanceHistoryUseCase(
+                bikeName = bike.name,
+                countingMethod = bike.countingMethod,
+                doneMaintenances = currentState.doneMaintenances
+            )
         }
     }
 
