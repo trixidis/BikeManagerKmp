@@ -17,6 +17,7 @@ import com.bikemanager.domain.usecase.bike.GetBikesUseCase
 import com.bikemanager.domain.usecase.bike.UpdateBikeUseCase
 import com.bikemanager.domain.usecase.maintenance.AddMaintenanceUseCase
 import com.bikemanager.domain.usecase.maintenance.DeleteMaintenanceUseCase
+import com.bikemanager.domain.usecase.maintenance.ExportMaintenanceHistoryUseCase
 import com.bikemanager.domain.usecase.maintenance.GetMaintenancesUseCase
 import com.bikemanager.domain.usecase.maintenance.MarkMaintenanceDoneUseCase
 import com.bikemanager.domain.usecase.notification.CancelMaintenanceReminderUseCase
@@ -51,6 +52,7 @@ val sharedModule: Module = module {
     factory { AddMaintenanceUseCase(get()) }
     factory { MarkMaintenanceDoneUseCase(get()) }
     factory { DeleteMaintenanceUseCase(get()) }
+    factory { ExportMaintenanceHistoryUseCase(get()) }
 
     // Notification Use Cases
     factory { ScheduleMaintenanceReminderUseCase(get()) }
@@ -75,7 +77,8 @@ val sharedModule: Module = module {
             deleteMaintenanceUseCase = get(),
             bikeRepository = get(),
             scheduleReminderUseCase = get(),
-            cancelReminderUseCase = get()
+            cancelReminderUseCase = get(),
+            exportMaintenanceHistoryUseCase = get()
         )
     }
 }
