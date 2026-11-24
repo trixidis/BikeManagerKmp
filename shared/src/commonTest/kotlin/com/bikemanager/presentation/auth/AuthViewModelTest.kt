@@ -89,6 +89,9 @@ class AuthViewModelTest {
 
     @Test
     fun `auth state updates when session is restored after a delay without an explicit refresh`() = runTest {
+        // Create the ViewModel inside runTest so its init coroutine doesn't run before collection starts
+        val viewModel = AuthViewModelMvi(getCurrentUserUseCase, signInUseCase, signInWithAppleUseCase, signOutUseCase, deleteAccountUseCase)
+
         viewModel.uiState.test {
             // Given: the ViewModel just started and Firebase hasn't restored any session yet
             assertEquals(AuthUiState.Checking, awaitItem())

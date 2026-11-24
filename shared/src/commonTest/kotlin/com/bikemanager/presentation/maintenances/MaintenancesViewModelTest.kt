@@ -1,6 +1,7 @@
 package com.bikemanager.presentation.maintenances
 
 import app.cash.turbine.test
+import com.bikemanager.domain.model.Bike
 import com.bikemanager.domain.model.Maintenance
 import com.bikemanager.domain.usecase.maintenance.AddMaintenanceUseCase
 import com.bikemanager.domain.usecase.maintenance.DeleteMaintenanceUseCase
@@ -42,6 +43,8 @@ class MaintenancesViewModelTest {
         Dispatchers.setMain(testDispatcher)
         maintenanceRepository = FakeMaintenanceRepository()
         bikeRepository = FakeBikeRepository()
+        // The ViewModel emits BikeDeleted when its bike is missing, so the bike must exist
+        bikeRepository.setBikes(listOf(Bike(id = bikeId, name = "Test Bike")))
         getMaintenancesUseCase = GetMaintenancesUseCase(maintenanceRepository)
         addMaintenanceUseCase = AddMaintenanceUseCase(maintenanceRepository)
         markMaintenanceDoneUseCase = MarkMaintenanceDoneUseCase(maintenanceRepository)
