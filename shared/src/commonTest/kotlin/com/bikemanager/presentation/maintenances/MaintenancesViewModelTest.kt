@@ -1,10 +1,14 @@
 package com.bikemanager.presentation.maintenances
 
 import app.cash.turbine.test
+import com.bikemanager.domain.common.Result
+import com.bikemanager.domain.export.MaintenanceHistoryExporter
+import com.bikemanager.domain.model.CountingMethod
 import com.bikemanager.domain.model.Bike
 import com.bikemanager.domain.model.Maintenance
 import com.bikemanager.domain.usecase.maintenance.AddMaintenanceUseCase
 import com.bikemanager.domain.usecase.maintenance.DeleteMaintenanceUseCase
+import com.bikemanager.domain.usecase.maintenance.ExportMaintenanceHistoryUseCase
 import com.bikemanager.domain.usecase.maintenance.GetMaintenancesUseCase
 import com.bikemanager.domain.usecase.maintenance.MarkMaintenanceDoneUseCase
 import com.bikemanager.domain.usecase.notification.CancelMaintenanceReminderUseCase
@@ -67,7 +71,8 @@ class MaintenancesViewModelTest {
             deleteMaintenanceUseCase = deleteMaintenanceUseCase,
             bikeRepository = bikeRepository,
             scheduleReminderUseCase = scheduleReminderUseCase,
-            cancelReminderUseCase = cancelReminderUseCase
+            cancelReminderUseCase = cancelReminderUseCase,
+            exportMaintenanceHistoryUseCase = ExportMaintenanceHistoryUseCase(NoOpExporter)
         )
     }
 
@@ -395,4 +400,12 @@ class MaintenancesViewModelTest {
             cancelAndIgnoreRemainingEvents()
         }
     }
+}
+
+private object NoOpExporter : MaintenanceHistoryExporter {
+    override suspend fun exportAndShare(
+        bikeName: String,
+        countingMethod: CountingMethod,
+        maintenances: List<Maintenance>
+    ): Result<Unit> = Result.Success(Unit)
 }

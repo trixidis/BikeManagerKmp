@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -87,10 +88,8 @@ fun BikesScreenContent(
     val showAddDialog = remember { mutableStateOf(false) }
     val editingBike = remember { mutableStateOf<Bike?>(null) }
     val deletingBike = remember { mutableStateOf<Bike?>(null) }
-    val showAccountMenu = remember { mutableStateOf(false) }
     val showDeleteAccountDialog = remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
-    val fabVisible = rememberFabVisibility(listState)
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Calculate total km/hours for each bike
@@ -166,153 +165,27 @@ fun BikesScreenContent(
         }
     }
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        floatingActionButton = {
-            AnimatedVisibility(
-                visible = fabVisible,
-                enter = fadeIn() + slideInVertically(initialOffsetY = { it * 2 }),
-                exit = fadeOut() + slideOutVertically(targetOffsetY = { it * 2 })
-            ) {
-                Fab(
-                    onClick = { showAddDialog.value = true },
-                    variant = FabVariant.ORANGE
+    BikesScreen(
+        uiState = uiState,
+        bikeTotals = bikeTotals,
+        onAddBikeClick = { showAddDialog.value = true },
+        onBikeClick = { bike ->
+            navController.navigate(
+                Route.Maintenances.create(
+                    bikeId = bike.id,
+                    bikeName = bike.name,
+                    countingMethod = bike.countingMethod
                 )
-            }
-        },
-        snackbarHost = {
-            PremiumSnackbarHost(
-                hostState = snackbarHostState,
-                getSnackbarType = { _ -> lastSnackbarType.value }
             )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            // Premium Header with orange dot and account menu
-            Row(
-                modifier = Modifier.padding(
-                    horizontal = Dimens.Space2xl,
-                    vertical = Dimens.Space3xl
-                ),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(Res.string.my_maintenances),
-                    style = MaterialTheme.typography.displayLarge,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = ".",
-                    style = MaterialTheme.typography.displayLarge,
-                    color = AccentOrange
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                Box {
-                    IconButton(onClick = { showAccountMenu.value = true }) {
-                        Icon(
-                            imageVector = Icons.Default.MoreVert,
-                            contentDescription = stringResource(Res.string.account),
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = showAccountMenu.value,
-                        onDismissRequest = { showAccountMenu.value = false },
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    ) {
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    stringResource(Res.string.sign_out),
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            },
-                            onClick = {
-                                showAccountMenu.value = false
-                                authViewModel.signOut()
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    text = stringResource(Res.string.delete_account_title),
-                                    color = MaterialTheme.colorScheme.error
-                                )
-                            },
-                            onClick = {
-                                showAccountMenu.value = false
-                                showDeleteAccountDialog.value = true
-                            }
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(Dimens.SpaceMd))
-
-            // Content
-            Box(modifier = Modifier.fillMaxSize()) {
-                when (val state = uiState) {
-                    is BikesUiState.Loading -> {
-                        CircularProgressIndicator(
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                    }
-
-                    is BikesUiState.Empty -> {
-                        EmptyState(
-                            message = stringResource(Res.string.no_bikes),
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                    }
-
-                    is BikesUiState.Success -> {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.spacedBy(6.dp),
-                            state = listState
-                        ) {
-                            items(
-                                items = state.bikes,
-                                key = { bike -> bike.id }
-                            ) { bike ->
-                                BikeItem(
-                                    bike = bike,
-                                    totalKmOrHours = bikeTotals[bike.id] ?: 0f,
-                                    onClick = {
-                                        navController.navigate(
-                                            Route.Maintenances.create(
-                                                bikeId = bike.id,
-                                                bikeName = bike.name,
-                                                countingMethod = bike.countingMethod
-                                            )
-                                        )
-                                    },
-                                    onEditClick = { editingBike.value = bike },
-                                    onLongPress = { deletingBike.value = bike }
-                                )
-                            }
-                        }
-                    }
-
-                    is BikesUiState.Error -> {
-                        Text(
-                            text = state.message,
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .padding(16.dp),
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                }
-            }
-        }
-    }
+        },
+        onEditBikeClick = { bike -> editingBike.value = bike },
+        onBikeLongPress = { bike -> deletingBike.value = bike },
+        onSignOutClick = { authViewModel.signOut() },
+        onDeleteAccountClick = { showDeleteAccountDialog.value = true },
+        listState = listState,
+        snackbarHostState = snackbarHostState,
+        snackbarType = lastSnackbarType.value
+    )
 
     if (showAddDialog.value) {
         AddBikeDialog(
@@ -386,4 +259,173 @@ fun BikesScreenContent(
             }
         )
     }
+}
+
+/**
+ * Stateless bikes list screen: header with account menu, bike cards and add FAB.
+ *
+ * Holds no ViewModel or DI dependency so it can be rendered in previews and
+ * screenshot tests with fake data.
+ *
+ * @param uiState Current bikes list state
+ * @param bikeTotals Total km/hours per bike id (missing entries display 0)
+ */
+@Composable
+fun BikesScreen(
+    uiState: BikesUiState,
+    bikeTotals: Map<String, Float>,
+    onAddBikeClick: () -> Unit,
+    onBikeClick: (Bike) -> Unit,
+    onEditBikeClick: (Bike) -> Unit,
+    onBikeLongPress: (Bike) -> Unit,
+    onSignOutClick: () -> Unit,
+    onDeleteAccountClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    listState: LazyListState = rememberLazyListState(),
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+    snackbarType: SnackbarType = SnackbarType.INFO
+) {
+    val fabVisible = rememberFabVisibility(listState)
+    val showAccountMenu = remember { mutableStateOf(false) }
+
+Scaffold(
+    modifier = modifier,
+    containerColor = MaterialTheme.colorScheme.background,
+    floatingActionButton = {
+        AnimatedVisibility(
+            visible = fabVisible,
+            enter = fadeIn() + slideInVertically(initialOffsetY = { it * 2 }),
+            exit = fadeOut() + slideOutVertically(targetOffsetY = { it * 2 })
+        ) {
+            Fab(
+                onClick = onAddBikeClick,
+                variant = FabVariant.ORANGE
+            )
+        }
+    },
+    snackbarHost = {
+        PremiumSnackbarHost(
+            hostState = snackbarHostState,
+            getSnackbarType = { _ -> snackbarType }
+        )
+    }
+) { paddingValues ->
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+    ) {
+        // Premium Header with orange dot and account menu
+        Row(
+            modifier = Modifier.padding(
+                horizontal = Dimens.Space2xl,
+                vertical = Dimens.Space3xl
+            ),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(Res.string.my_maintenances),
+                style = MaterialTheme.typography.displayLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = ".",
+                style = MaterialTheme.typography.displayLarge,
+                color = AccentOrange
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Box {
+                IconButton(onClick = { showAccountMenu.value = true }) {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = stringResource(Res.string.account),
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                DropdownMenu(
+                    expanded = showAccountMenu.value,
+                    onDismissRequest = { showAccountMenu.value = false },
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                ) {
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                stringResource(Res.string.sign_out),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        },
+                        onClick = {
+                            showAccountMenu.value = false
+                            onSignOutClick()
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = stringResource(Res.string.delete_account_title),
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        },
+                        onClick = {
+                            showAccountMenu.value = false
+                            onDeleteAccountClick()
+                        }
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(Dimens.SpaceMd))
+
+        // Content
+        Box(modifier = Modifier.fillMaxSize()) {
+            when (val state = uiState) {
+                is BikesUiState.Loading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+
+                is BikesUiState.Empty -> {
+                    EmptyState(
+                        message = stringResource(Res.string.no_bikes),
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+
+                is BikesUiState.Success -> {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                        state = listState
+                    ) {
+                        items(
+                            items = state.bikes,
+                            key = { bike -> bike.id }
+                        ) { bike ->
+                            BikeItem(
+                                bike = bike,
+                                totalKmOrHours = bikeTotals[bike.id] ?: 0f,
+                                onClick = { onBikeClick(bike) },
+                                onEditClick = { onEditBikeClick(bike) },
+                                onLongPress = { onBikeLongPress(bike) }
+                            )
+                        }
+                    }
+                }
+
+                is BikesUiState.Error -> {
+                    Text(
+                        text = state.message,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(16.dp),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
+        }
+    }
+}
 }
