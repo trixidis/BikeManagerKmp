@@ -78,6 +78,7 @@ kotlin {
                 implementation(libs.sqldelight.android)
                 implementation(libs.koin.android)
                 implementation(libs.coroutines.android)
+                implementation(libs.androidx.core)
                 // Android-only: Lifecycle ViewModel Compose
                 implementation(libs.androidx.lifecycle.viewmodel.compose)
                 // Android-only: UI Tooling Preview for @Preview annotation

@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,6 +43,7 @@ import com.bikemanager.ui.utils.formatNumberDecimal
  * @param countingMethod Counting method (KM or HOURS)
  * @param activeTab Current active tab variant
  * @param onBackClick Callback when back button is clicked
+ * @param onExportClick Callback when the export-to-PDF button is clicked. Button is hidden when null.
  * @param modifier Modifier to be applied
  */
 @Composable
@@ -51,6 +53,7 @@ fun ParallaxHeader(
     countingMethod: CountingMethod,
     activeTab: TabVariant,
     onBackClick: () -> Unit,
+    onExportClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
 
@@ -89,21 +92,44 @@ fun ParallaxHeader(
                 .fillMaxSize()
                 .padding(Dimens.Space2xl)
         ) {
-            // Back button
-            IconButton(
-                onClick = onBackClick,
-                modifier = Modifier
-                    .size(Dimens.BackButtonSize)
-                    .background(
-                        MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
-                        RoundedCornerShape(14.dp)
-                    )
+            // Back button + export action
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = stringResource(Res.string.back),
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
+                IconButton(
+                    onClick = onBackClick,
+                    modifier = Modifier
+                        .size(Dimens.BackButtonSize)
+                        .background(
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
+                            RoundedCornerShape(14.dp)
+                        )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = stringResource(Res.string.back),
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+
+                if (onExportClick != null) {
+                    IconButton(
+                        onClick = onExportClick,
+                        modifier = Modifier
+                            .size(Dimens.BackButtonSize)
+                            .background(
+                                MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
+                                RoundedCornerShape(14.dp)
+                            )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = stringResource(Res.string.export_maintenance_history),
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.weight(1f))

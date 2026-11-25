@@ -10,6 +10,7 @@
     <string name="my_maintenances">Mes Entretiens</string>
     <string name="back">Retour</string>
     <string name="close">Fermer</string>
+    <string name="export_maintenance_history">Exporter l'historique des entretiens en PDF</string>
 
     <!-- Empty states -->
     <string name="no_bikes">Vous n'avez pour l'instant ajouté aucune moto</string>

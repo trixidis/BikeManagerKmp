@@ -228,7 +228,8 @@ fun MaintenancesScreenContent(
                 totalValue = totalValue,
                 countingMethod = activeCountingMethod,
                 activeTab = currentTabVariant,
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                onExportClick = { viewModel.exportMaintenanceHistory() }
             )
 
             // Premium Tabs with overlapping layout

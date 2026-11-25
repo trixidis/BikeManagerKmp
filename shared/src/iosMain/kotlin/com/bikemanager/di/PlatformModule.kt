@@ -1,5 +1,7 @@
 package com.bikemanager.di
 
+import com.bikemanager.domain.export.MaintenanceHistoryExporter
+import com.bikemanager.domain.export.MaintenanceHistoryExporterImpl
 import com.bikemanager.domain.notification.NotificationScheduler
 import com.bikemanager.domain.notification.NotificationSchedulerImpl
 import org.koin.core.module.Module
@@ -10,4 +12,5 @@ import org.koin.dsl.module
  */
 actual val platformModule: Module = module {
     single<NotificationScheduler> { NotificationSchedulerImpl(get()) }
+    single<MaintenanceHistoryExporter> { MaintenanceHistoryExporterImpl() }
 }
