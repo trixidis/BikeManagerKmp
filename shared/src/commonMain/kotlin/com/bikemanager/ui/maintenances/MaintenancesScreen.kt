@@ -162,7 +162,8 @@ fun MaintenancesScreenContent(
                     val result = snackbarHostState.showSnackbar(
                         message = maintenanceDeletedText,
                         actionLabel = undoText,
-                        duration = SnackbarDuration.Short
+                        // Long: leave enough time to undo an accidental deletion
+                        duration = SnackbarDuration.Long
                     )
                     if (result == SnackbarResult.ActionPerformed) {
                         // Process undo in a new coroutine to avoid blocking the event collection
