@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.sqldelight)
     alias(libs.plugins.kover)
     alias(libs.plugins.compose.multiplatform)
+    alias(libs.plugins.roborazzi)
 }
 
 kotlin {
@@ -87,6 +88,18 @@ kotlin {
                 implementation("androidx.work:work-runtime-ktx:2.9.0")
             }
         }
+        val androidUnitTest by getting {
+            dependencies {
+                // Screenshot tests of Compose previews (Roborazzi on Robolectric, no emulator needed)
+                implementation(project.dependencies.platform(libs.compose.bom))
+                implementation(libs.roborazzi)
+                implementation(libs.roborazzi.compose)
+                implementation(libs.robolectric)
+                implementation(libs.compose.ui.test.junit4)
+                implementation(libs.compose.ui.test.manifest)
+                implementation(libs.junit)
+            }
+        }
         val iosX64Main by getting
         val iosArm64Main by getting
         val iosSimulatorArm64Main by getting
@@ -115,6 +128,12 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+    testOptions {
+        unitTests {
+            // Required by Robolectric to load resources for screenshot tests
+            isIncludeAndroidResources = true
+        }
     }
 }
 

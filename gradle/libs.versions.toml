@@ -22,6 +22,8 @@ junit = "4.13.2"
 kotlinTest = "2.3.0"
 turbine = "1.2.1"
 kover = "0.9.4"
+roborazzi = "1.79.0"
+robolectric = "4.18.1"
 # KMP Firebase & Auth
 gitliveFirebase = "2.4.0"
 kmpAuth = "2.5.0-alpha01"
@@ -107,6 +109,13 @@ stately-common = { module = "co.touchlab:stately-common", version = "2.0.7" }
 junit = { module = "junit:junit", version.ref = "junit" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 
+# Screenshot testing (Roborazzi + Robolectric)
+roborazzi = { module = "io.github.takahirom.roborazzi:roborazzi", version.ref = "roborazzi" }
+roborazzi-compose = { module = "io.github.takahirom.roborazzi:roborazzi-compose", version.ref = "roborazzi" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
+compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
@@ -118,4 +127,5 @@ google-services = { id = "com.google.gms.google-services", version = "4.4.4" }
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
+roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
