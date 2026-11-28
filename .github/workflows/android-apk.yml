@@ -1,0 +1,155 @@
+name: Android APK
+
+# Construit un APK release signé et l'envoie sur Firebase App Distribution
+# (privé : seuls les testeurs invités peuvent l'installer) :
+#  - à chaque push sur main (= chaque PR mergée)
+#  - sur chaque PR, pour tester avant de merger
+#  - à la demande (bouton « Run workflow »)
+# Aucun APK n'est publié sur GitHub (dépôt public).
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: apk-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-apk:
+    name: Build release APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    env:
+      GOOGLE_SERVICES_JSON_RELEASE: ${{ secrets.GOOGLE_SERVICES_JSON_RELEASE }}
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+      FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+
+    steps:
+      - name: Check required secrets
+        id: secrets
+        run: |
+          missing=""
+          for name in GOOGLE_SERVICES_JSON_RELEASE ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD FIREBASE_APP_ID FIREBASE_SERVICE_ACCOUNT_JSON; do
+            if [ -z "${!name}" ]; then missing="$missing $name"; fi
+          done
+          if [ -n "$missing" ]; then
+            echo "::warning::Secrets manquants:$missing — APK non construit (voir docs/CI_APK.md)"
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        if: steps.secrets.outputs.ok == 'true'
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        if: steps.secrets.outputs.ok == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        if: steps.secrets.outputs.ok == 'true'
+        uses: gradle/actions/setup-gradle@v4
+
+      # gradle.properties, google-services.json et le keystore sont ignorés par git :
+      # on les reconstitue à partir des secrets du dépôt.
+      - name: Restore config files from secrets
+        if: steps.secrets.outputs.ok == 'true'
+        run: |
+          cat > gradle.properties <<'PROPS'
+          org.gradle.jvmargs=-Xmx4g -Dfile.encoding=UTF-8
+          org.gradle.caching=true
+          android.useAndroidX=true
+          android.nonTransitiveRClass=true
+          kotlin.code.style=official
+          kotlin.native.ignoreDisabledTargets=true
+          PROPS
+
+          mkdir -p androidApp/src/release
+          echo "$GOOGLE_SERVICES_JSON_RELEASE" | base64 --decode > androidApp/src/release/google-services.json
+
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > androidApp/ci-release.jks
+          {
+            echo "storeFile=ci-release.jks"
+            echo "storePassword=$ANDROID_KEYSTORE_PASSWORD"
+            echo "keyAlias=$ANDROID_KEY_ALIAS"
+            echo "keyPassword=$ANDROID_KEY_PASSWORD"
+          } > keystore.properties
+
+      - name: Compute version
+        if: steps.secrets.outputs.ok == 'true'
+        id: version
+        run: |
+          short_sha="${GITHUB_SHA::7}"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            short_sha="$(echo '${{ github.event.pull_request.head.sha }}' | cut -c1-7)"
+            suffix="-pr${{ github.event.pull_request.number }}.${{ github.run_number }}+${short_sha}"
+          else
+            suffix="-ci.${{ github.run_number }}+${short_sha}"
+          fi
+          echo "suffix=$suffix" >> "$GITHUB_OUTPUT"
+          echo "short_sha=$short_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Build release APK
+        if: steps.secrets.outputs.ok == 'true'
+        run: ./gradlew :androidApp:assembleRelease -PciVersionSuffix="${{ steps.version.outputs.suffix }}" --stacktrace
+
+      - name: Rename APK
+        if: steps.secrets.outputs.ok == 'true'
+        id: apk
+        run: |
+          src="$(ls androidApp/build/outputs/apk/release/*.apk | head -n1)"
+          dest="bikemanager${{ steps.version.outputs.suffix }}.apk"
+          dest="${dest//+/-}"
+          cp "$src" "$dest"
+          echo "path=$dest" >> "$GITHUB_OUTPUT"
+
+      - name: Release notes
+        if: steps.secrets.outputs.ok == 'true'
+        id: notes
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            notes="PR #${{ github.event.pull_request.number }} : $PR_TITLE"
+          elif [ -n "$COMMIT_MSG" ]; then
+            notes="main : $COMMIT_MSG"
+          else
+            notes="Build manuel ($GITHUB_REF_NAME)"
+          fi
+          notes="$notes (${{ steps.version.outputs.short_sha }})"
+          {
+            echo "text<<EOF_NOTES"
+            echo "$notes"
+            echo "EOF_NOTES"
+          } >> "$GITHUB_OUTPUT"
+
+      # Distribution privée : seuls les testeurs du groupe « testers » reçoivent le build.
+      - name: Distribute via Firebase App Distribution
+        if: steps.secrets.outputs.ok == 'true'
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ env.FIREBASE_APP_ID }}
+          serviceCredentialsFileContent: ${{ env.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          groups: testers
+          file: ${{ steps.apk.outputs.path }}
+          releaseNotes: ${{ steps.notes.outputs.text }}
+
+      - name: Job summary
+        if: steps.secrets.outputs.ok == 'true'
+        run: |
+          echo "### 📱 ${{ steps.apk.outputs.path }} envoyé sur Firebase App Distribution (groupe testers)" >> "$GITHUB_STEP_SUMMARY"
