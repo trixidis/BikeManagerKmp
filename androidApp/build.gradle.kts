@@ -44,7 +44,10 @@ android {
         minSdk = 24
         targetSdk = 36
         versionCode = 9
-        versionName = "1.5.0"
+        // La CI peut suffixer le versionName (ex: "1.5.0-ci.42+abc1234") pour
+        // identifier facilement le build installé sur le téléphone.
+        val ciVersionSuffix = (project.findProperty("ciVersionSuffix") as String?).orEmpty()
+        versionName = "1.5.0$ciVersionSuffix"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
