@@ -1,47 +1,49 @@
-# APK de test construit par GitHub Actions
+# APK de test via Firebase App Distribution
 
-Le workflow `.github/workflows/android-apk.yml` construit un **APK release signé** :
+Le workflow `.github/workflows/android-apk.yml` construit un **APK release signé** et l'envoie sur
+**Firebase App Distribution**. La distribution est privée : seuls les testeurs invités peuvent installer.
+Aucun APK n'est publié sur GitHub (le dépôt est public).
 
-| Déclencheur | Où récupérer l'APK |
+| Déclencheur | Notes de version affichées dans App Tester |
 |---|---|
-| PR mergée (push sur `main`) | Pre-release **`continuous`** : lien fixe `https://github.com/trixidis/BikeManagerKmp/releases/download/continuous/bikemanager-latest.apk` (+ Firebase App Distribution si configuré) |
-| PR ouverte / mise à jour | Artefact du run (onglet *Actions* → le run → *Artifacts*), pour tester **avant** de merger |
-| Manuel | *Actions* → *Android APK* → *Run workflow* |
+| PR mergée (push sur `main`) | `main : <message du commit>` |
+| PR ouverte / mise à jour | `PR #12 : <titre de la PR>` (pour tester **avant** de merger) |
+| Manuel (*Actions* → *Android APK* → *Run workflow*) | `Build manuel (<branche>)` |
 
-Le `versionName` est suffixé (`1.5.0-ci.42+abc1234` ou `1.5.0-pr12.43+abc1234`) pour savoir quel build est installé.
-Le `versionCode` n'est pas modifié : on peut réinstaller par-dessus un build précédent.
+Le `versionName` est suffixé (`1.5.0-ci.42+abc1234` pour `main`, `1.5.0-pr12.43+abc1234` pour une PR)
+pour savoir quel build est installé. Le `versionCode` n'est pas modifié : chaque build s'installe par-dessus le précédent.
 
-## 1. Secrets à créer (une seule fois)
+## 1. Mettre en place Firebase App Distribution (une seule fois)
+
+1. Console Firebase → **App Distribution** → *Commencer* sur l'app Android.
+2. Onglet *Testeurs et groupes* → créer un groupe dont l'**alias** est **`testers`** → s'y ajouter avec son adresse mail.
+3. Google Cloud console (même projet) → *IAM et administration → Comptes de service* → *Créer un compte de service*
+   → rôle **Firebase App Distribution Admin** → onglet *Clés* → *Ajouter une clé* → JSON.
+4. Sur le téléphone : accepter l'invitation reçue par mail et installer l'app **Firebase App Tester**.
+   Tu reçois ensuite une notification à chaque nouveau build.
+
+## 2. Secrets GitHub
 
 *Settings → Secrets and variables → Actions → New repository secret*
 
-| Secret | Contenu | Commande pour le générer |
+| Secret | Contenu | Pour le générer |
 |---|---|---|
-| `GOOGLE_SERVICES_JSON_RELEASE` | `androidApp/src/release/google-services.json` en base64 | `base64 -w0 androidApp/src/release/google-services.json` (macOS : `base64 -i … `) |
+| `GOOGLE_SERVICES_JSON_RELEASE` | `androidApp/src/release/google-services.json` en base64 | `base64 -w0 androidApp/src/release/google-services.json` (macOS : `base64 -i <fichier>`) |
 | `ANDROID_KEYSTORE_BASE64` | Le keystore `.jks` en base64 | `base64 -w0 chemin/vers/keystore.jks` |
 | `ANDROID_KEYSTORE_PASSWORD` | `storePassword` de `keystore.properties` | |
 | `ANDROID_KEY_ALIAS` | `keyAlias` | |
 | `ANDROID_KEY_PASSWORD` | `keyPassword` | |
+| `FIREBASE_APP_ID` | ID de l'app Android, du type `1:1234567890:android:abcdef…` | Console Firebase → *Paramètres du projet* → *Vos applications* |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | Contenu brut du fichier JSON de la clé du compte de service | |
 
-Sans ces secrets, le workflow ne casse pas : il affiche un avertissement et ne construit rien.
+S'il manque un secret, le workflow ne casse pas : il affiche un avertissement et ne construit rien.
+Les PR venant d'un fork n'ont pas accès aux secrets, donc elles ne déclenchent aucun build ni distribution.
 
-> **Google Sign-In** : l'empreinte SHA-1 du keystore utilisé doit être déclarée dans la console Firebase
-> (*Paramètres du projet → Vos applications → Android → Empreintes SHA*), sinon la connexion Google échoue.
-> `keytool -list -v -keystore keystore.jks -alias <alias>` pour l'obtenir.
+## Points d'attention
 
-> **Conflit avec la version Play Store** : si Play App Signing est activé, l'APK installé depuis le Play Store
-> est signé avec la clé de Google, pas votre clé d'upload. Android refusera alors d'installer l'APK CI par-dessus :
-> désinstaller la version Play Store une fois avant (les données sont synchronisées via Firebase).
-
-## 2. (Optionnel) Firebase App Distribution — notification à chaque merge
-
-Plutôt que d'aller chercher l'APK, on reçoit une notification sur le téléphone à chaque PR mergée.
-
-1. Console Firebase → **App Distribution** → *Commencer* → créer un groupe de testeurs nommé **`testers`** et s'y ajouter.
-2. Google Cloud console → *IAM → Comptes de service* → créer un compte avec le rôle **Firebase App Distribution Admin** → créer une clé JSON.
-3. Ajouter les secrets :
-   - `FIREBASE_APP_ID` : l'ID d'app Android (`1:1234567890:android:abcdef…`, visible dans les paramètres du projet Firebase)
-   - `FIREBASE_SERVICE_ACCOUNT_JSON` : le contenu brut du fichier JSON de la clé
-4. Sur le téléphone : accepter l'invitation par mail et installer l'app **Firebase App Tester**.
-
-Si ces deux secrets sont absents, l'étape est simplement ignorée.
+- **Google Sign-In** : l'empreinte SHA-1 du keystore utilisé doit être déclarée dans Firebase
+  (*Paramètres du projet → Vos applications → Android → Empreintes SHA*), sinon la connexion Google échoue.
+  Pour l'obtenir : `keytool -list -v -keystore keystore.jks -alias <alias>`.
+- **Conflit avec la version Play Store** : si Play App Signing est activé, la version du Play Store est signée
+  par la clé de Google, pas par ta clé d'upload. Android refusera d'installer le build de la CI par-dessus :
+  désinstalle une fois la version Play Store (les données sont synchronisées via Firebase).
